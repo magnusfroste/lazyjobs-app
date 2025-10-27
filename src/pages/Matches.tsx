@@ -1,159 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { User } from "@supabase/supabase-js";
+import { useAuth } from "@/hooks/useAuth";
+import { useMatches } from "@/hooks/useMatches";
 import { ArrowLeft, ExternalLink, FileText, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-
-interface Match {
-  id: string;
-  match_score: number;
-  is_applied: boolean;
-  created_at: string;
-  job: {
-    id: string;
-    title: string;
-    company: string;
-    location: string | null;
-    is_remote: boolean;
-    salary_min: number | null;
-    salary_max: number | null;
-    salary_currency: string | null;
-    employment_type: string | null;
-    required_skills: string[] | null;
-    url: string | null;
-    description: string | null;
-  };
-}
 
 const Matches = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const { matches, loading: matchesLoading, deleteMatch, markAsApplied } = useMatches(user?.id || "");
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
-    });
+  // Redirect to auth if not logged in
+  if (!authLoading && !user) {
+    navigate("/auth");
+    return null;
+  }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (user) {
-      loadMatches();
-    }
-  }, [user]);
-
-  const loadMatches = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("matches")
-        .select(`
-          id,
-          match_score,
-          is_applied,
-          created_at,
-          job:jobs (
-            id,
-            title,
-            company,
-            location,
-            is_remote,
-            salary_min,
-            salary_max,
-            salary_currency,
-            employment_type,
-            required_skills,
-            url,
-            description
-          )
-        `)
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setMatches(data as any || []);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load matches",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMarkAsApplied = async (matchId: string) => {
-    try {
-      const { error } = await supabase
-        .from("matches")
-        .update({ is_applied: true, applied_at: new Date().toISOString() })
-        .eq("id", matchId);
-
-      if (error) throw error;
-
-      setMatches(matches.map(m => 
-        m.id === matchId ? { ...m, is_applied: true } : m
-      ));
-
-      toast({
-        title: "Success",
-        description: "Marked as applied",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleDeleteMatch = async (matchId: string) => {
-    try {
-      const { error } = await supabase
-        .from("matches")
-        .delete()
-        .eq("id", matchId);
-
-      if (error) throw error;
-
-      setMatches(matches.filter(m => m.id !== matchId));
-
-      toast({
-        title: "Success",
-        description: "Match removed",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  const loading = authLoading || matchesLoading;
 
   if (loading) {
     return (
@@ -223,7 +88,7 @@ const Matches = () => {
                     {match.match_score}% ✨
                   </Badge>
                   <button
-                    onClick={() => handleDeleteMatch(match.id)}
+                    onClick={() => deleteMatch(match.id)}
                     className="text-muted-foreground hover:text-destructive transition-colors"
                   >
                     <X className="w-5 h-5" />
@@ -267,7 +132,7 @@ const Matches = () => {
                 
                 {!match.is_applied && (
                   <Button
-                    onClick={() => handleMarkAsApplied(match.id)}
+                    onClick={() => markAsApplied(match.id)}
                     variant="outline"
                     className="flex-1"
                   >

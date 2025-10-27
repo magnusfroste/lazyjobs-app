@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,14 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, signIn, signUp, signInWithGoogle } = useAuth();
+
+  useEffect(() => {
+    // Redirect if already logged in
+    if (user) {
+      navigate("/swipe");
+    }
+  }, [user, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,20 +29,11 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { error } = await signIn(email, password);
         if (error) throw error;
         navigate("/swipe");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/swipe`,
-          },
-        });
+        const { error } = await signUp(email, password);
         if (error) throw error;
         toast({
           title: "Success!",
@@ -55,10 +54,7 @@ const Auth = () => {
   const handleDemoLogin = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: "demo@lazyjobs.com",
-        password: "demo123456",
-      });
+      const { error } = await signIn("demo@lazyjobs.com", "demo123456");
       if (error) throw error;
       navigate("/swipe");
     } catch (error: any) {
@@ -74,12 +70,7 @@ const Auth = () => {
 
   const handleGoogleAuth = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/swipe`,
-        },
-      });
+      const { error } = await signInWithGoogle();
       if (error) throw error;
     } catch (error: any) {
       toast({
