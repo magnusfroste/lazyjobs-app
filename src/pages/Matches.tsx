@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
@@ -13,12 +13,17 @@ const Matches = () => {
   const { matches, loading: matchesLoading, deleteMatch, markAsApplied } = useMatches(user?.id || "");
 
   // Redirect to auth if not logged in
-  if (!authLoading && !user) {
-    navigate("/auth");
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [authLoading, user, navigate]);
 
   const loading = authLoading || matchesLoading;
+
+  if (!authLoading && !user) {
+    return null;
+  }
 
   if (loading) {
     return (

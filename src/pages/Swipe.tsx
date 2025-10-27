@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useJobs } from "@/hooks/useJobs";
@@ -16,12 +17,17 @@ const Swipe = () => {
   );
 
   // Redirect to auth if not logged in
-  if (!authLoading && !user) {
-    navigate("/auth");
-    return null;
-  }
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [authLoading, user, navigate]);
 
   const loading = authLoading || jobsLoading;
+
+  if (!authLoading && !user) {
+    return null;
+  }
 
   if (loading) {
     return (
