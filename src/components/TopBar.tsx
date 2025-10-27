@@ -1,37 +1,28 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Briefcase, Heart, Settings, Sun, Moon, Menu } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Briefcase, Heart, User, Sun, Moon, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 const TopBar = () => {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-  };
+  const { signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate("/auth");
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -65,16 +56,21 @@ const TopBar = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => navigate("/matches")}>
-                <Heart className="w-4 h-4 mr-2" />
-                My Matches
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/swipe")}>
                 <Briefcase className="w-4 h-4 mr-2" />
                 Swipe Jobs
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/matches")}>
+                <Heart className="w-4 h-4 mr-2" />
+                My Matches
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/profile")}>
+                <User className="w-4 h-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
-                <Settings className="w-4 h-4 mr-2" />
+                <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
