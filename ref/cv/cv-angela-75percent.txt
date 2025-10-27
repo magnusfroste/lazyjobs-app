@@ -1,0 +1,94 @@
+ANGELA SVENSSON
+Full Stack Developer
+Stockholm, Sweden
+angela.svensson@email.com | +46 70 234 5678
+GitHub: github.com/angelasvensson | LinkedIn: linkedin.com/in/angela-svensson
+
+PROFESSIONAL SUMMARY
+Full Stack Developer with 3 years of experience building modern web applications. Strong expertise in React, Node.js, and cloud technologies. Proven track record of delivering high-quality code and collaborating effectively in agile teams.
+
+WORK EXPERIENCE
+
+Full Stack Developer
+Digital Solutions AB, Stockholm
+March 2022 - Present
+- Developed and maintained React applications serving 50,000+ users
+- Built RESTful APIs using Node.js and Express
+- Implemented responsive designs with TailwindCSS
+- Collaborated with UX designers and product managers
+- Participated in code reviews and mentored junior developers
+- Reduced page load time by 40% through optimization
+
+Frontend Developer
+StartupTech, Stockholm
+June 2021 - February 2022
+- Created interactive user interfaces with React and TypeScript
+- Integrated third-party APIs and payment systems
+- Wrote unit tests using Jest and React Testing Library
+- Worked in agile sprints with daily standups
+- Improved accessibility (WCAG 2.1 AA compliance)
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+KTH Royal Institute of Technology, Stockholm
+2017 - 2021
+- Focus on Software Engineering
+- Thesis: "Modern Web Application Architecture"
+- GPA: 3.7/4.0
+
+TECHNICAL SKILLS
+
+Frontend:
+- React, TypeScript, JavaScript (ES6+)
+- HTML5, CSS3, TailwindCSS, Styled Components
+- Redux, React Query, Context API
+- Responsive design, Mobile-first development
+
+Backend:
+- Node.js, Express, NestJS
+- REST APIs, GraphQL
+- PostgreSQL, MongoDB
+- Authentication (JWT, OAuth)
+
+Tools & Practices:
+- Git, GitHub, GitLab
+- Docker, CI/CD
+- Jest, Vitest, Cypress
+- Agile/Scrum, Jira
+- Figma, Design Systems
+
+Cloud:
+- AWS (EC2, S3, Lambda)
+- Vercel, Netlify
+- Basic DevOps knowledge
+
+LANGUAGES
+- Swedish (Native)
+- English (Fluent)
+- Spanish (Basic)
+
+PROJECTS
+
+Personal Portfolio Website
+- Built with Next.js, TypeScript, and TailwindCSS
+- Deployed on Vercel with CI/CD
+- SEO optimized, 95+ Lighthouse score
+
+Open Source Contributions
+- Contributed to React component libraries
+- Fixed bugs in popular npm packages
+- Active on Stack Overflow (1,200+ reputation)
+
+CERTIFICATIONS
+- AWS Certified Cloud Practitioner (2023)
+- React Advanced Patterns (2022)
+
+INTERESTS
+- Open source development
+- Tech meetups and conferences
+- Hiking and photography
+- Continuous learning
+
+REFERENCES
+Available upon request
