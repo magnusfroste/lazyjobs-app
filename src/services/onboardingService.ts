@@ -39,7 +39,7 @@ export const onboardingService = {
    * Trigger CV processing webhook (if configured)
    */
   async processCV(cvUrl: string, userId: string): Promise<any> {
-    const webhookUrl = getConfig("n8n_cv_webhook_url") as string;
+    const webhookUrl = getConfig("cv_webhook_url") as string;
     
     if (!webhookUrl) {
       console.warn("CV processing webhook not configured, skipping...");
