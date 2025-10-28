@@ -1,5 +1,7 @@
 # OpenJobs Connector
 
+> ⚠️ **IMPORTANT:** This connector is **NOT deployed to Vercel**. It runs as a separate Docker container on Easypanel.
+
 Fetches jobs from the OpenJobs aggregation platform, which provides unified access to multiple job sources.
 
 ## Features

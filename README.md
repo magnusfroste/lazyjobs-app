@@ -1,73 +1,134 @@
-# Welcome to your Lovable project
+# LazyJobs
 
-## Project info
+> 🚀 **Swipe. Match. Get Hired.** The lazy way to land your dream job.
 
-**URL**: https://lovable.dev/projects/c047a2c8-dc89-4a67-9c08-58c1ecb98372
+LazyJobs is a Tinder-like job matching platform powered by AI. Upload your CV, swipe through personalized job matches, and get AI-generated application materials—all in one seamless experience.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- 📄 **CV-based matching**: Upload your CV and get jobs matched to your skills
+- 🎯 **Smart job recommendations**: AI analyzes your profile and ranks jobs by fit
+- 👆 **Swipe interface**: Tinder-like UX for browsing opportunities
+- 🤖 **AI application assistant**: Generate cover letters and answers in seconds
+- 📊 **Skill gap analysis**: See what skills you need to level up
+- 🌍 **Multi-source aggregation**: Jobs from Arbetsförmedlingen, EURES, Remotive, and more
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c047a2c8-dc89-4a67-9c08-58c1ecb98372) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🏗️ Architecture
 
-**Use your preferred IDE**
+LazyJobs uses a **3-server architecture**:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1. **Vercel** - React/Vite frontend (auto-deploys from GitHub)
+2. **Supabase** - Backend with PostgreSQL, auth, and edge functions
+3. **Easypanel** - OpenJobs connector (Docker container fetching & enriching jobs)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the full architecture and deployment guide.
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ and npm
+- Supabase account (or use existing project)
+
+### Local Development
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd lazyjobs
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your Supabase credentials
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:8080` to see the app.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 📁 Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+lazyjobs/
+├── src/                    # React frontend
+│   ├── components/         # UI components
+│   ├── pages/             # Route pages
+│   ├── hooks/             # Custom React hooks
+│   ├── services/          # API service layer
+│   └── integrations/      # Supabase client
+├── supabase/              # Backend
+│   ├── functions/         # Edge functions (auto-deployed)
+│   └── migrations/        # Database schema
+├── connectors/            # Data pipeline (NOT deployed to Vercel)
+│   └── openjobs/          # OpenJobs connector (runs on Easypanel)
+├── docs/                  # Documentation
+└── ref/                   # Reference implementation
+```
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## 🛠️ Technologies
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
+- **Backend**: Supabase (PostgreSQL, Auth, Edge Functions)
+- **UI**: shadcn/ui, Framer Motion
+- **Deployment**: Vercel (frontend), Supabase (backend), Easypanel (connector)
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/c047a2c8-dc89-4a67-9c08-58c1ecb98372) and click on Share -> Publish.
+## 📚 Documentation
 
-## Can I connect a custom domain to my Lovable project?
+- [Deployment Guide](DEPLOYMENT.md) - Full deployment instructions
+- [OpenJobs Integration](docs/setup/OPENJOBS_INTEGRATION.md) - Connector setup
+- [Architecture](connectors/README.md) - Data flow and connector architecture
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🚢 Deployment
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Deploy to Vercel
+
+```bash
+# Push to GitHub (auto-deploys)
+git push origin main
+```
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for environment variables and configuration.
+
+### Custom Domain
+
+Connect a custom domain in the Vercel dashboard:
+1. Go to Project Settings → Domains
+2. Add your domain
+3. Configure DNS as instructed
+
+---
+
+## 🤝 Contributing
+
+This is a private project. If you have access, feel free to open issues or submit PRs.
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+## Edit your project
+
+You can edit your project by:
+- Using the Lovable web interface at [lovable.dev/projects/c047a2c8-dc89-4a67-9c08-58c1ecb98372](https://lovable.dev/projects/c047a2c8-dc89-4a67-9c08-58c1ecb98372)
+- Cloning the repository locally (see Getting Started above)

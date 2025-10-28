@@ -1,5 +1,7 @@
 # LazyJobs Data Connectors
 
+> ⚠️ **IMPORTANT:** The connector code in this directory is **NOT deployed to Vercel**. It runs as a separate Docker container on Easypanel and is kept here for version control and documentation.
+
 This directory contains data pipeline connectors that fetch jobs from external sources and ingest them into LazyJobs.
 
 ## Architecture Overview

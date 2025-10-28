@@ -10,6 +10,19 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  build: {
+    sourcemap: mode === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', 'lucide-react'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
   plugins: [
     react(), 
     mode === "development" && componentTagger(),
