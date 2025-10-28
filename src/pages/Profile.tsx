@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { profileService } from "@/services/profileService";
+import CVDisplay from "@/components/CVDisplay";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -393,14 +394,14 @@ const Profile = () => {
                     onChange={handleCVUpload}
                     disabled={uploading}
                     className="hidden"
-                    id="cv-upload"
+                    id="cv-upload-input"
                   />
                   <Label htmlFor="cv-upload">
                     <Button
                       type="button"
                       variant="outline"
                       disabled={uploading || processing}
-                      onClick={() => document.getElementById("cv-upload")?.click()}
+                      onClick={() => document.getElementById("cv-upload-input")?.click()}
                     >
                       {uploading && "Uploading..."}
                       {processing && "Analyzing..."}
@@ -411,6 +412,16 @@ const Profile = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* CV Display - Show extracted data */}
+          {profile?.cv_data && (
+            <CVDisplay 
+              cvData={profile.cv_data} 
+              onReupload={() => {
+                document.getElementById('cv-upload-input')?.click();
+              }}
+            />
+          )}
 
           {/* Theme Settings */}
           <Card>
