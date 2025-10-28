@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { onboardingService, OnboardingPreferences, SurveyAnswers } from "@/services/onboardingService";
+import { profileService } from "@/services/profileService";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 type OnboardingStep = "welcome" | "upload" | "processing" | "preferences" | "complete";
 
 export const useOnboarding = (userId: string) => {
+  const { user } = useAuth();
   const [step, setStep] = useState<OnboardingStep>("welcome");
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -24,43 +27,39 @@ export const useOnboarding = (userId: string) => {
   };
 
   const handleUploadCV = async (file: File) => {
+    if (!user?.email) return;
+    
     setUploading(true);
     setError(null);
 
     try {
-      // Upload file
-      const url = await onboardingService.uploadCV(userId, file);
-      setCvUrl(url);
-
-      // Move to processing step
       setStep("processing");
       setProcessing(true);
 
-      // Try to process CV (if webhook configured)
-      try {
-        const cvData = await onboardingService.processCV(url, userId);
-        await onboardingService.saveCVData(userId, url, cvData);
-        
-        toast({
-          title: "CV Uploaded Successfully",
-          description: "Your CV has been analyzed and saved.",
-        });
-      } catch (processError) {
-        // If processing fails, just save the URL
-        console.warn("CV processing failed, saving URL only:", processError);
-        await onboardingService.saveCVData(userId, url);
-        
-        toast({
-          title: "CV Uploaded",
-          description: "Your CV has been saved. Processing will happen in the background.",
-        });
+      // Use the working profileService.uploadCV method
+      const result = await profileService.uploadCV(userId, file, user.email);
+
+      if (!result.success) {
+        throw new Error(result.error || "Upload failed");
       }
+
+      setCvUrl(result.publicUrl || "");
+      
+      toast({
+        title: "CV Uploaded Successfully ✨",
+        description: result.cvData 
+          ? `Found ${result.cvData.skills_flat?.length || 0} skills in your CV`
+          : "Your CV has been analyzed and saved",
+      });
 
       // Move to preferences
       setProcessing(false);
       setStep("preferences");
     } catch (err) {
       setError((err as Error).message);
+      setProcessing(false);
+      setStep("upload"); // Go back to upload on error
+      
       toast({
         title: "Upload Failed",
         description: (err as Error).message,

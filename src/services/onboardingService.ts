@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getConfig } from "@/lib/config";
 
 export interface OnboardingPreferences {
   location?: string;
@@ -14,75 +13,6 @@ export interface SurveyAnswers {
 }
 
 export const onboardingService = {
-  /**
-   * Upload CV file to Supabase Storage
-   */
-  async uploadCV(userId: string, file: File): Promise<string> {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${userId}/${Date.now()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("cvs")
-      .upload(fileName, file);
-
-    if (uploadError) {
-      throw new Error(`Upload failed: ${uploadError.message}`);
-    }
-
-    // Get public URL
-    const { data } = supabase.storage.from("cvs").getPublicUrl(fileName);
-    
-    return data.publicUrl;
-  },
-
-  /**
-   * Trigger CV processing webhook (if configured)
-   */
-  async processCV(cvUrl: string, userId: string): Promise<any> {
-    const webhookUrl = getConfig("cv_webhook_url") as string;
-    
-    if (!webhookUrl) {
-      console.warn("CV processing webhook not configured, skipping...");
-      return null;
-    }
-
-    try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cv_url: cvUrl, user_id: userId }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Webhook failed: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("CV processing failed:", error);
-      throw error;
-    }
-  },
-
-  /**
-   * Save CV data to user profile
-   */
-  async saveCVData(userId: string, cvUrl: string, cvData?: any): Promise<void> {
-    const updates: any = {
-      cv_data: cvData || { cv_url: cvUrl },
-      updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", userId);
-
-    if (error) {
-      throw new Error(`Failed to save CV data: ${error.message}`);
-    }
-  },
-
   /**
    * Save user preferences
    */
