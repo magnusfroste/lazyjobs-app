@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Tables } from "@/integrations/supabase/types";
+import { getConfig } from "@/lib/config";
 
 type Profile = Tables<"profiles">;
 
@@ -82,11 +83,18 @@ export class ProfileService {
         .from("cvs")
         .getPublicUrl(filePath);
 
-      // 2. Get webhook URL from environment
-      const webhookUrl = import.meta.env.VITE_N8N_CV_WEBHOOK_URL;
+      // 2. Get webhook URL from app_settings
+      const webhookUrl = getConfig("cv_webhook_url") as string | null;
       if (!webhookUrl) {
-        console.warn("VITE_N8N_CV_WEBHOOK_URL not configured - skipping CV analysis");
-        return { success: true, publicUrl };
+        console.warn("⚠️ CV webhook URL not configured in app_settings - skipping CV analysis");
+        console.warn(
+          "💡 Set it in Supabase: UPDATE app_settings SET value = jsonb_set(value, '{cv_webhook_url}', '\"https://your-n8n.com/webhook/cvparser\"') WHERE key = 'config';"
+        );
+        return {
+          success: true,
+          publicUrl,
+          error: "CV uploaded but analysis skipped (webhook not configured)",
+        };
       }
 
       // 3. Call n8n webhook
