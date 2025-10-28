@@ -70,6 +70,25 @@ export class JobService {
     }
   }
 
+  async getAIMatchedJobs(userId: string, limit = 100): Promise<JobWithMatch[]> {
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-match-jobs", {
+        body: { user_id: userId, limit },
+      });
+
+      if (error) {
+        console.error("AI matching error:", error);
+        throw new JobServiceError("Failed to fetch AI-matched jobs");
+      }
+
+      // ai-match-jobs returns { success: true, data: [...jobs with scores...] }
+      return data?.data || [];
+    } catch (error) {
+      console.error("Error fetching AI-matched jobs:", error);
+      throw new JobServiceError("Failed to fetch AI-matched jobs");
+    }
+  }
+
   async getJobsExcludingSwipedByUser(userId: string, limit = 50): Promise<Job[]> {
     // Get jobs that user hasn't swiped on yet
     const { data: swipedJobIds, error: swipeError } = await supabase

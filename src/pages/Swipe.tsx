@@ -1,22 +1,43 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useJobs } from "@/hooks/useJobs";
 import { useSwipe } from "@/hooks/useSwipe";
+import { getAppConfig } from "@/lib/config";
 import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
+import { MatchModeToggle } from "@/components/MatchModeToggle";
+
+type MatchMode = "keyword" | "ai";
 
 const Swipe = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
-  const { jobs, loading: jobsLoading } = useJobs(user?.id, true);
+  const [matchMode, setMatchMode] = useState<MatchMode>("keyword");
+  const [aiMatchingEnabled, setAiMatchingEnabled] = useState(false);
+  const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
+  const { jobs, loading: jobsLoading } = useJobs(user?.id, true, matchMode);
   const { currentJob, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
     user?.id || "",
     jobs
   );
+
+  // Load feature flags
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await getAppConfig();
+        setAiMatchingEnabled(config.features.ai_matching ?? false);
+        setAiMatchingPremium(config.features.ai_matching_premium ?? false);
+      } catch (error) {
+        console.error("Failed to load feature flags:", error);
+      }
+    };
+    loadConfig();
+  }, []);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -52,8 +73,17 @@ const Swipe = () => {
   return (
     <div className="min-h-screen pb-32">
       <TopBar />
-      
+
       <div className="container max-w-2xl mx-auto px-4 pt-20">
+        {aiMatchingEnabled && (
+          <MatchModeToggle
+            mode={matchMode}
+            onChange={setMatchMode}
+            showPremiumBadge={aiMatchingPremium}
+            isPremium={false}
+          />
+        )}
+
         {currentJob ? (
           <>
             <JobCard 
