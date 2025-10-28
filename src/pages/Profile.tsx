@@ -23,6 +23,7 @@ const Profile = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Redirect to auth if not logged in
@@ -106,12 +107,41 @@ const Profile = () => {
 
     try {
       setUploading(true);
-      await profileService.uploadCV(user.id, file);
       
       toast({
-        title: "Success",
-        description: "CV uploaded successfully",
+        title: "Uploading CV...",
+        description: "Please wait while we upload your file",
       });
+
+      const result = await profileService.uploadCV(user.id, file, user.email!);
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      setUploading(false);
+      setProcessing(true);
+      
+      toast({
+        title: "Analyzing CV...",
+        description: "Extracting your skills and experience",
+      });
+
+      // Give a moment for the processing state to show
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (result.cvData) {
+        const skillCount = result.cvData.skills_flat?.length || 0;
+        toast({
+          title: "Success! ✨",
+          description: `CV uploaded and analyzed! Found ${skillCount} skills in your profile.`,
+        });
+      } else {
+        toast({
+          title: "CV Uploaded",
+          description: "Your CV was uploaded successfully",
+        });
+      }
       
       refetch();
     } catch (error: any) {
@@ -122,6 +152,7 @@ const Profile = () => {
       });
     } finally {
       setUploading(false);
+      setProcessing(false);
     }
   };
 
@@ -218,7 +249,9 @@ const Profile = () => {
                 <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary transition-colors">
                   <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground mb-4">
-                    Upload PDF or Word document (max 5MB)
+                    {uploading && "Uploading your CV..."}
+                    {processing && "Analyzing your CV..."}
+                    {!uploading && !processing && "Upload PDF or Word document (max 5MB)"}
                   </p>
                   <Input
                     type="file"
@@ -232,10 +265,12 @@ const Profile = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={uploading}
+                      disabled={uploading || processing}
                       onClick={() => document.getElementById("cv-upload")?.click()}
                     >
-                      {uploading ? "Uploading..." : "Choose File"}
+                      {uploading && "Uploading..."}
+                      {processing && "Analyzing..."}
+                      {!uploading && !processing && "Choose File"}
                     </Button>
                   </Label>
                 </div>
