@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApplicationGenerator } from "@/hooks/useApplicationGenerator";
 import { Job } from "@/types/job";
 import { toast } from "sonner";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 interface ApplicationAssistantModalProps {
   job: Job;
@@ -205,9 +206,9 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 <TabsContent value="cv" className="space-y-4">
                   {result.cv && (
                     <>
-                      <div className="bg-muted/30 border rounded-xl p-6 max-h-96 overflow-y-auto">
-                        <pre className="text-sm whitespace-pre-wrap font-sans">{result.cv}</pre>
-                      </div>
+                <div className="bg-muted/30 border rounded-xl p-6 max-h-96 overflow-y-auto">
+                  <MarkdownContent content={result.cv} />
+                </div>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleCopy(result.cv!, 'CV')}
@@ -234,9 +235,9 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 <TabsContent value="cover" className="space-y-4">
                   {result.cover_letter && (
                     <>
-                      <div className="bg-muted/30 border rounded-xl p-6 max-h-96 overflow-y-auto">
-                        <pre className="text-sm whitespace-pre-wrap font-sans">{result.cover_letter}</pre>
-                      </div>
+                <div className="bg-muted/30 border rounded-xl p-6 max-h-96 overflow-y-auto">
+                  <MarkdownContent content={result.cover_letter} />
+                </div>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleCopy(result.cover_letter!, 'Cover Letter')}
