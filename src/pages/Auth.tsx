@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,13 +16,18 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
+  const { profile, loading: profileLoading } = useProfile(user?.id);
 
   useEffect(() => {
     // Redirect if already logged in
-    if (user) {
-      navigate("/swipe");
+    if (user && !profileLoading) {
+      if (profile?.onboarding_completed) {
+        navigate("/swipe");
+      } else {
+        navigate("/onboarding");
+      }
     }
-  }, [user, navigate]);
+  }, [user, profile, profileLoading, navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +37,7 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        navigate("/swipe");
+        // Navigation handled by useEffect after profile loads
       } else {
         const { error } = await signUp(email, password);
         if (error) throw error;
@@ -56,7 +62,7 @@ const Auth = () => {
     try {
       const { error } = await signIn("demo@lazyjobs.com", "demo123456");
       if (error) throw error;
-      navigate("/swipe");
+      // Navigation handled by useEffect after profile loads
     } catch (error: any) {
       toast({
         title: "Error",

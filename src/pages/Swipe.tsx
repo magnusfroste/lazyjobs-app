@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { useJobs } from "@/hooks/useJobs";
 import { useSwipe } from "@/hooks/useSwipe";
 import JobCard from "@/components/JobCard";
@@ -10,6 +11,7 @@ import TopBar from "@/components/TopBar";
 const Swipe = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useProfile(user?.id);
   const { jobs, loading: jobsLoading } = useJobs(user?.id, true);
   const { currentJob, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
     user?.id || "",
@@ -23,7 +25,14 @@ const Swipe = () => {
     }
   }, [authLoading, user, navigate]);
 
-  const loading = authLoading || jobsLoading;
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    if (user && !profileLoading && profile && !profile.onboarding_completed) {
+      navigate("/onboarding");
+    }
+  }, [user, profile, profileLoading, navigate]);
+
+  const loading = authLoading || profileLoading || jobsLoading;
 
   if (!authLoading && !user) {
     return null;

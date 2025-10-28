@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { initializeConfig } from "@/lib/config";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import Swipe from "./pages/Swipe";
 import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
@@ -36,6 +37,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Navigate to="/auth" replace />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/swipe" element={<Swipe />} />
               <Route path="/matches" element={<Matches />} />
               <Route path="/profile" element={<Profile />} />
