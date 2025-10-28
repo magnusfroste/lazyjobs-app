@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut } from "lucide-react";
+import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { profileService } from "@/services/profileService";
 
 const Profile = () => {
@@ -25,6 +26,12 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Job preferences state
+  const [location, setLocation] = useState("");
+  const [salaryMin, setSalaryMin] = useState("");
+  const [remoteOnly, setRemoteOnly] = useState(false);
+  const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -38,6 +45,13 @@ const Profile = () => {
     if (profile) {
       setFullName(profile.full_name || "");
       setPhone(profile.phone || "");
+      
+      // Load preferences
+      const prefs = (profile.preferences as any) || {};
+      setLocation(prefs.location || "");
+      setSalaryMin(prefs.salary_min?.toString() || "");
+      setRemoteOnly(prefs.remote_only || false);
+      setEmploymentTypes(prefs.employment_types || []);
     }
   }, [profile]);
 
@@ -77,6 +91,39 @@ const Profile = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSavePreferences = async () => {
+    try {
+      setSaving(true);
+      await updateProfile({
+        preferences: {
+          location,
+          salary_min: salaryMin ? parseInt(salaryMin) : null,
+          remote_only: remoteOnly,
+          employment_types: employmentTypes,
+        },
+      });
+      
+      toast({
+        title: "Success",
+        description: "Job preferences updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update preferences",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleEmploymentType = (type: string) => {
+    setEmploymentTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    );
   };
 
   const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,6 +281,93 @@ const Profile = () => {
                 className="w-full gradient-primary text-white"
               >
                 {saving ? "Saving..." : "Save Profile"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Job Preferences */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5" />
+                Job Preferences
+              </CardTitle>
+              <CardDescription>
+                Set your preferences to get better job matches
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Location */}
+              <div className="space-y-2">
+                <Label htmlFor="location" className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Preferred Location
+                </Label>
+                <Input
+                  id="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Sweden, Stockholm, Remote..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  e.g., "Sweden", "Stockholm", "Remote", "USA"
+                </p>
+              </div>
+
+              {/* Minimum Salary */}
+              <div className="space-y-2">
+                <Label htmlFor="salaryMin" className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Minimum Salary (USD)
+                </Label>
+                <Input
+                  id="salaryMin"
+                  type="number"
+                  value={salaryMin}
+                  onChange={(e) => setSalaryMin(e.target.value)}
+                  placeholder="50000"
+                />
+              </div>
+
+              {/* Remote Only Checkbox */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remoteOnly"
+                  checked={remoteOnly}
+                  onCheckedChange={(checked) => setRemoteOnly(checked as boolean)}
+                />
+                <Label
+                  htmlFor="remoteOnly"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Remote jobs only
+                </Label>
+              </div>
+
+              {/* Employment Types */}
+              <div className="space-y-2">
+                <Label>Employment Types</Label>
+                <div className="flex flex-wrap gap-2">
+                  {['full-time', 'part-time', 'contract', 'internship'].map((type) => (
+                    <Button
+                      key={type}
+                      type="button"
+                      variant={employmentTypes.includes(type) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => toggleEmploymentType(type)}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                onClick={handleSavePreferences}
+                disabled={saving}
+                className="w-full"
+              >
+                {saving ? "Saving..." : "Save Preferences"}
               </Button>
             </CardContent>
           </Card>
