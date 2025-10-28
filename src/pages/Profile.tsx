@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase } from "lucide-react";
+import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { profileService } from "@/services/profileService";
+import { FEATURES } from "@/lib/featureFlags";
 import CVDisplay from "@/components/CVDisplay";
 
 const Profile = () => {
@@ -33,6 +34,10 @@ const Profile = () => {
   const [salaryMin, setSalaryMin] = useState("");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
+  
+  // Application assistant preferences
+  const [autoOpenApplication, setAutoOpenApplication] = useState(false);
+  const [applicationLanguage, setApplicationLanguage] = useState<'auto' | 'en' | 'sv'>('auto');
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -53,6 +58,10 @@ const Profile = () => {
       setSalaryMin(prefs.salary_min?.toString() || "");
       setRemoteOnly(prefs.remote_only || false);
       setEmploymentTypes(prefs.employment_types || []);
+      
+      // Load application assistant settings
+      setAutoOpenApplication(prefs.auto_open_application || false);
+      setApplicationLanguage((profile.application_language_preference as 'auto' | 'en' | 'sv') || 'auto');
     }
   }, [profile]);
 
@@ -103,7 +112,9 @@ const Profile = () => {
           salary_min: salaryMin ? parseInt(salaryMin) : null,
           remote_only: remoteOnly,
           employment_types: employmentTypes,
+          auto_open_application: autoOpenApplication,
         },
+        application_language_preference: applicationLanguage,
       });
       
       toast({
@@ -389,6 +400,85 @@ const Profile = () => {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Application Assistant Settings */}
+          {FEATURES.APPLICATION_ASSISTANT && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Application Assistant
+                </CardTitle>
+                <CardDescription>
+                  Configure how the AI application generator works for you
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Auto-open toggle */}
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="auto-open"
+                    checked={autoOpenApplication}
+                    onCheckedChange={(checked) => setAutoOpenApplication(checked as boolean)}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="auto-open"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Auto-open after matching
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Automatically open the application generator when you like a job. 
+                      If disabled, you can apply later from your matches page.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Language preference */}
+                <div className="space-y-3">
+                  <Label>Default Application Language</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      type="button"
+                      variant={applicationLanguage === 'auto' ? 'default' : 'outline'}
+                      onClick={() => setApplicationLanguage('auto')}
+                      className="w-full"
+                    >
+                      🌍 Auto-detect
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={applicationLanguage === 'en' ? 'default' : 'outline'}
+                      onClick={() => setApplicationLanguage('en')}
+                      className="w-full"
+                    >
+                      🇬🇧 English
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={applicationLanguage === 'sv' ? 'default' : 'outline'}
+                      onClick={() => setApplicationLanguage('sv')}
+                      className="w-full"
+                    >
+                      🇸🇪 Swedish
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {applicationLanguage === 'auto'
+                      ? "We'll detect the language from each job description"
+                      : `Applications will always be generated in ${
+                          applicationLanguage === 'en' ? 'English' : 'Swedish'
+                        }`}
+                  </p>
+                </div>
+
+                <Button onClick={handleSavePreferences} disabled={saving} className="w-full">
+                  {saving ? "Saving..." : "Save Preferences"}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* CV Upload */}
           <Card>
