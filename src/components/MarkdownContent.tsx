@@ -4,7 +4,17 @@ interface MarkdownContentProps {
   content: string;
 }
 
+function unwrapFullFence(src: string): string {
+  if (!src) return src;
+  const trimmed = src.trim();
+  // Matches ``` or ```markdown/```md fenced whole-document blocks
+  const fenceMatch = trimmed.match(/^```(?:\s*(?:markdown|md))?\s*\n([\s\S]*?)\n```$/i);
+  return fenceMatch ? fenceMatch[1].trim() : trimmed;
+}
+
 export const MarkdownContent = ({ content }: MarkdownContentProps) => {
+  const cleaned = unwrapFullFence(content);
+
   return (
     <div className="markdown-content font-sans">
       <ReactMarkdown
@@ -25,12 +35,18 @@ export const MarkdownContent = ({ content }: MarkdownContentProps) => {
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-accent pl-4 italic my-3 text-muted-foreground">{children}</blockquote>
           ),
-          code: ({ children }) => (
-            <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
-          ),
+          hr: () => <hr className="my-6 border-muted" />,
+          code: ({ inline, children, ...props }: any) =>
+            inline ? (
+              <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
+            ) : (
+              <pre className="bg-muted/50 p-4 rounded-md overflow-x-auto">
+                <code className="font-mono text-sm">{children}</code>
+              </pre>
+            ),
         }}
       >
-        {content}
+        {cleaned}
       </ReactMarkdown>
     </div>
   );
