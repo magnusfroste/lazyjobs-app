@@ -160,6 +160,19 @@ export class ProfileService {
       // 6. Save cv_data to profiles table
       await this.updateProfile(userId, { cv_data: cvData });
 
+      // 7. Auto-populate full_name and phone from CV data
+      const profileUpdates: Partial<Profile> = {};
+      if (cvData.name) {
+        profileUpdates.full_name = cvData.name;
+      }
+      if (cvData.phone) {
+        profileUpdates.phone = cvData.phone;
+      }
+
+      if (Object.keys(profileUpdates).length > 0) {
+        await this.updateProfile(userId, profileUpdates);
+      }
+
       return {
         success: true,
         publicUrl,
