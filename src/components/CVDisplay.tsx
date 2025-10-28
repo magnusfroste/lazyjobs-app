@@ -1,15 +1,23 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { FileText, Briefcase, GraduationCap, Award, Globe, Github, Linkedin } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { FileText, Briefcase, GraduationCap, Award, Globe, Github, Linkedin, Edit, Plus, X } from "lucide-react";
 
 interface CVDisplayProps {
   cvData: any;
   onReupload?: () => void;
+  onSkillsUpdate?: (skills: string[]) => Promise<void>;
 }
 
-export default function CVDisplay({ cvData, onReupload }: CVDisplayProps) {
+export default function CVDisplay({ cvData, onReupload, onSkillsUpdate }: CVDisplayProps) {
+  const [isEditingSkills, setIsEditingSkills] = useState(false);
+  const [editedSkills, setEditedSkills] = useState<string[]>([]);
+  const [newSkill, setNewSkill] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
   const skills = cvData?.skills_flat || [];
   const experienceYears = cvData?.experience_years;
   const education = cvData?.education?.[0];
@@ -18,6 +26,48 @@ export default function CVDisplay({ cvData, onReupload }: CVDisplayProps) {
   const bio = cvData?.bio;
   const github = cvData?.github;
   const linkedin = cvData?.linkedin;
+
+  useEffect(() => {
+    setEditedSkills(skills);
+  }, [skills]);
+
+  const handleStartEdit = () => {
+    setEditedSkills([...skills]);
+    setIsEditingSkills(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditedSkills(skills);
+    setNewSkill("");
+    setIsEditingSkills(false);
+  };
+
+  const handleSaveSkills = async () => {
+    if (!onSkillsUpdate) return;
+    
+    try {
+      setIsSaving(true);
+      await onSkillsUpdate(editedSkills);
+      setIsEditingSkills(false);
+      setNewSkill("");
+    } catch (error) {
+      console.error("Failed to save skills:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddSkill = () => {
+    const trimmed = newSkill.trim();
+    if (trimmed && !editedSkills.includes(trimmed)) {
+      setEditedSkills([...editedSkills, trimmed]);
+      setNewSkill("");
+    }
+  };
+
+  const handleRemoveSkill = (skillToRemove: string) => {
+    setEditedSkills(editedSkills.filter(s => s !== skillToRemove));
+  };
 
   if (!cvData) {
     return null;
@@ -49,16 +99,72 @@ export default function CVDisplay({ cvData, onReupload }: CVDisplayProps) {
         )}
 
         {/* Skills - PRIMARY SECTION */}
-        {skills.length > 0 && (
+        {(skills.length > 0 || isEditingSkills) && (
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Briefcase className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Skills ({skills.length})</h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-primary" />
+                <h3 className="font-semibold">
+                  Skills ({isEditingSkills ? editedSkills.length : skills.length})
+                </h3>
+              </div>
+              
+              {onSkillsUpdate && !isEditingSkills && (
+                <Button variant="outline" size="sm" onClick={handleStartEdit}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Skills
+                </Button>
+              )}
             </div>
+
+            {/* Edit Mode */}
+            {isEditingSkills && (
+              <div className="space-y-3 mb-4 p-4 bg-muted/50 rounded-lg">
+                <div className="flex gap-2">
+                  <Input
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
+                    placeholder="Add new skill (e.g., Docker)"
+                    className="flex-1"
+                  />
+                  <Button onClick={handleAddSkill} size="sm" variant="secondary">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleSaveSkills} 
+                    disabled={isSaving}
+                    className="gradient-primary text-white"
+                  >
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
+                  <Button onClick={handleCancelEdit} variant="outline">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Skills Display */}
             <div className="flex flex-wrap gap-2">
-              {skills.map((skill: string, idx: number) => (
-                <Badge key={idx} variant="secondary">
+              {(isEditingSkills ? editedSkills : skills).map((skill: string, idx: number) => (
+                <Badge 
+                  key={idx} 
+                  variant="secondary"
+                  className={isEditingSkills ? "pr-1" : ""}
+                >
                   {skill}
+                  {isEditingSkills && (
+                    <button
+                      onClick={() => handleRemoveSkill(skill)}
+                      className="ml-2 hover:text-destructive"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
                 </Badge>
               ))}
             </div>

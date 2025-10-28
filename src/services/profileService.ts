@@ -61,6 +61,19 @@ export class ProfileService {
     await this.updateProfile(userId, { preferences });
   }
 
+  async updateSkills(userId: string, skills: string[]): Promise<Profile> {
+    const profile = await this.getProfile(userId);
+    if (!profile) throw new ProfileServiceError("Profile not found");
+
+    const currentCvData = (profile.cv_data as any) || {};
+    const updatedCvData = {
+      ...currentCvData,
+      skills_flat: skills,
+    };
+
+    return await this.updateProfile(userId, { cv_data: updatedCvData });
+  }
+
   async uploadCV(userId: string, file: File, userEmail: string): Promise<{
     success: boolean;
     publicUrl?: string;

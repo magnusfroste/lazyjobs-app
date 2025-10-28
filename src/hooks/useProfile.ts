@@ -54,6 +54,17 @@ export const useProfile = (userId: string | undefined) => {
     }
   };
 
+  const updateSkills = async (skills: string[]) => {
+    if (!userId) return;
+    
+    try {
+      const updated = await profileService.updateSkills(userId, skills);
+      setProfile(updated);
+    } catch (err) {
+      throw err;
+    }
+  };
+
   return {
     profile,
     loading,
@@ -61,5 +72,6 @@ export const useProfile = (userId: string | undefined) => {
     refetch: loadProfile,
     updateProfile,
     completeOnboarding,
+    updateSkills,
   };
 };

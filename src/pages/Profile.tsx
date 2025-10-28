@@ -18,7 +18,7 @@ import CVDisplay from "@/components/CVDisplay";
 const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
-  const { profile, updateProfile, refetch } = useProfile(user?.id);
+  const { profile, updateProfile, updateSkills, refetch } = useProfile(user?.id);
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   
@@ -201,6 +201,23 @@ const Profile = () => {
     } finally {
       setUploading(false);
       setProcessing(false);
+    }
+  };
+
+  const handleSkillsUpdate = async (skills: string[]) => {
+    try {
+      await updateSkills(skills);
+      toast({
+        title: "Success",
+        description: `Updated to ${skills.length} skills`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update skills",
+        variant: "destructive",
+      });
+      throw error;
     }
   };
 
@@ -420,6 +437,7 @@ const Profile = () => {
               onReupload={() => {
                 document.getElementById('cv-upload-input')?.click();
               }}
+              onSkillsUpdate={handleSkillsUpdate}
             />
           )}
 
