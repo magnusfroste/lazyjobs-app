@@ -40,23 +40,21 @@ export class SwipeService {
     userId: string,
     job: Job,
     direction: "left" | "right",
-    matchScore?: number
+    matchScore: number
   ): Promise<void> {
-    await this.recordSwipe({
-      user_id: userId,
-      job_id: job.id,
-      direction,
-      job_title: job.title,
-      company_name: job.company,
-      salary_min: job.salary_min,
-      salary_max: job.salary_max,
-      is_remote: job.is_remote,
-      location: job.location,
-      employment_type: job.employment_type,
-      experience_level: job.experience_level,
-      required_skills: job.required_skills,
-      match_score: matchScore,
-    });
+    // Record in swipes table only (skip swipe_events for now)
+    const { error } = await supabase
+      .from("swipes")
+      .insert({
+        user_id: userId,
+        job_id: job.id,
+        direction,
+      });
+
+    // Ignore duplicate key errors (user already swiped this job)
+    if (error && error.code !== "23505") {
+      throw new SwipeServiceError(error.message);
+    }
   }
 
   async getUserSwipeHistory(userId: string, limit = 100) {

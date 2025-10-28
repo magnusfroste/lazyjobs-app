@@ -3,12 +3,12 @@ import { useSwipeable } from "react-swipeable";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { MapPin, DollarSign, Briefcase, Clock, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Tables } from "@/integrations/supabase/types";
-
-type Job = Tables<"jobs">;
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
+import { JobWithMatch } from "@/types/job";
 
 interface JobCardProps {
-  job: Job;
+  job: JobWithMatch;
   onSwipe: (direction: "left" | "right") => void;
   remainingJobs: number;
 }
@@ -19,8 +19,14 @@ const JobCard = ({ job, onSwipe, remainingJobs }: JobCardProps) => {
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
 
-  // Mock match score - in production, this would be calculated
-  const matchScore = Math.floor(Math.random() * 30) + 50;
+  const matchScore = job.match_score || 0.5;
+  const matchBreakdown = job.match_breakdown || {
+    skills: 0,
+    salary: 0,
+    location: 0,
+    remote: 0,
+    employment: 0,
+  };
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -63,9 +69,58 @@ const JobCard = ({ job, onSwipe, remainingJobs }: JobCardProps) => {
               <h2 className="text-2xl font-bold mb-2">{job.title}</h2>
               <p className="text-lg text-muted-foreground">{job.company}</p>
             </div>
-            <Badge className="gradient-primary text-white border-0 px-4 py-2 text-lg font-semibold">
-              {matchScore}% ✨
-            </Badge>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="px-4 py-2 bg-primary/10 text-primary rounded-full text-lg font-semibold hover:bg-primary/20 transition-colors cursor-pointer border-0">
+                  {Math.round(matchScore * 100)}% ✨
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Match Breakdown</h4>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Skills</span>
+                      <span className="font-medium">{matchBreakdown.skills}%</span>
+                    </div>
+                    <Progress value={matchBreakdown.skills} className="h-2" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Salary</span>
+                      <span className="font-medium">{matchBreakdown.salary}%</span>
+                    </div>
+                    <Progress value={matchBreakdown.salary} className="h-2" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Location</span>
+                      <span className="font-medium">{matchBreakdown.location}%</span>
+                    </div>
+                    <Progress value={matchBreakdown.location} className="h-2" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Remote</span>
+                      <span className="font-medium">{matchBreakdown.remote}%</span>
+                    </div>
+                    <Progress value={matchBreakdown.remote} className="h-2" />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Employment Type</span>
+                      <span className="font-medium">{matchBreakdown.employment}%</span>
+                    </div>
+                    <Progress value={matchBreakdown.employment} className="h-2" />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Job Details */}

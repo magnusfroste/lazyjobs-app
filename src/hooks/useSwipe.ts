@@ -1,37 +1,25 @@
 import { useState } from "react";
-import { Tables } from "@/integrations/supabase/types";
 import { swipeService } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
 import { useToast } from "@/hooks/use-toast";
+import { JobWithMatch } from "@/types/job";
 
-type Job = Tables<"jobs">;
-
-export const useSwipe = (userId: string, jobs: Job[]) => {
+export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeHistory, setSwipeHistory] = useState<string[]>([]);
   const { toast } = useToast();
-
-  const calculateMatchScore = (job: Job): number => {
-    // Mock match score calculation - will be replaced with AI matching
-    return Math.floor(Math.random() * 30) + 50;
-  };
 
   const handleSwipe = async (direction: "left" | "right") => {
     if (currentIndex >= jobs.length) return;
 
     const currentJob = jobs[currentIndex];
-    const matchScore = calculateMatchScore(currentJob);
+    const matchScore = currentJob.match_score || 0.5;
 
     try {
-      // Record swipe event
-      await swipeService.recordSwipeWithJob(
-        userId,
-        currentJob,
-        direction,
-        matchScore
-      );
+      // Record swipe in swipes table
+      await swipeService.recordSwipeWithJob(userId, currentJob, direction, matchScore);
 
-      // If right swipe, create a match
+      // If right swipe, also create match
       if (direction === "right") {
         await matchService.createMatch(userId, currentJob.id, matchScore);
         

@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { Tables } from "@/integrations/supabase/types";
 import { jobService } from "@/services/jobService";
-
-type Job = Tables<"jobs">;
+import { JobWithMatch } from "@/types/job";
 
 export const useJobs = (userId?: string, excludeSwiped = true) => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobs, setJobs] = useState<JobWithMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -14,14 +12,21 @@ export const useJobs = (userId?: string, excludeSwiped = true) => {
       setLoading(true);
       setError(null);
       
-      let data: Job[];
-      if (userId && excludeSwiped) {
-        data = await jobService.getJobsExcludingSwipedByUser(userId);
-      } else {
-        data = await jobService.getActiveJobs();
+      if (!userId) {
+        setJobs([]);
+        return;
       }
       
-      setJobs(data);
+      // Call service (which calls existing edge function)
+      const fetchedJobs = await jobService.getMatchedJobs(userId, 100);
+      
+      // Filter by 50% minimum threshold (hardcoded for now)
+      const filtered = fetchedJobs.filter(job => {
+        const score = job.match_score ?? 0.5;
+        return score >= 0.5;
+      });
+      
+      setJobs(filtered);
     } catch (err) {
       setError(err as Error);
       setJobs([]);
