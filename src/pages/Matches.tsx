@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
-import { ArrowLeft, ExternalLink, FileText, CheckCircle2, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileText, CheckCircle2, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ApplicationAssistantModal } from "@/components/ApplicationAssistantModal";
+import { Job } from "@/types/job";
 
 const Matches = () => {
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
+  const [selectedJobForApplication, setSelectedJobForApplication] = useState<Job | null>(null);
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { matches, loading: matchesLoading, deleteMatch, markAsApplied } = useMatches(user?.id || "");
@@ -125,24 +128,31 @@ const Matches = () => {
               )}
 
               <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={() => setSelectedJobForApplication(match.job)}
+                  className="flex-1 gradient-primary text-white"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Apply with AI
+                </Button>
+                
                 {match.job.url && (
                   <Button
                     onClick={() => window.open(match.job.url!, "_blank")}
-                    className="flex-1 gradient-primary text-white"
+                    variant="outline"
+                    className="flex-1"
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    Apply Now
+                    View Job
                   </Button>
                 )}
-                
+
                 {!match.is_applied && (
                   <Button
                     onClick={() => markAsApplied(match.id)}
                     variant="outline"
-                    className="flex-1"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Mark as Applied
+                    <CheckCircle2 className="w-4 h-4" />
                   </Button>
                 )}
 
@@ -176,6 +186,15 @@ const Matches = () => {
           )}
         </div>
       </div>
+
+      {/* Application Assistant Modal */}
+      {selectedJobForApplication && user && (
+        <ApplicationAssistantModal
+          job={selectedJobForApplication}
+          userId={user.id}
+          onClose={() => setSelectedJobForApplication(null)}
+        />
+      )}
     </div>
   );
 };
