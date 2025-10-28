@@ -90,7 +90,7 @@ const Matches = () => {
 
                 <div className="flex flex-col items-end gap-2">
                   <Badge className="gradient-primary text-white border-0 px-3 py-1">
-                    {match.match_score}% ✨
+                    {Math.round((match.match_score || 0) * 100)}% ✨
                   </Badge>
                   <button
                     onClick={() => deleteMatch(match.id)}
@@ -155,7 +155,7 @@ const Matches = () => {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Matched {new Date(match.created_at).toLocaleDateString()} • {match.match_score}% match
+                Matched {new Date(match.created_at).toLocaleDateString()} • {Math.round((match.match_score || 0) * 100)}% match
               </p>
             </div>
           ))}
