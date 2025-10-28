@@ -32,7 +32,7 @@ export const useJobs = (
       // Filter by 50% minimum threshold (hardcoded for now)
       const filtered = fetchedJobs.filter((job) => {
         const score = job.match_score ?? 0.2;
-        return score >= 0.5;
+        return score >= 0.2;
       });
 
       setJobs(filtered);
