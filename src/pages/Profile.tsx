@@ -492,7 +492,7 @@ const Profile = () => {
                   <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground mb-4">
                     {uploading && "Uploading your CV..."}
-                    {processing && "Analyzing your CV..."}
+                    {processing && "Analyzing your CV with AI... This usually takes 20-50 seconds."}
                     {!uploading && !processing && "Upload PDF or Word document (max 5MB)"}
                   </p>
                   <Input
