@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useJobs } from "@/hooks/useJobs";
 import { useSwipe } from "@/hooks/useSwipe";
+import { useCardFlip } from "@/hooks/useCardFlip";
 import { getAppConfig } from "@/lib/config";
 import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
@@ -25,6 +26,7 @@ const Swipe = () => {
     user?.id || "",
     jobs
   );
+  const { flipCard, isCardFlipped } = useCardFlip();
 
   // Load feature flags
   useEffect(() => {
@@ -97,6 +99,8 @@ const Swipe = () => {
                     onSwipe={idx === 0 ? handleSwipe : () => {}}
                     remainingJobs={remainingJobs}
                     isActive={idx === 0}
+                    isFlipped={isCardFlipped(job.id)}
+                    onFlip={() => flipCard(job.id)}
                   />
                 ))
               }
