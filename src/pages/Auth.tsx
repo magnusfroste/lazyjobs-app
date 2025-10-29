@@ -60,7 +60,7 @@ const Auth = () => {
   const handleDemoLogin = async () => {
     setLoading(true);
     try {
-      const { error } = await signIn("demo@lazyjobs.com", "demo123456");
+      const { error } = await signIn("demo@lazyjobs.ink", "123456");
       if (error) throw error;
       // Navigation handled by useEffect after profile loads
     } catch (error: any) {
