@@ -19,6 +19,7 @@ interface JobCardProps {
 
 const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = false, onFlip }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
@@ -192,37 +193,31 @@ const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = fal
             </div>
           )}
 
-          {/* Description */}
+          {/* About this Role - Expandable Description */}
           {job.description && (
-            <div className="space-y-2">
-              <h3 className="font-semibold">Description</h3>
-              <p className="text-sm text-muted-foreground line-clamp-3">
+            <div className="pt-4 border-t space-y-2">
+              <h3 className="font-semibold">About this role</h3>
+              <p className={`text-sm text-muted-foreground ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}>
                 {job.description}
               </p>
+              {job.description.length > 150 && (
+                <button 
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  className="text-sm text-primary hover:underline mt-2 font-semibold"
+                >
+                  {isDescriptionExpanded ? 'Show less ↑' : 'Read more →'}
+                </button>
+              )}
             </div>
           )}
 
-          {/* Company Description */}
-          <div className="pt-4 border-t">
-            <h3 className="font-semibold mb-2">Company Description</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {job.description || "No company description available."}
-            </p>
-            <button className="text-sm text-primary hover:underline mt-2 font-semibold">
-              Read more →
-            </button>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <button className="flex-1 py-3 px-6 rounded-xl gradient-primary text-white font-semibold hover:opacity-90 transition-opacity">
-              📄 Full Details
-            </button>
+          {/* Action Button */}
+          <div className="pt-4">
             <button 
               onClick={() => job.url && window.open(job.url, "_blank")}
-              className="flex-1 py-3 px-6 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors"
+              className="w-full py-3 px-6 rounded-xl gradient-primary text-white font-semibold hover:opacity-90 transition-opacity"
             >
-              🔗 Original
+              🔗 View Original Job Posting
             </button>
           </div>
         </div>
