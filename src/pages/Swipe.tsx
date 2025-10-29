@@ -9,7 +9,6 @@ import { getAppConfig } from "@/lib/config";
 import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
-import { MatchModeToggle } from "@/components/MatchModeToggle";
 import { CardStack } from "@/components/CardStack";
 
 type MatchMode = "keyword" | "ai";
@@ -75,18 +74,14 @@ const Swipe = () => {
 
   return (
     <div className="min-h-screen pb-32">
-      <TopBar />
+      <TopBar 
+        matchMode={matchMode}
+        onModeChange={setMatchMode}
+        showMatchToggle={aiMatchingEnabled}
+        isPremium={!aiMatchingPremium}
+      />
 
       <div className="container max-w-2xl mx-auto px-4 pt-20">
-        {aiMatchingEnabled && (
-          <MatchModeToggle
-            mode={matchMode}
-            onChange={setMatchMode}
-            showPremiumBadge={aiMatchingPremium}
-            isPremium={false}
-          />
-        )}
-
         {jobs.length > 0 ? (
           <>
             <CardStack
