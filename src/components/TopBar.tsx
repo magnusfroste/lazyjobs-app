@@ -38,7 +38,7 @@ const TopBar = ({ matchMode, onModeChange, showMatchToggle = false, isPremium = 
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  const canUseAI = !isPremium;
+  const canUseAI = !isPremium; // isPremium means "requires premium"
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b">
@@ -85,13 +85,13 @@ const TopBar = ({ matchMode, onModeChange, showMatchToggle = false, isPremium = 
                 {isMobile ? (
                   <span className="flex items-center gap-1">
                     <span className="text-base">🤖</span>
-                    {!isPremium && <Badge variant="secondary" className="scale-75 -ml-1 text-[10px] px-1 py-0">✨</Badge>}
+                    {isPremium && <Badge variant="secondary" className="scale-75 -ml-1 text-[10px] px-1 py-0">✨</Badge>}
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5">
                     <span className="text-base">🤖</span>
                     <span>AI</span>
-                    {!isPremium && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">✨</Badge>}
+                    {isPremium && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">✨</Badge>}
                   </span>
                 )}
               </button>

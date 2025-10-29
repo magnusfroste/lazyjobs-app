@@ -75,10 +75,10 @@ const Swipe = () => {
   return (
     <div className="min-h-screen pb-32">
       <TopBar 
-        matchMode={matchMode}
-        onModeChange={setMatchMode}
-        showMatchToggle={aiMatchingEnabled}
-        isPremium={!aiMatchingPremium}
+          matchMode={matchMode}
+          onModeChange={setMatchMode}
+          showMatchToggle={aiMatchingEnabled}
+          isPremium={aiMatchingPremium}
       />
 
       <div className="container max-w-2xl mx-auto px-4 pt-20">
