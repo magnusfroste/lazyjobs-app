@@ -380,13 +380,20 @@ async function getExistingJobIds(externalIds) {
       .in('external_id', externalIds)
     
     if (error) {
-      console.warn('⚠️  Could not check existing jobs:', error.message)
+      console.warn('⚠️  Could not check existing jobs:')
+      console.warn('   Message:', error.message)
+      console.warn('   Code:', error.code)
+      console.warn('   Details:', error.details)
+      console.warn('   Hint:', error.hint)
+      console.warn('   Full error:', JSON.stringify(error, null, 2))
       return []
     }
     
     return data.map(job => job.external_id)
   } catch (error) {
     console.warn('⚠️  Could not check existing jobs, will rely on database deduplication')
+    console.warn('   Error:', error.message)
+    console.warn('   Stack:', error.stack)
     return []
   }
 }
