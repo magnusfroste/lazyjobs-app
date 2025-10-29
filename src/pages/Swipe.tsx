@@ -96,6 +96,7 @@ const Swipe = () => {
                     job={job}
                     onSwipe={idx === 0 ? handleSwipe : () => {}}
                     remainingJobs={remainingJobs}
+                    isActive={idx === 0}
                   />
                 ))
               }

@@ -11,9 +11,10 @@ interface JobCardProps {
   job: JobWithMatch;
   onSwipe: (direction: "left" | "right") => void;
   remainingJobs: number;
+  isActive?: boolean;
 }
 
-const JobCard = ({ job, onSwipe, remainingJobs }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, remainingJobs, isActive = true }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
@@ -218,9 +219,11 @@ const JobCard = ({ job, onSwipe, remainingJobs }: JobCardProps) => {
         </div>
 
         {/* Job Counter */}
-        <div className="bg-muted/30 px-6 py-3 text-center text-sm text-muted-foreground">
-          {remainingJobs} jobs • Tap score to see details
-        </div>
+        {isActive && (
+          <div className="bg-muted/30 px-6 py-3 text-center text-sm text-muted-foreground">
+            {remainingJobs} jobs • Tap score to see details
+          </div>
+        )}
       </div>
     </motion.div>
   );
