@@ -9,6 +9,7 @@ import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { MatchModeToggle } from "@/components/MatchModeToggle";
+import { CardStack } from "@/components/CardStack";
 
 type MatchMode = "keyword" | "ai";
 
@@ -20,7 +21,7 @@ const Swipe = () => {
   const [aiMatchingEnabled, setAiMatchingEnabled] = useState(false);
   const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
   const { jobs, loading: jobsLoading } = useJobs(user?.id, true, matchMode);
-  const { currentJob, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
+  const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
     user?.id || "",
     jobs
   );
@@ -84,12 +85,20 @@ const Swipe = () => {
           />
         )}
 
-        {currentJob ? (
+        {jobs.length > 0 ? (
           <>
-            <JobCard 
-              job={currentJob} 
-              onSwipe={handleSwipe}
-              remainingJobs={remainingJobs}
+            <CardStack
+              cards={jobs
+                .slice(currentIndex, currentIndex + 3)
+                .map((job, idx) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onSwipe={idx === 0 ? handleSwipe : () => {}}
+                    remainingJobs={remainingJobs}
+                  />
+                ))
+              }
             />
             <SwipeControls
               onSwipeLeft={() => handleSwipe("left")}
