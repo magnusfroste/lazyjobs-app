@@ -7,6 +7,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Progress } from "@/components/ui/progress";
 import { JobWithMatch } from "@/types/job";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isHTML, htmlToFormattedText } from "@/lib/htmlToText";
 
 interface JobCardProps {
   job: JobWithMatch;
@@ -197,9 +198,16 @@ const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = fal
           {job.description && (
             <div className="pt-4 border-t space-y-2">
               <h3 className="font-semibold">About this role</h3>
-              <p className={`text-sm text-muted-foreground ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}>
-                {job.description}
-              </p>
+              {isHTML(job.description) ? (
+                <div 
+                  className={`text-sm text-muted-foreground prose prose-sm max-w-none ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}
+                  dangerouslySetInnerHTML={{ __html: htmlToFormattedText(job.description) }}
+                />
+              ) : (
+                <p className={`text-sm text-muted-foreground ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}>
+                  {job.description}
+                </p>
+              )}
               {job.description.length > 150 && (
                 <button 
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
