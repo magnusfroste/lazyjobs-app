@@ -5,6 +5,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useJobs } from "@/hooks/useJobs";
 import { useSwipe } from "@/hooks/useSwipe";
 import { useCardFlip } from "@/hooks/useCardFlip";
+import { useToast } from "@/hooks/use-toast";
 import { getAppConfig } from "@/lib/config";
 import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
@@ -20,12 +21,21 @@ const Swipe = () => {
   const [matchMode, setMatchMode] = useState<MatchMode>("keyword");
   const [aiMatchingEnabled, setAiMatchingEnabled] = useState(false);
   const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
+  const { toast } = useToast();
   const { jobs, loading: jobsLoading } = useJobs(user?.id, true, matchMode);
   const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
     user?.id || "",
     jobs
   );
   const { flipCard, isCardFlipped } = useCardFlip();
+
+  const handleModeChange = (newMode: MatchMode) => {
+    setMatchMode(newMode);
+    toast({
+      title: `Switched to ${newMode === "ai" ? "AI" : "Keyword"} matching`,
+      description: "Showing fresh jobs!",
+    });
+  };
 
   // Load feature flags
   useEffect(() => {
@@ -76,7 +86,7 @@ const Swipe = () => {
     <div className="min-h-screen pb-32">
       <TopBar 
           matchMode={matchMode}
-          onModeChange={setMatchMode}
+          onModeChange={handleModeChange}
           showMatchToggle={aiMatchingEnabled}
           isPremium={aiMatchingPremium}
       />
