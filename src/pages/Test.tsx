@@ -15,6 +15,13 @@ interface Message {
   responseTime?: number;
   rawResponse?: any;
   request?: any;
+  jobMatch?: {
+    job_title: string;
+    match_score: number;
+    matched_skills: string[];
+    missing_skills: string[];
+    reasoning: string;
+  };
 }
 
 const Test = () => {
@@ -48,6 +55,66 @@ const Test = () => {
       console.error("Error discovering models:", error);
       toast({
         title: "❌ Discovery Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testJobMatching = async () => {
+    setIsLoading(true);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: "🧪 Testing job matching with 1 profile + 1 job..." },
+    ]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("test-llm-chat", {
+        body: { testJobMatching: true },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || "Job matching test failed");
+      }
+
+      const matchResult = data.matchResult;
+      const content = matchResult
+        ? `✅ Job Match Result:\n\nJob: ${matchResult.job_title}\nMatch Score: ${(
+            matchResult.match_score * 100
+          ).toFixed(1)}%\n\nMatched Skills: ${matchResult.matched_skills.join(", ") || "None"}\nMissing Skills: ${matchResult.missing_skills.join(", ") || "None"}\n\nReasoning: ${matchResult.reasoning}`
+        : "No match result returned";
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content,
+          responseTime: data.responseTime,
+          rawResponse: data.rawResponse,
+          request: data.request,
+          jobMatch: matchResult,
+        },
+      ]);
+
+      toast({
+        title: "✅ Job Matching Test Complete",
+        description: `Response in ${data.responseTime}ms`,
+      });
+    } catch (error: any) {
+      console.error("Error testing job matching:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `❌ Error: ${error.message}`,
+        },
+      ]);
+      toast({
+        title: "❌ Test Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -199,6 +266,34 @@ const Test = () => {
                     {JSON.stringify(availableModels, null, 2)}
                   </pre>
                 )}
+              </CardContent>
+            </Card>
+
+            <Separator />
+
+            {/* Job Matching Test */}
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-semibold">Job Matching Test</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Test with 1 profile + 1 job using the same schema as match-jobs-llm
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={testJobMatching}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      "Test Matching"
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
 
