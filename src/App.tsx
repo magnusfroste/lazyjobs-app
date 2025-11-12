@@ -11,6 +11,7 @@ import Onboarding from "./pages/Onboarding";
 import Swipe from "./pages/Swipe";
 import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
+import Test from "./pages/Test";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => {
               <Route path="/swipe" element={<Swipe />} />
               <Route path="/matches" element={<Matches />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/test" element={<Test />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

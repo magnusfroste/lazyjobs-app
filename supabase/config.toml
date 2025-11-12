@@ -6,6 +6,9 @@ verify_jwt = true
 [functions.match-jobs-llm]
 verify_jwt = true
 
+[functions.test-llm-chat]
+verify_jwt = false
+
 [functions.generate-application]
 verify_jwt = false
 
