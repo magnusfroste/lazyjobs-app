@@ -2,7 +2,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai";
+type MatchMode = "keyword" | "ai" | "llm";
 
 interface MatchModeToggleProps {
   mode: MatchMode;
@@ -24,7 +24,7 @@ export const MatchModeToggle = ({
       <RadioGroup
         value={mode}
         onValueChange={(value) => canUseAI && onChange(value as MatchMode)}
-        className="flex gap-4"
+        className="flex gap-3"
       >
         <div className="flex-1">
           <div
@@ -42,7 +42,7 @@ export const MatchModeToggle = ({
             >
               <div className="flex items-center gap-2">
                 <span className="text-lg">🔤</span>
-                <span>Keyword Match</span>
+                <span>Keyword</span>
               </div>
             </Label>
           </div>
@@ -65,8 +65,8 @@ export const MatchModeToggle = ({
               className={`flex-1 ${canUseAI ? "cursor-pointer" : "cursor-not-allowed"} font-medium`}
             >
               <div className="flex items-center gap-2">
-                <span className="text-lg">🤖</span>
-                <span>AI Match</span>
+                <span className="text-lg">⚡</span>
+                <span>AI-Fast</span>
                 {showPremiumBadge && !isPremium && (
                   <Badge variant="secondary" className="ml-auto text-xs">
                     ✨ Premium
@@ -76,12 +76,39 @@ export const MatchModeToggle = ({
             </Label>
           </div>
         </div>
+
+        <div className="flex-1">
+          <div
+            className={`relative flex items-center space-x-2 rounded-lg border-2 p-4 cursor-pointer transition-all ${
+              mode === "llm"
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/50"
+            }`}
+            onClick={() => onChange("llm")}
+          >
+            <RadioGroupItem value="llm" id="llm" />
+            <Label
+              htmlFor="llm"
+              className="flex-1 cursor-pointer font-medium"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🧠</span>
+                <span>LLM</span>
+              </div>
+            </Label>
+          </div>
+        </div>
       </RadioGroup>
 
       {mode === "ai" && (
         <div className="mt-3 text-sm text-muted-foreground text-center">
-          ℹ️ AI matching uses semantic search to find jobs based on meaning,
-          not just keywords
+          ⚡ AI-Fast uses semantic search for quick matches
+        </div>
+      )}
+      
+      {mode === "llm" && (
+        <div className="mt-3 text-sm text-muted-foreground text-center">
+          🧠 LLM uses Qwen 80B for intelligent scoring with detailed breakdowns
         </div>
       )}
     </div>

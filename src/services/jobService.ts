@@ -89,6 +89,24 @@ export class JobService {
     }
   }
 
+  async getLLMMatchedJobs(userId: string, limit = 100): Promise<JobWithMatch[]> {
+    try {
+      const { data, error } = await supabase.functions.invoke("match-jobs-llm", {
+        body: { user_id: userId, limit },
+      });
+
+      if (error) {
+        console.error("LLM matching error:", error);
+        throw new JobServiceError("Failed to fetch LLM-matched jobs");
+      }
+
+      return data?.jobs || [];
+    } catch (error) {
+      console.error("Error fetching LLM-matched jobs:", error);
+      throw new JobServiceError("Failed to fetch LLM-matched jobs");
+    }
+  }
+
   async getJobsExcludingSwipedByUser(userId: string, limit = 50): Promise<Job[]> {
     // Get jobs that user hasn't swiped on yet
     const { data: swipedJobIds, error: swipeError } = await supabase

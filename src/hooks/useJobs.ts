@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { jobService } from "@/services/jobService";
 import { JobWithMatch } from "@/types/job";
 
-type MatchMode = "keyword" | "ai";
+type MatchMode = "keyword" | "ai" | "llm";
 
 export const useJobs = (
   userId?: string,
@@ -27,7 +27,9 @@ export const useJobs = (
 
       // Call appropriate service based on match mode
       const fetchedJobs =
-        matchMode === "ai"
+        matchMode === "llm"
+          ? await jobService.getLLMMatchedJobs(userId, topN)
+          : matchMode === "ai"
           ? await jobService.getAIMatchedJobs(userId, topN)
           : await jobService.getMatchedJobs(userId, 5000);
 
