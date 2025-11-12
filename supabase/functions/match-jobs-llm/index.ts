@@ -135,7 +135,7 @@ Consider skill transferability, seniority alignment, and career progression.`;
 
     // Call Qwen LLM API (OpenAI-compatible) with timeout
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
     
     try {
       const llmResponse = await fetch(matchLLMUrl, {
@@ -247,7 +247,7 @@ Consider skill transferability, seniority alignment, and career progression.`;
       clearTimeout(timeout);
       
       if (fetchError instanceof Error && fetchError.name === "AbortError") {
-        throw new Error("Request timed out after 30 seconds");
+        throw new Error("Request timed out after 60 seconds");
       }
       
       throw fetchError;
