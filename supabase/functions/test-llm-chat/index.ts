@@ -66,18 +66,9 @@ serve(async (req) => {
     console.log(`Testing LLM endpoint: ${LLM_API_URL}`);
     console.log(`Tool calling: ${useToolCalling}`);
     console.log(`Message: ${message}`);
-
-    // Try common model name patterns for Qwen
-    // User can check available models first with discoverModels=true
-    const possibleModels = [
-      "Qwen/Qwen2.5-80B-Instruct",
-      "qwen2.5-80b-instruct", 
-      "qwen",
-      "default"
-    ];
     
     const requestBody: any = {
-      model: possibleModels[0], // Start with full path
+      model: "autoversio",
       messages: [
         {
           role: "system",
