@@ -10,6 +10,7 @@ const corsHeaders = {
 interface TestChatRequest {
   message: string;
   useToolCalling: boolean;
+  discoverModels?: boolean;
 }
 
 serve(async (req) => {
@@ -20,7 +21,7 @@ serve(async (req) => {
   const startTime = Date.now();
 
   try {
-    const { message, useToolCalling }: TestChatRequest = await req.json();
+    const { message, useToolCalling, discoverModels }: TestChatRequest = await req.json();
 
     const LLM_API_URL = Deno.env.get("MATCH_LLM_URL");
     const LLM_API_KEY = Deno.env.get("MATCH_LLM_API_KEY");
@@ -29,12 +30,54 @@ serve(async (req) => {
       throw new Error("LLM configuration missing");
     }
 
+    // If discovering models, call /v1/models endpoint
+    if (discoverModels) {
+      const modelsUrl = LLM_API_URL.replace("/chat/completions", "/models");
+      console.log(`Discovering models at: ${modelsUrl}`);
+      
+      const modelsResponse = await fetch(modelsUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${LLM_API_KEY}`,
+        },
+      });
+
+      if (!modelsResponse.ok) {
+        const errorText = await modelsResponse.text();
+        console.error(`Models API error (${modelsResponse.status}):`, errorText);
+        throw new Error(`Models API error: ${modelsResponse.status} - ${errorText}`);
+      }
+
+      const modelsData = await modelsResponse.json();
+      console.log("Available models:", JSON.stringify(modelsData, null, 2));
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          models: modelsData,
+          endpoint: modelsUrl,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     console.log(`Testing LLM endpoint: ${LLM_API_URL}`);
     console.log(`Tool calling: ${useToolCalling}`);
     console.log(`Message: ${message}`);
 
+    // Try common model name patterns for Qwen
+    // User can check available models first with discoverModels=true
+    const possibleModels = [
+      "Qwen/Qwen2.5-80B-Instruct",
+      "qwen2.5-80b-instruct", 
+      "qwen",
+      "default"
+    ];
+    
     const requestBody: any = {
-      model: "qwen",
+      model: possibleModels[0], // Start with full path
       messages: [
         {
           role: "system",
@@ -130,7 +173,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : "Unknown error",
         responseTime,
       }),
       {

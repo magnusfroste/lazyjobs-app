@@ -23,7 +23,38 @@ const Test = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [availableModels, setAvailableModels] = useState<any>(null);
   const { toast } = useToast();
+
+  const discoverModels = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("test-llm-chat", {
+        body: { discoverModels: true },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to discover models");
+      }
+
+      setAvailableModels(data.models);
+      toast({
+        title: "✅ Models Discovered",
+        description: `Found ${data.models?.data?.length || 0} model(s)`,
+      });
+    } catch (error: any) {
+      console.error("Error discovering models:", error);
+      toast({
+        title: "❌ Discovery Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const sendMessage = async () => {
     if (!message.trim()) return;
@@ -146,6 +177,30 @@ const Test = () => {
                 </div>
               )}
             </ScrollArea>
+
+            <Separator />
+
+            {/* Model Discovery */}
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold">Available Models</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={discoverModels}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Discover"}
+                  </Button>
+                </div>
+                {availableModels && (
+                  <pre className="text-xs bg-background p-2 rounded overflow-auto max-h-32">
+                    {JSON.stringify(availableModels, null, 2)}
+                  </pre>
+                )}
+              </CardContent>
+            </Card>
 
             <Separator />
 
