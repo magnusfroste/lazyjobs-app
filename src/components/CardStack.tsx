@@ -13,10 +13,11 @@ export const CardStack = ({ cards, previewCount = 3 }: CardStackProps) => {
   const visibleCards = cards.slice(0, previewCount);
 
   return (
-    <div className="relative w-full" style={{ touchAction: "pan-y" }}>
+    <div className="relative w-full animate-fade-in" style={{ touchAction: "pan-y" }}>
       {visibleCards.map((card, index) => (
         <div
           key={index}
+          className="transition-all duration-300 ease-out"
           style={{
             position: index === 0 ? "relative" : "absolute",
             top: 0,

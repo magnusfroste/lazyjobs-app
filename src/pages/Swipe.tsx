@@ -85,6 +85,7 @@ const Swipe = () => {
         {remainingJobs > 0 ? (
           <>
             <CardStack
+              key={`${matchMode}-${jobs.length}`}
               cards={jobs
                 .slice(currentIndex, currentIndex + 3)
                 .map((job, idx) => (
