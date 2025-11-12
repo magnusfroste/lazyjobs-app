@@ -41,7 +41,7 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    const { user_id, limit = 20 }: MatchRequest = await req.json();
+    const { user_id, limit = 5 }: MatchRequest = await req.json();
 
     if (userData.user.id !== user_id) {
       throw new Error("User ID mismatch");
