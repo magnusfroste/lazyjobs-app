@@ -209,7 +209,7 @@ Consider skill transferability, seniority alignment, and career progression.`;
       }
 
       const llmData = await llmResponse.json();
-      console.log("LLM response received:", JSON.stringify(llmData).substring(0, 200));
+      console.log("Full LLM response:", JSON.stringify(llmData, null, 2));
 
       // Parse tool call response
       const toolCall = llmData.choices?.[0]?.message?.tool_calls?.[0];
@@ -217,7 +217,21 @@ Consider skill transferability, seniority alignment, and career progression.`;
         throw new Error("Invalid LLM response format");
       }
 
-      const matches = JSON.parse(toolCall.function.arguments).matches;
+      console.log("Tool call found:", JSON.stringify(toolCall, null, 2));
+      console.log("Tool call arguments (raw):", toolCall.function.arguments);
+
+      // Parse arguments with error handling
+      let matches;
+      try {
+        const parsedArgs = JSON.parse(toolCall.function.arguments);
+        matches = parsedArgs.matches;
+        console.log("Successfully parsed matches:", matches.length);
+      } catch (parseError) {
+        console.error("Failed to parse tool call arguments:", parseError);
+        console.error("Raw arguments string:", toolCall.function.arguments);
+        console.error("Arguments type:", typeof toolCall.function.arguments);
+        throw new Error(`Invalid tool call arguments: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+      }
 
       // Merge LLM scores with original job data
       const scoredJobs = matches
