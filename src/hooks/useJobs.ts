@@ -28,7 +28,7 @@ export const useJobs = (
       // Call appropriate service based on match mode
       const fetchedJobs =
         matchMode === "llm"
-          ? await jobService.getLLMMatchedJobs(userId, topN)
+          ? await jobService.getLLMMatchedJobs(userId, 20) // Reduced for LLM to avoid timeouts
           : matchMode === "ai"
           ? await jobService.getAIMatchedJobs(userId, topN)
           : await jobService.getMatchedJobs(userId, 5000);

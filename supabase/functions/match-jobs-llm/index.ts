@@ -41,7 +41,7 @@ serve(async (req) => {
       throw new Error("Unauthorized");
     }
 
-    const { user_id, limit = 100 }: MatchRequest = await req.json();
+    const { user_id, limit = 20 }: MatchRequest = await req.json();
 
     if (userData.user.id !== user_id) {
       throw new Error("User ID mismatch");
@@ -133,104 +133,125 @@ Consider skill transferability, seniority alignment, and career progression.`;
       jobs: jobsForLLM,
     });
 
-    // Call Qwen LLM API (OpenAI-compatible)
-    const llmResponse = await fetch(matchLLMUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${matchLLMApiKey}`,
-      },
-      body: JSON.stringify({
-        model: "autoversio",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "score_job_matches",
-              description: "Score and analyze job matches for a candidate",
-              parameters: {
-                type: "object",
-                properties: {
-                  matches: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        job_id: { type: "string" },
-                        match_score: { type: "number", minimum: 0, maximum: 1 },
-                        match_breakdown: {
-                          type: "object",
-                          properties: {
-                            skills: { type: "number", minimum: 0, maximum: 100 },
-                            salary: { type: "number", minimum: 0, maximum: 100 },
-                            location: { type: "number", minimum: 0, maximum: 100 },
-                            remote: { type: "number", minimum: 0, maximum: 100 },
-                            employment: { type: "number", minimum: 0, maximum: 100 },
+    // Call Qwen LLM API (OpenAI-compatible) with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    try {
+      const llmResponse = await fetch(matchLLMUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${matchLLMApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "autoversio",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "score_job_matches",
+                description: "Score and analyze job matches for a candidate",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    matches: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          job_id: { type: "string" },
+                          match_score: { type: "number", minimum: 0, maximum: 1 },
+                          match_breakdown: {
+                            type: "object",
+                            properties: {
+                              skills: { type: "number", minimum: 0, maximum: 100 },
+                              salary: { type: "number", minimum: 0, maximum: 100 },
+                              location: { type: "number", minimum: 0, maximum: 100 },
+                              remote: { type: "number", minimum: 0, maximum: 100 },
+                              employment: { type: "number", minimum: 0, maximum: 100 },
+                            },
+                            required: ["skills", "salary", "location", "remote", "employment"],
                           },
-                          required: ["skills", "salary", "location", "remote", "employment"],
+                          matched_skills: { type: "array", items: { type: "string" } },
+                          missing_skills: { type: "array", items: { type: "string" } },
+                          reasoning: { type: "string", maxLength: 200 },
                         },
-                        matched_skills: { type: "array", items: { type: "string" } },
-                        missing_skills: { type: "array", items: { type: "string" } },
-                        reasoning: { type: "string", maxLength: 200 },
+                        required: ["job_id", "match_score", "match_breakdown", "matched_skills", "missing_skills", "reasoning"],
                       },
-                      required: ["job_id", "match_score", "match_breakdown", "matched_skills", "missing_skills", "reasoning"],
                     },
                   },
+                  required: ["matches"],
                 },
-                required: ["matches"],
               },
             },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "score_job_matches" } },
-      }),
-    });
+          ],
+          tool_choice: { type: "function", function: { name: "score_job_matches" } },
+        }),
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeout);
 
-    if (!llmResponse.ok) {
-      const errorText = await llmResponse.text();
-      console.error("LLM API error:", llmResponse.status, errorText);
-      throw new Error(`LLM API error: ${llmResponse.status}`);
+      if (!llmResponse.ok) {
+        const errorText = await llmResponse.text();
+        console.error("LLM API error:", llmResponse.status, errorText);
+        
+        if (llmResponse.status === 524) {
+          throw new Error("LLM API timeout - try reducing the number of jobs");
+        }
+        
+        throw new Error(`LLM API error: ${llmResponse.status}`);
+      }
+
+      const llmData = await llmResponse.json();
+      console.log("LLM response received:", JSON.stringify(llmData).substring(0, 200));
+
+      // Parse tool call response
+      const toolCall = llmData.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall || toolCall.function.name !== "score_job_matches") {
+        throw new Error("Invalid LLM response format");
+      }
+
+      const matches = JSON.parse(toolCall.function.arguments).matches;
+
+      // Merge LLM scores with original job data
+      const scoredJobs = matches
+        .map((match: any) => {
+          const job = jobs.find((j) => j.id === match.job_id);
+          if (!job) return null;
+
+          return {
+            ...job,
+            match_score: match.match_score,
+            match_breakdown: match.match_breakdown,
+            matched_skills: match.matched_skills,
+            missing_skills: match.missing_skills,
+            reasoning: match.reasoning,
+          };
+        })
+        .filter(Boolean)
+        .sort((a: any, b: any) => b.match_score - a.match_score);
+
+      console.log(`Returning ${scoredJobs.length} scored jobs`);
+
+      return new Response(
+        JSON.stringify({ success: true, jobs: scoredJobs }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (fetchError) {
+      clearTimeout(timeout);
+      
+      if (fetchError instanceof Error && fetchError.name === "AbortError") {
+        throw new Error("Request timed out after 30 seconds");
+      }
+      
+      throw fetchError;
     }
-
-    const llmData = await llmResponse.json();
-    console.log("LLM response received:", JSON.stringify(llmData).substring(0, 200));
-
-    // Parse tool call response
-    const toolCall = llmData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall || toolCall.function.name !== "score_job_matches") {
-      throw new Error("Invalid LLM response format");
-    }
-
-    const matches = JSON.parse(toolCall.function.arguments).matches;
-
-    // Merge LLM scores with original job data
-    const scoredJobs = matches
-      .map((match: any) => {
-        const job = jobs.find((j) => j.id === match.job_id);
-        if (!job) return null;
-
-        return {
-          ...job,
-          match_score: match.match_score,
-          match_breakdown: match.match_breakdown,
-          matched_skills: match.matched_skills,
-          missing_skills: match.missing_skills,
-          reasoning: match.reasoning,
-        };
-      })
-      .filter(Boolean)
-      .sort((a: any, b: any) => b.match_score - a.match_score);
-
-    console.log(`Returning ${scoredJobs.length} scored jobs`);
-
-    return new Response(
-      JSON.stringify({ success: true, jobs: scoredJobs }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
   } catch (error) {
     console.error("Error in match-jobs-llm:", error);
     return new Response(
