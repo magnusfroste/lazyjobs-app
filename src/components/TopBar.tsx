@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai";
+type MatchMode = "keyword" | "ai" | "llm";
 
 interface TopBarProps {
   matchMode?: MatchMode;
@@ -81,10 +81,10 @@ const TopBar = ({
         {/* Match Mode Toggle - Compact for TopBar */}
         {showMatchToggle && matchMode && onModeChange && (
           <div className="flex-1 flex justify-center">
-            <div className="inline-flex items-center rounded-full bg-muted p-1 gap-1">
+            <div className="inline-flex items-center rounded-full bg-muted p-1 gap-0.5">
               <button
                 onClick={() => onModeChange("keyword")}
-                className={`relative px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
                   matchMode === "keyword"
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -102,7 +102,7 @@ const TopBar = ({
               <button
                 onClick={() => canUseAI && onModeChange("ai")}
                 disabled={!canUseAI}
-                className={`relative px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
                   !canUseAI
                     ? "opacity-50 cursor-not-allowed"
                     : matchMode === "ai"
@@ -112,14 +112,31 @@ const TopBar = ({
               >
                 {isMobile ? (
                   <span className="flex items-center gap-1">
-                    <span className="text-base">🤖</span>
+                    <span className="text-base">⚡</span>
                     {isPremium && <Badge variant="secondary" className="scale-75 -ml-1 text-[10px] px-1 py-0">✨</Badge>}
                   </span>
                 ) : (
                   <span className="flex items-center gap-1.5">
-                    <span className="text-base">🤖</span>
-                    <span>AI</span>
+                    <span className="text-base">⚡</span>
+                    <span>AI-Fast</span>
                     {isPremium && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">✨</Badge>}
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => onModeChange("llm")}
+                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  matchMode === "llm"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {isMobile ? (
+                  <span className="text-base">🧠</span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-base">🧠</span>
+                    <span>LLM</span>
                   </span>
                 )}
               </button>

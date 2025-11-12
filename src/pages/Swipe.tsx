@@ -12,7 +12,7 @@ import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 
-type MatchMode = "keyword" | "ai";
+type MatchMode = "keyword" | "ai" | "llm";
 
 const Swipe = () => {
   const navigate = useNavigate();
@@ -39,8 +39,9 @@ const Swipe = () => {
 
   const handleModeChange = (newMode: MatchMode) => {
     setMatchMode(newMode);
+    const modeLabel = newMode === "llm" ? "LLM" : newMode === "ai" ? "AI-Fast" : "Keyword";
     toast({
-      title: `Switched to ${newMode === "ai" ? "AI" : "Keyword"} matching`,
+      title: `Switched to ${modeLabel} matching`,
       description: "Showing fresh jobs!",
     });
   };
