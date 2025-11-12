@@ -17,6 +17,7 @@ const OPENJOBS_API_URL = process.env.OPENJOBS_API_URL || 'http://localhost:8080'
 const INGEST_URL = process.env.INGEST_URL
 const CONNECTOR_API_KEY = process.env.CONNECTOR_API_KEY
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const ENABLE_ENRICHMENT = process.env.ENABLE_ENRICHMENT !== 'false'
 const ENRICHMENT_URL = process.env.ENRICHMENT_URL
 const ENABLE_QDRANT = process.env.ENABLE_QDRANT === 'true'
@@ -371,7 +372,8 @@ async function getExistingJobIds(externalIds) {
   try {
     const { createClient } = await import('@supabase/supabase-js')
     const supabaseUrl = INGEST_URL.split('/functions')[0]
-    const supabase = createClient(supabaseUrl, SUPABASE_ANON_KEY)
+    // Use service role key to bypass RLS and check all jobs (active and inactive)
+    const supabase = createClient(supabaseUrl, SUPABASE_SERVICE_ROLE_KEY)
     
     // Query jobs table for existing external_ids
     const { data, error } = await supabase
