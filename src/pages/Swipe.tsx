@@ -21,8 +21,16 @@ const Swipe = () => {
   const [matchMode, setMatchMode] = useState<MatchMode>("keyword");
   const [aiMatchingEnabled, setAiMatchingEnabled] = useState(false);
   const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
+  const [keywordThreshold, setKeywordThreshold] = useState(0.65);
+  const [aiTopN, setAiTopN] = useState(50);
   const { toast } = useToast();
-  const { jobs, loading: jobsLoading } = useJobs(user?.id, true, matchMode);
+  const { jobs, loading: jobsLoading } = useJobs(
+    user?.id,
+    true,
+    matchMode,
+    keywordThreshold,
+    aiTopN
+  );
   const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
     user?.id || "",
     jobs
@@ -89,6 +97,10 @@ const Swipe = () => {
           onModeChange={handleModeChange}
           showMatchToggle={aiMatchingEnabled}
           isPremium={aiMatchingPremium}
+          keywordThreshold={keywordThreshold}
+          onKeywordThresholdChange={setKeywordThreshold}
+          aiTopN={aiTopN}
+          onAiTopNChange={setAiTopN}
       />
 
       <div className="container max-w-2xl mx-auto px-4 pt-20">

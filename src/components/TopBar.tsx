@@ -20,14 +20,42 @@ interface TopBarProps {
   onModeChange?: (mode: MatchMode) => void;
   showMatchToggle?: boolean;
   isPremium?: boolean;
+  keywordThreshold?: number;
+  onKeywordThresholdChange?: (threshold: number) => void;
+  aiTopN?: number;
+  onAiTopNChange?: (topN: number) => void;
 }
 
-const TopBar = ({ matchMode, onModeChange, showMatchToggle = false, isPremium = false }: TopBarProps = {}) => {
+const TopBar = ({
+  matchMode,
+  onModeChange,
+  showMatchToggle = false,
+  isPremium = false,
+  keywordThreshold = 0.65,
+  onKeywordThresholdChange,
+  aiTopN = 50,
+  onAiTopNChange,
+}: TopBarProps = {}) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
 
   const isMobile = useIsMobile();
+
+  const getQualityBadge = () => {
+    if (matchMode === "ai") {
+      if (aiTopN === 100) return "🎯 Top 100";
+      if (aiTopN === 50) return "🎯 Top 50";
+      if (aiTopN === 25) return "🎯 Top 25";
+    } else {
+      if (keywordThreshold === 0.4) return "✨ 40%+";
+      if (keywordThreshold === 0.65) return "✨ 65%+";
+      if (keywordThreshold === 0.85) return "✨ 85%+";
+    }
+    return null;
+  };
+
+  const qualityBadge = getQualityBadge();
 
   const handleSignOut = async () => {
     await signOut();
@@ -133,12 +161,69 @@ const TopBar = ({ matchMode, onModeChange, showMatchToggle = false, isPremium = 
                 Profile
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              
+              {/* Match Quality Settings */}
+              <div className="px-2 py-1.5">
+                <div className="text-sm font-medium mb-2">Match Quality</div>
+                {matchMode === "keyword" ? (
+                  <div className="space-y-1">
+                    <DropdownMenuItem
+                      onClick={() => onKeywordThresholdChange?.(0.4)}
+                      className={keywordThreshold === 0.4 ? "bg-accent" : ""}
+                    >
+                      Low (40%+)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onKeywordThresholdChange?.(0.65)}
+                      className={keywordThreshold === 0.65 ? "bg-accent" : ""}
+                    >
+                      Medium (65%+)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onKeywordThresholdChange?.(0.85)}
+                      className={keywordThreshold === 0.85 ? "bg-accent" : ""}
+                    >
+                      High (85%+)
+                    </DropdownMenuItem>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <DropdownMenuItem
+                      onClick={() => onAiTopNChange?.(100)}
+                      className={aiTopN === 100 ? "bg-accent" : ""}
+                    >
+                      Low (Top 100)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onAiTopNChange?.(50)}
+                      className={aiTopN === 50 ? "bg-accent" : ""}
+                    >
+                      Medium (Top 50)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onAiTopNChange?.(25)}
+                      className={aiTopN === 25 ? "bg-accent" : ""}
+                    >
+                      High (Top 25)
+                    </DropdownMenuItem>
+                  </div>
+                )}
+              </div>
+
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Quality Badge */}
+          {qualityBadge && (
+            <div className="text-xs text-muted-foreground">
+              {qualityBadge}
+            </div>
+          )}
         </div>
       </div>
     </div>

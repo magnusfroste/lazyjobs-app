@@ -7,7 +7,9 @@ type MatchMode = "keyword" | "ai";
 export const useJobs = (
   userId?: string,
   excludeSwiped = true,
-  matchMode: MatchMode = "keyword"
+  matchMode: MatchMode = "keyword",
+  minThreshold = 0.65,
+  topN = 50
 ) => {
   const [jobs, setJobs] = useState<JobWithMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,14 +28,18 @@ export const useJobs = (
       // Call appropriate service based on match mode
       const fetchedJobs =
         matchMode === "ai"
-          ? await jobService.getAIMatchedJobs(userId, 100)
-          : await jobService.getMatchedJobs(userId, 100);
+          ? await jobService.getAIMatchedJobs(userId, topN)
+          : await jobService.getMatchedJobs(userId, 5000);
 
-      // Filter by 50% minimum threshold (hardcoded for now)
-      const filtered = fetchedJobs.filter((job) => {
-        const score = job.match_score ?? 0.4;
-        return score >= 0.4;
-      });
+      // For keyword mode: filter by percentage threshold
+      // For AI mode: already limited by topN in the service call
+      const filtered =
+        matchMode === "keyword"
+          ? fetchedJobs.filter((job) => {
+              const score = job.match_score ?? 0;
+              return score >= minThreshold;
+            })
+          : fetchedJobs;
 
       setJobs(filtered);
     } catch (err) {
@@ -46,7 +52,7 @@ export const useJobs = (
 
   useEffect(() => {
     loadJobs();
-  }, [userId, excludeSwiped, matchMode]);
+  }, [userId, excludeSwiped, matchMode, minThreshold, topN]);
 
   return { jobs, loading, error, refetch: loadJobs };
 };
