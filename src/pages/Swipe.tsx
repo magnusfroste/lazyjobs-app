@@ -82,7 +82,7 @@ const Swipe = () => {
       />
 
       <div className="container max-w-2xl mx-auto px-4 pt-20">
-        {jobs.length > 0 ? (
+        {remainingJobs > 0 ? (
           <>
             <CardStack
               cards={jobs
