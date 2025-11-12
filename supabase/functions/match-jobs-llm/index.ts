@@ -141,7 +141,7 @@ Consider skill transferability, seniority alignment, and career progression.`;
         Authorization: `Bearer ${matchLLMApiKey}`,
       },
       body: JSON.stringify({
-        model: "qwen2.5:72b",
+        model: "autoversio",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
