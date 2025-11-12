@@ -89,8 +89,9 @@ serve(async (req) => {
     console.log(`Processing ${jobs.length} jobs with Qwen LLM`);
 
     // Prepare candidate profile for LLM
+    const allCandidateSkills = profile.cv_data?.skills_flat || profile.cv_data?.skills || [];
     const candidateProfile = {
-      skills: profile.cv_data?.skills || [],
+      skills: Array.isArray(allCandidateSkills) ? allCandidateSkills.slice(0, 40) : [],
       experience_years: profile.cv_data?.experience_years || 0,
       preferred_salary_min: profile.preferences?.salary_min || 0,
       preferred_salary_max: profile.preferences?.salary_max || 200000,
@@ -103,13 +104,13 @@ serve(async (req) => {
       id: job.id,
       title: job.title,
       company: job.company,
-      required_skills: job.required_skills || [],
+      required_skills: (job.required_skills || []).slice(0, 15),
       salary_min: job.salary_min,
       salary_max: job.salary_max,
       location: job.location,
       remote_option: job.remote_option,
       employment_type: job.employment_type,
-      description: job.description?.substring(0, 500), // Limit description length
+      description: job.description?.substring(0, 300), // Limit description length
     }));
 
     const systemPrompt = `You are an expert job matching system. Analyze how well a candidate matches each job posting.
@@ -135,7 +136,7 @@ Consider skill transferability, seniority alignment, and career progression.`;
 
     // Call Qwen LLM API (OpenAI-compatible) with timeout
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+    const timeout = setTimeout(() => controller.abort(), 90000); // 90 second timeout
     
     try {
       const llmResponse = await fetch(matchLLMUrl, {
@@ -191,6 +192,7 @@ Consider skill transferability, seniority alignment, and career progression.`;
             },
           ],
           tool_choice: { type: "function", function: { name: "score_job_matches" } },
+          max_tokens: 1000,
         }),
         signal: controller.signal,
       });
@@ -261,7 +263,12 @@ Consider skill transferability, seniority alignment, and career progression.`;
       clearTimeout(timeout);
       
       if (fetchError instanceof Error && fetchError.name === "AbortError") {
-        throw new Error("Request timed out after 60 seconds");
+        console.warn("LLM request timed out after 90 seconds. Returning fallback jobs.");
+        const fallbackJobs = jobs.map((j: any) => ({ ...j, match_score: 0 }));
+        return new Response(
+          JSON.stringify({ success: true, jobs: fallbackJobs, note: "llm_timeout_fallback" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
       
       throw fetchError;
