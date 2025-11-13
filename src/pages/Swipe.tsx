@@ -24,7 +24,6 @@ const Swipe = () => {
   const [keywordThreshold, setKeywordThreshold] = useState(0.65);
   const [aiTopN, setAiTopN] = useState(50);
   const [firstFetchTriggered, setFirstFetchTriggered] = useState(false);
-  const [secondFetchTriggered, setSecondFetchTriggered] = useState(false);
   const { toast } = useToast();
   const { jobs, loading: jobsLoading, triggerBackgroundFetch, backgroundFetching } = useJobs(
     user?.id,
@@ -85,27 +84,23 @@ const Swipe = () => {
       setFirstFetchTriggered(true);
     }
 
-    // 70% progress: fetch another batch (with guard to prevent repeated triggers)
-    const progressPercent = jobs.length > 0 ? (currentIndex / jobs.length) * 100 : 0;
-    if (progressPercent >= 70 && matchMode === "llm" && jobs.length > 0 && !secondFetchTriggered) {
-      console.log("📦 70% through stack, fetching 25 more jobs...");
+    // Continuous fetching: When stack gets low, fetch more
+    const shouldFetchMore = 
+      matchMode === "llm" && 
+      jobs.length > 0 && 
+      remainingJobs <= 10 && 
+      !backgroundFetching;
+
+    if (shouldFetchMore) {
+      console.log(`📦 ${remainingJobs} jobs left, fetching 25 more...`);
       triggerBackgroundFetch?.(25);
-      setSecondFetchTriggered(true);
     }
-  }, [currentIndex, matchMode, jobs.length, firstFetchTriggered, secondFetchTriggered, triggerBackgroundFetch]);
+  }, [currentIndex, matchMode, jobs.length, remainingJobs, firstFetchTriggered, backgroundFetching, triggerBackgroundFetch]);
 
   // Reset triggers when match mode changes
   useEffect(() => {
     setFirstFetchTriggered(false);
-    setSecondFetchTriggered(false);
   }, [matchMode]);
-
-  // Reset second fetch trigger when new jobs arrive
-  useEffect(() => {
-    if (jobs.length > 5 && secondFetchTriggered) {
-      setSecondFetchTriggered(false);
-    }
-  }, [jobs.length, secondFetchTriggered]);
 
   const loading = authLoading || profileLoading || jobsLoading;
 
