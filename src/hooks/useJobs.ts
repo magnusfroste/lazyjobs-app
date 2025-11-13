@@ -15,10 +15,15 @@ export const useJobs = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [dynamicLimit, setDynamicLimit] = useState(matchMode === "llm" ? 5 : topN);
+  const [backgroundFetching, setBackgroundFetching] = useState(false);
 
-  const loadJobs = async () => {
+  const loadJobs = async (isBackgroundFetch = false) => {
     try {
-      setLoading(true);
+      if (isBackgroundFetch) {
+        setBackgroundFetching(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
       if (!userId) {
@@ -50,6 +55,7 @@ export const useJobs = (
       setJobs([]);
     } finally {
       setLoading(false);
+      setBackgroundFetching(false);
     }
   };
 
@@ -60,7 +66,8 @@ export const useJobs = (
   const triggerBackgroundFetch = (newLimit: number) => {
     console.log(`🔄 Background fetch triggered: ${newLimit} jobs`);
     setDynamicLimit(newLimit);
+    loadJobs(true); // Pass flag to indicate background fetch
   };
 
-  return { jobs, loading, error, refetch: loadJobs, triggerBackgroundFetch, dynamicLimit };
+  return { jobs, loading, error, refetch: loadJobs, triggerBackgroundFetch, dynamicLimit, backgroundFetching };
 };

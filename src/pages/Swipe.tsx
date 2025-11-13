@@ -25,7 +25,7 @@ const Swipe = () => {
   const [aiTopN, setAiTopN] = useState(50);
   const [firstFetchTriggered, setFirstFetchTriggered] = useState(false);
   const { toast } = useToast();
-  const { jobs, loading: jobsLoading, triggerBackgroundFetch } = useJobs(
+  const { jobs, loading: jobsLoading, triggerBackgroundFetch, backgroundFetching } = useJobs(
     user?.id,
     true,
     matchMode,
@@ -80,6 +80,10 @@ const Swipe = () => {
     // First swipe: trigger background fetch of 25 jobs
     if (currentIndex === 1 && !firstFetchTriggered && matchMode === "llm") {
       console.log("🚀 First swipe detected, fetching 25 more jobs...");
+      toast({
+        title: "🔄 Loading more jobs...",
+        description: "Finding your next opportunities",
+      });
       triggerBackgroundFetch?.(25);
       setFirstFetchTriggered(true);
     }
@@ -88,14 +92,28 @@ const Swipe = () => {
     const progressPercent = jobs.length > 0 ? (currentIndex / jobs.length) * 100 : 0;
     if (progressPercent >= 70 && matchMode === "llm" && jobs.length > 0) {
       console.log("📦 70% through stack, fetching 25 more jobs...");
+      toast({
+        title: "🔄 Loading more jobs...",
+        description: "Preparing your next matches",
+      });
       triggerBackgroundFetch?.(25);
     }
-  }, [currentIndex, matchMode, jobs.length, firstFetchTriggered, triggerBackgroundFetch]);
+  }, [currentIndex, matchMode, jobs.length, firstFetchTriggered, triggerBackgroundFetch, toast]);
 
   // Reset trigger when match mode changes
   useEffect(() => {
     setFirstFetchTriggered(false);
   }, [matchMode]);
+
+  // Show success toast when background fetch completes
+  useEffect(() => {
+    if (!backgroundFetching && firstFetchTriggered && jobs.length > 0) {
+      toast({
+        title: "✅ More jobs loaded!",
+        description: `${jobs.length} jobs ready to swipe`,
+      });
+    }
+  }, [backgroundFetching, firstFetchTriggered, jobs.length, toast]);
 
   const loading = authLoading || profileLoading || jobsLoading;
 
@@ -128,6 +146,14 @@ const Swipe = () => {
       />
 
       <div className="container max-w-2xl mx-auto px-4 pt-20">
+        {/* Background fetch indicator */}
+        {backgroundFetching && (
+          <div className="fixed top-20 right-4 z-50 bg-primary/10 backdrop-blur-sm border border-primary/20 rounded-full px-4 py-2 flex items-center gap-2 shadow-lg animate-in fade-in slide-in-from-top-2">
+            <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium text-primary">Loading more jobs...</span>
+          </div>
+        )}
+
         {remainingJobs > 0 ? (
           <>
             <CardStack
