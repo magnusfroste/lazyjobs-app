@@ -117,26 +117,27 @@ serve(async (req) => {
 
     const systemPrompt = `You are an expert job matching system. Return ONLY valid JSON.
 
-Return this exact structure:
-{
-  "matches": [
+    Return this exact structure (at most 3 jobs):
     {
-      "job_id": "string",
-      "match_score": 0.0-1.0,
-      "matched_skills": ["skill1", "skill2", ...],
-      "missing_skills": ["skill1", "skill2", ...],
-      "reasoning": "brief explanation"
+      "matches": [
+        {
+          "job_id": "string",
+          "match_score": 0.0-1.0,
+          "matched_skills": ["skill1", "skill2", ...],
+          "missing_skills": ["skill1", "skill2", ...],
+          "reasoning": "brief explanation"
+        }
+      ]
     }
-  ]
-}
 
-Rules:
-- matched_skills: max 8 items per job
-- missing_skills: max 5 items per job
-- reasoning: max 150 characters per job
-- match_score: 0.0 (no match) to 1.0 (perfect match)
+    Rules:
+    - Analyze all provided jobs but RETURN ONLY THE TOP 3 matches (sorted by match_score desc)
+    - matched_skills: max 6 items per job
+    - missing_skills: max 4 items per job
+    - reasoning: max 120 characters per job
+    - match_score: 0.0 (no match) to 1.0 (perfect match)
 
-Analyze ALL jobs provided. Do not include any other text, markdown, or explanation. Only return the JSON object.`;
+    Do not include any other text, markdown, or explanation. Only return the JSON object.`;
 
     const userPrompt = JSON.stringify({
       candidate: candidateProfile,
@@ -161,7 +162,7 @@ Analyze ALL jobs provided. Do not include any other text, markdown, or explanati
             { role: "user", content: userPrompt },
           ],
           temperature: 0.2,  // Lower for more deterministic JSON
-          max_tokens: 500,   // Reduced since we have less data
+          max_tokens: 800,   // Allow enough room for up to 3 matches
           // response_format removed - can cause issues with vLLM
         }),
         signal: controller.signal,
@@ -203,7 +204,12 @@ Analyze ALL jobs provided. Do not include any other text, markdown, or explanati
       } catch (parseError) {
         console.error("Failed to parse JSON from content:", parseError);
         console.error("Cleaned content:", content);
-        throw new Error(`Invalid JSON: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+        // Graceful fallback on invalid JSON (often due to length truncation)
+        const fallbackJobs = jobs.map((j: any) => ({ ...j, match_score: 0 }));
+        return new Response(
+          JSON.stringify({ success: true, jobs: fallbackJobs, note: "llm_invalid_json_fallback" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
 
       // Merge LLM scores with original job data
