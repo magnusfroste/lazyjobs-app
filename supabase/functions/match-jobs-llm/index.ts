@@ -113,28 +113,35 @@ serve(async (req) => {
       description: job.description?.substring(0, 300), // Limit description length
     }));
 
-    const systemPrompt = `You are an expert job matching system. Analyze how well a candidate matches each job posting.
+    const systemPrompt = `You are an expert job matching system. Return ONLY valid JSON.
 
-For each job, provide:
-1. match_score: Overall match (0.0 to 1.0)
-2. match_breakdown: Category scores (0-100 each):
-   - skills: Technical/professional skill alignment
-   - salary: Compensation fit  
-   - location: Geographic compatibility
-   - remote: Remote work preference match
-   - employment: Contract type alignment
-3. matched_skills: Skills candidate has that job needs
-4. missing_skills: Critical skills candidate should learn
-5. reasoning: Brief explanation (max 200 chars)
+Return this exact structure:
+{
+  "matches": [
+    {
+      "job_id": "string",
+      "match_score": 0.0-1.0,
+      "matched_skills": ["skill1", "skill2", ...],
+      "missing_skills": ["skill1", "skill2", ...],
+      "reasoning": "brief explanation"
+    }
+  ]
+}
 
-Consider skill transferability, seniority alignment, and career progression.`;
+Rules:
+- matched_skills: max 8 items per job
+- missing_skills: max 5 items per job
+- reasoning: max 150 characters per job
+- match_score: 0.0 (no match) to 1.0 (perfect match)
+
+Analyze ALL jobs provided. Do not include any other text, markdown, or explanation. Only return the JSON object.`;
 
     const userPrompt = JSON.stringify({
       candidate: candidateProfile,
       jobs: jobsForLLM,
     });
 
-    // Call Qwen LLM API (OpenAI-compatible) with timeout
+    // Call LLM API with timeout
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 90000); // 90 second timeout
     
@@ -151,48 +158,9 @@ Consider skill transferability, seniority alignment, and career progression.`;
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },
           ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "score_job_matches",
-                description: "Score and analyze job matches for a candidate",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    matches: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          job_id: { type: "string" },
-                          match_score: { type: "number", minimum: 0, maximum: 1 },
-                          match_breakdown: {
-                            type: "object",
-                            properties: {
-                              skills: { type: "number", minimum: 0, maximum: 100 },
-                              salary: { type: "number", minimum: 0, maximum: 100 },
-                              location: { type: "number", minimum: 0, maximum: 100 },
-                              remote: { type: "number", minimum: 0, maximum: 100 },
-                              employment: { type: "number", minimum: 0, maximum: 100 },
-                            },
-                            required: ["skills", "salary", "location", "remote", "employment"],
-                          },
-                          matched_skills: { type: "array", items: { type: "string" } },
-                          missing_skills: { type: "array", items: { type: "string" } },
-                          reasoning: { type: "string", maxLength: 200 },
-                        },
-                        required: ["job_id", "match_score", "match_breakdown", "matched_skills", "missing_skills", "reasoning"],
-                      },
-                    },
-                  },
-                  required: ["matches"],
-                },
-              },
-            },
-          ],
-          tool_choice: { type: "function", function: { name: "score_job_matches" } },
-          max_tokens: 1000,
+          temperature: 0.7,
+          max_tokens: 800,
+          response_format: { type: "json_object" },
         }),
         signal: controller.signal,
       });
@@ -213,26 +181,27 @@ Consider skill transferability, seniority alignment, and career progression.`;
       const llmData = await llmResponse.json();
       console.log("Full LLM response:", JSON.stringify(llmData, null, 2));
 
-      // Parse tool call response
-      const toolCall = llmData.choices?.[0]?.message?.tool_calls?.[0];
-      if (!toolCall || toolCall.function.name !== "score_job_matches") {
-        throw new Error("Invalid LLM response format");
+      // Extract JSON from message content
+      let content = llmData.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error("No content in LLM response");
       }
 
-      console.log("Tool call found:", JSON.stringify(toolCall, null, 2));
-      console.log("Tool call arguments (raw):", toolCall.function.arguments);
+      console.log("Raw content:", content);
 
-      // Parse arguments with error handling
+      // Remove markdown code blocks if present
+      content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+      // Parse JSON with error handling
       let matches;
       try {
-        const parsedArgs = JSON.parse(toolCall.function.arguments);
-        matches = parsedArgs.matches;
+        const parsedData = JSON.parse(content);
+        matches = parsedData.matches;
         console.log("Successfully parsed matches:", matches.length);
       } catch (parseError) {
-        console.error("Failed to parse tool call arguments:", parseError);
-        console.error("Raw arguments string:", toolCall.function.arguments);
-        console.error("Arguments type:", typeof toolCall.function.arguments);
-        throw new Error(`Invalid tool call arguments: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
+        console.error("Failed to parse JSON from content:", parseError);
+        console.error("Cleaned content:", content);
+        throw new Error(`Invalid JSON: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`);
       }
 
       // Merge LLM scores with original job data

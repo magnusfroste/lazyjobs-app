@@ -115,12 +115,29 @@ serve(async (req) => {
       console.log("Candidate skills count:", candidateProfile.skills.length);
       console.log("Job required skills count:", jobForLLM.required_skills.length);
 
-      // Use EXACT same system prompt as match-jobs-llm
-      const systemPrompt = `You are an expert job matching system. Analyze how well a candidate matches each job posting.
-Score from 0-1 based on skills, experience, salary expectations, location preferences, and employment type.
-Consider both matched skills and missing skills. Provide clear reasoning.
+      // Use plain JSON generation (no function calling)
+      const systemPrompt = `You are an expert job matching system. Return ONLY valid JSON.
 
-CRITICAL: You MUST call the score_job_matches function exactly once. Do not include any message content.`;
+Return this exact structure:
+{
+  "matches": [
+    {
+      "job_id": "string",
+      "match_score": 0.0-1.0,
+      "matched_skills": ["skill1", "skill2", ...],
+      "missing_skills": ["skill1", "skill2", ...],
+      "reasoning": "brief explanation"
+    }
+  ]
+}
+
+Rules:
+- matched_skills: max 8 items
+- missing_skills: max 5 items
+- reasoning: max 150 characters
+- match_score: 0.0 (no match) to 1.0 (perfect match)
+
+Do not include any other text, markdown, or explanation. Only return the JSON object.`;
 
       const userPrompt = `Candidate Profile:
 ${JSON.stringify(candidateProfile, null, 2)}
@@ -130,7 +147,6 @@ ${JSON.stringify([jobForLLM], null, 2)}
 
 Return a match score and analysis for this job.`;
 
-      // Use EXACT same tool schema as match-jobs-llm
       const requestBody: any = {
         model: "autoversio",
         messages: [
@@ -138,49 +154,8 @@ Return a match score and analysis for this job.`;
           { role: "user", content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 500,
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "score_job_matches",
-              description: "Score job matches for a candidate",
-              parameters: {
-                type: "object",
-                properties: {
-                  matches: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        job_id: { type: "string" },
-                        match_score: { type: "number", minimum: 0, maximum: 1 },
-                        match_breakdown: {
-                          type: "object",
-                          properties: {
-                            skills: { type: "number" },
-                            salary: { type: "number" },
-                            location: { type: "number" },
-                            remote: { type: "number" },
-                            employment: { type: "number" },
-                          },
-                        },
-                        matched_skills: { type: "array", items: { type: "string" } },
-                        missing_skills: { type: "array", items: { type: "string" } },
-                        reasoning: { type: "string" },
-                      },
-                      required: ["job_id", "match_score"],
-                      additionalProperties: false,
-                    },
-                  },
-                },
-                required: ["matches"],
-                additionalProperties: false,
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "score_job_matches" } },
+        max_tokens: 800,
+        response_format: { type: "json_object" },
       };
 
       console.log("Calling LLM with job matching tool schema...");
@@ -212,18 +187,19 @@ Return a match score and analysis for this job.`;
       console.log("LLM Response:", JSON.stringify(data, null, 2));
       console.log(`Response time: ${responseTime}ms`);
 
-      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
       const finishReason = data.choices?.[0]?.finish_reason;
-
       console.log("Finish reason:", finishReason);
 
-      if (!toolCall) {
-        console.error("No tool call in response");
+      // Extract JSON from message content
+      let content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        console.error("No content in response");
         return new Response(
           JSON.stringify({
             success: false,
-            error: "LLM did not return a tool call",
+            error: "LLM did not return content",
             responseTime,
+            finishReason,
             rawResponse: data,
             request: requestBody,
           }),
@@ -233,46 +209,25 @@ Return a match score and analysis for this job.`;
         );
       }
 
-      // Parse tool call arguments
-      let parsedArgs;
-      const argsRaw = toolCall.function.arguments;
-      
-      console.log("Raw arguments type:", typeof argsRaw);
-      console.log("Raw arguments:", argsRaw);
+      console.log("Raw content:", content);
 
-      if (typeof argsRaw === "string") {
-        try {
-          parsedArgs = JSON.parse(argsRaw);
-          console.log("Successfully parsed string arguments");
-        } catch (parseError) {
-          console.error("Failed to parse tool call arguments:", parseError);
-          console.error("Raw arguments string:", argsRaw);
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: `Invalid tool call arguments: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
-              responseTime,
-              rawArguments: argsRaw,
-              finishReason,
-              rawResponse: data,
-              request: requestBody,
-            }),
-            {
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
-          );
-        }
-      } else if (typeof argsRaw === "object" && argsRaw) {
-        parsedArgs = argsRaw;
-        console.log("Arguments already an object");
-      } else {
-        console.error("Unexpected arguments type:", typeof argsRaw);
+      // Remove markdown code blocks if present
+      content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+
+      // Parse JSON
+      let parsedArgs;
+      try {
+        parsedArgs = JSON.parse(content);
+        console.log("Successfully parsed JSON from content");
+      } catch (parseError) {
+        console.error("Failed to parse JSON from content:", parseError);
+        console.error("Cleaned content:", content);
         return new Response(
           JSON.stringify({
             success: false,
-            error: "Unexpected tool call arguments format",
+            error: `Invalid JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
             responseTime,
-            rawArguments: argsRaw,
+            rawContent: content,
             finishReason,
             rawResponse: data,
             request: requestBody,
