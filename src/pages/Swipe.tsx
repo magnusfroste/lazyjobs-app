@@ -23,8 +23,9 @@ const Swipe = () => {
   const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
   const [keywordThreshold, setKeywordThreshold] = useState(0.65);
   const [aiTopN, setAiTopN] = useState(50);
+  const [firstFetchTriggered, setFirstFetchTriggered] = useState(false);
   const { toast } = useToast();
-  const { jobs, loading: jobsLoading } = useJobs(
+  const { jobs, loading: jobsLoading, triggerBackgroundFetch } = useJobs(
     user?.id,
     true,
     matchMode,
@@ -73,6 +74,28 @@ const Swipe = () => {
       navigate("/onboarding");
     }
   }, [user, profile, profileLoading, navigate]);
+
+  // Progressive loading: trigger background fetches
+  useEffect(() => {
+    // First swipe: trigger background fetch of 25 jobs
+    if (currentIndex === 1 && !firstFetchTriggered && matchMode === "llm") {
+      console.log("🚀 First swipe detected, fetching 25 more jobs...");
+      triggerBackgroundFetch?.(25);
+      setFirstFetchTriggered(true);
+    }
+
+    // 70% progress: fetch another batch
+    const progressPercent = jobs.length > 0 ? (currentIndex / jobs.length) * 100 : 0;
+    if (progressPercent >= 70 && matchMode === "llm" && jobs.length > 0) {
+      console.log("📦 70% through stack, fetching 25 more jobs...");
+      triggerBackgroundFetch?.(25);
+    }
+  }, [currentIndex, matchMode, jobs.length, firstFetchTriggered, triggerBackgroundFetch]);
+
+  // Reset trigger when match mode changes
+  useEffect(() => {
+    setFirstFetchTriggered(false);
+  }, [matchMode]);
 
   const loading = authLoading || profileLoading || jobsLoading;
 

@@ -14,6 +14,7 @@ export const useJobs = (
   const [jobs, setJobs] = useState<JobWithMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [dynamicLimit, setDynamicLimit] = useState(matchMode === "llm" ? 5 : topN);
 
   const loadJobs = async () => {
     try {
@@ -28,7 +29,7 @@ export const useJobs = (
       // Call appropriate service based on match mode
       const fetchedJobs =
         matchMode === "llm"
-          ? await jobService.getLLMMatchedJobs(userId, 5) // Testing with 5 jobs
+          ? await jobService.getLLMMatchedJobs(userId, dynamicLimit)
           : matchMode === "ai"
           ? await jobService.getAIMatchedJobs(userId, topN)
           : await jobService.getMatchedJobs(userId, 5000);
@@ -54,7 +55,12 @@ export const useJobs = (
 
   useEffect(() => {
     loadJobs();
-  }, [userId, excludeSwiped, matchMode, minThreshold, topN]);
+  }, [userId, excludeSwiped, matchMode, minThreshold, topN, dynamicLimit]);
 
-  return { jobs, loading, error, refetch: loadJobs };
+  const triggerBackgroundFetch = (newLimit: number) => {
+    console.log(`🔄 Background fetch triggered: ${newLimit} jobs`);
+    setDynamicLimit(newLimit);
+  };
+
+  return { jobs, loading, error, refetch: loadJobs, triggerBackgroundFetch, dynamicLimit };
 };
