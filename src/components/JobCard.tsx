@@ -12,7 +12,6 @@ import { isHTML, htmlToFormattedText } from "@/lib/htmlToText";
 interface JobCardProps {
   job: JobWithMatch;
   onSwipe: (direction: "left" | "right") => void;
-  remainingJobs: number;
   isActive?: boolean;
   isFlipped?: boolean;
   onFlip?: () => void;
@@ -20,7 +19,7 @@ interface JobCardProps {
   totalJobsAnalyzed?: number;
 }
 
-const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = false, onFlip, isBackgroundFetching = false, totalJobsAnalyzed = 0 }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, isBackgroundFetching = false, totalJobsAnalyzed = 0 }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -238,10 +237,10 @@ const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = fal
             {isBackgroundFetching ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                <span>Analyzing more jobs... ({totalJobsAnalyzed} analyzed)</span>
+                <span>Analyzing more jobs... ({totalJobsAnalyzed} analyzed so far)</span>
               </div>
             ) : (
-              <span>{remainingJobs} left • {totalJobsAnalyzed} analyzed • Tap score for details</span>
+              <span>{totalJobsAnalyzed} jobs analyzed • Tap score for details</span>
             )}
           </div>
         )}

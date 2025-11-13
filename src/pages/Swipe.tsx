@@ -145,7 +145,7 @@ const Swipe = () => {
         {remainingJobs > 0 ? (
           <>
             <CardStack
-              key={`${matchMode}-${currentIndex}`}
+              key={matchMode}
               cards={jobs
                 .slice(currentIndex, currentIndex + 3)
                 .map((job, idx) => (
@@ -153,7 +153,6 @@ const Swipe = () => {
                     key={job.id}
                     job={job}
                     onSwipe={idx === 0 ? handleSwipe : () => {}}
-                    remainingJobs={remainingJobs}
                     isActive={idx === 0}
                     isFlipped={isCardFlipped(job.id)}
                     onFlip={() => flipCard(job.id)}
