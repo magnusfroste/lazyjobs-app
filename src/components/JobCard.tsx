@@ -16,9 +16,11 @@ interface JobCardProps {
   isActive?: boolean;
   isFlipped?: boolean;
   onFlip?: () => void;
+  isBackgroundFetching?: boolean;
+  totalJobsLoaded?: number;
 }
 
-const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = false, onFlip }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = false, onFlip, isBackgroundFetching = false, totalJobsLoaded = 0 }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -230,10 +232,17 @@ const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = fal
           </div>
         </div>
 
-        {/* Job Counter */}
+        {/* Job Progress Counter */}
         {isActive && (
           <div className="bg-muted/30 px-6 py-3 text-center text-sm text-muted-foreground">
-            {remainingJobs} jobs • Tap score to see details
+            {isBackgroundFetching ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span>Loading more jobs... ({totalJobsLoaded} matched)</span>
+              </div>
+            ) : (
+              <span>{remainingJobs} jobs left • {totalJobsLoaded} matched • Tap score to see details</span>
+            )}
           </div>
         )}
 
