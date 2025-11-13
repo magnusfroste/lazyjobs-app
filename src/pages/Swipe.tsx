@@ -24,6 +24,7 @@ const Swipe = () => {
   const [keywordThreshold, setKeywordThreshold] = useState(0.65);
   const [aiTopN, setAiTopN] = useState(50);
   const [firstFetchTriggered, setFirstFetchTriggered] = useState(false);
+  const [totalJobsAnalyzed, setTotalJobsAnalyzed] = useState(0);
   const { toast } = useToast();
   const { jobs, loading: jobsLoading, triggerBackgroundFetch, backgroundFetching } = useJobs(
     user?.id,
@@ -97,9 +98,17 @@ const Swipe = () => {
     }
   }, [currentIndex, matchMode, jobs.length, remainingJobs, firstFetchTriggered, backgroundFetching, triggerBackgroundFetch]);
 
-  // Reset triggers when match mode changes
+  // Update total jobs analyzed
+  useEffect(() => {
+    if (jobs.length > totalJobsAnalyzed) {
+      setTotalJobsAnalyzed(jobs.length);
+    }
+  }, [jobs.length, totalJobsAnalyzed]);
+
+  // Reset triggers and counter when match mode changes
   useEffect(() => {
     setFirstFetchTriggered(false);
+    setTotalJobsAnalyzed(0);
   }, [matchMode]);
 
   const loading = authLoading || profileLoading || jobsLoading;
@@ -136,7 +145,7 @@ const Swipe = () => {
         {remainingJobs > 0 ? (
           <>
             <CardStack
-              key={`${matchMode}-${jobs.length}`}
+              key={`${matchMode}-${currentIndex}`}
               cards={jobs
                 .slice(currentIndex, currentIndex + 3)
                 .map((job, idx) => (
@@ -149,7 +158,7 @@ const Swipe = () => {
                     isFlipped={isCardFlipped(job.id)}
                     onFlip={() => flipCard(job.id)}
                     isBackgroundFetching={backgroundFetching}
-                    totalJobsLoaded={jobs.length}
+                    totalJobsAnalyzed={totalJobsAnalyzed}
                   />
                 ))
               }

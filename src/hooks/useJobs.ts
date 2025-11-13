@@ -19,7 +19,7 @@ export const useJobs = (
   const lastFetchTimeRef = useRef<number>(0);
   const pendingFetchRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadJobs = async (isBackgroundFetch = false, limitOverride?: number) => {
+  const loadJobs = async (isBackgroundFetch = false, limitOverride?: number, appendToExisting = false) => {
     // Clear any pending fetch
     if (pendingFetchRef.current) {
       clearTimeout(pendingFetchRef.current);
@@ -76,7 +76,18 @@ export const useJobs = (
             })
           : fetchedJobs;
 
-      setJobs(filtered);
+      if (appendToExisting && isBackgroundFetch) {
+        // Append new jobs, filter out duplicates by ID
+        setJobs(prevJobs => {
+          const existingIds = new Set(prevJobs.map(j => j.id));
+          const newJobs = filtered.filter(j => !existingIds.has(j.id));
+          console.log(`➕ Appending ${newJobs.length} new jobs to existing ${prevJobs.length}`);
+          return [...prevJobs, ...newJobs];
+        });
+      } else {
+        // Initial load or mode switch: replace
+        setJobs(filtered);
+      }
     } catch (err) {
       setError(err as Error);
       setJobs([]);
@@ -94,7 +105,7 @@ export const useJobs = (
   const triggerBackgroundFetch = (newLimit: number) => {
     console.log(`🔄 Background fetch triggered: ${newLimit} jobs`);
     setDynamicLimit(newLimit);
-    loadJobs(true, newLimit); // Pass the new limit directly to avoid race conditions
+    loadJobs(true, newLimit, true); // Pass true to append jobs instead of replacing
   };
 
   return { jobs, loading, error, refetch: loadJobs, triggerBackgroundFetch, dynamicLimit, backgroundFetching };

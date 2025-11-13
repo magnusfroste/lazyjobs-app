@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { swipeService } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
 import { useToast } from "@/hooks/use-toast";
@@ -8,12 +8,21 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeHistory, setSwipeHistory] = useState<string[]>([]);
   const { toast } = useToast();
+  const prevJobsRef = useRef<JobWithMatch[]>([]);
 
-  // Reset swipe state when jobs array changes (e.g., when toggling match modes)
+  // Only reset if jobs array was actually replaced (not on background append)
   useEffect(() => {
-    setCurrentIndex(0);
-    setSwipeHistory([]);
-  }, [jobs.length]);
+    const jobsReplaced = jobs.length > 0 && prevJobsRef.current.length > 0 &&
+      (jobs[0]?.id !== prevJobsRef.current[0]?.id);
+    
+    if (jobsReplaced) {
+      console.log("🔄 Jobs replaced, resetting index");
+      setCurrentIndex(0);
+      setSwipeHistory([]);
+    }
+    
+    prevJobsRef.current = jobs;
+  }, [jobs]);
 
   const handleSwipe = async (direction: "left" | "right") => {
     if (currentIndex >= jobs.length) return;
