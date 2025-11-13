@@ -88,10 +88,10 @@ serve(async (req) => {
 
     console.log(`Processing ${jobs.length} jobs with Qwen LLM`);
 
-    // Prepare candidate profile for LLM (SIMPLIFIED - 10 skills max)
+    // Prepare candidate profile for LLM (INCREASED to 25 skills for better matching)
     const allCandidateSkills = profile.cv_data?.skills_flat || profile.cv_data?.skills || [];
     const candidateProfile = {
-      skills: Array.isArray(allCandidateSkills) ? allCandidateSkills.slice(0, 10) : [],
+      skills: Array.isArray(allCandidateSkills) ? allCandidateSkills.slice(0, 25) : [],
       experience_years: profile.cv_data?.experience_years || 0,
       preferred_salary_min: profile.preferences?.salary_min || 0,
       preferred_salary_max: profile.preferences?.salary_max || 200000,
@@ -132,8 +132,8 @@ serve(async (req) => {
 
     Rules:
     - Analyze all provided jobs but RETURN ONLY THE TOP 3 matches (sorted by match_score desc)
-    - matched_skills: max 6 items per job
-    - missing_skills: max 4 items per job
+    - matched_skills: max 8 items per job
+    - missing_skills: max 6 items per job
     - reasoning: max 120 characters per job
     - match_score: 0.0 (no match) to 1.0 (perfect match)
 
@@ -162,7 +162,7 @@ serve(async (req) => {
             { role: "user", content: userPrompt },
           ],
           temperature: 0.2,  // Lower for more deterministic JSON
-          max_tokens: 800,   // Allow enough room for up to 3 matches
+          max_tokens: 1000,  // Increased for better skill analysis
           // response_format removed - can cause issues with vLLM
         }),
         signal: controller.signal,
