@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { jobService } from "@/services/jobService";
 import { JobWithMatch } from "@/types/job";
 
@@ -16,9 +16,34 @@ export const useJobs = (
   const [error, setError] = useState<Error | null>(null);
   const [dynamicLimit, setDynamicLimit] = useState(matchMode === "llm" ? 5 : topN);
   const [backgroundFetching, setBackgroundFetching] = useState(false);
+  const lastFetchTimeRef = useRef<number>(0);
+  const pendingFetchRef = useRef<NodeJS.Timeout | null>(null);
 
-  const loadJobs = async (isBackgroundFetch = false) => {
+  const loadJobs = async (isBackgroundFetch = false, limitOverride?: number) => {
+    // Clear any pending fetch
+    if (pendingFetchRef.current) {
+      clearTimeout(pendingFetchRef.current);
+      pendingFetchRef.current = null;
+    }
+
+    // Check cooldown (5 seconds) - only for background fetches
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastFetchTimeRef.current;
+    const COOLDOWN_MS = 5000;
+
+    if (isBackgroundFetch && timeSinceLastFetch < COOLDOWN_MS && lastFetchTimeRef.current > 0) {
+      console.log(`⏳ Cooldown active. Waiting ${Math.ceil((COOLDOWN_MS - timeSinceLastFetch) / 1000)}s...`);
+      
+      // Schedule the fetch after cooldown
+      const waitTime = COOLDOWN_MS - timeSinceLastFetch;
+      pendingFetchRef.current = setTimeout(() => {
+        loadJobs(isBackgroundFetch, limitOverride);
+      }, waitTime);
+      return;
+    }
     try {
+      lastFetchTimeRef.current = now;
+      
       if (isBackgroundFetch) {
         setBackgroundFetching(true);
       } else {
@@ -31,10 +56,12 @@ export const useJobs = (
         return;
       }
 
+      const currentLimit = limitOverride ?? dynamicLimit;
+
       // Call appropriate service based on match mode
       const fetchedJobs =
         matchMode === "llm"
-          ? await jobService.getLLMMatchedJobs(userId, dynamicLimit)
+          ? await jobService.getLLMMatchedJobs(userId, currentLimit)
           : matchMode === "ai"
           ? await jobService.getAIMatchedJobs(userId, topN)
           : await jobService.getMatchedJobs(userId, 5000);
@@ -61,12 +88,13 @@ export const useJobs = (
 
   useEffect(() => {
     loadJobs();
-  }, [userId, excludeSwiped, matchMode, minThreshold, topN, dynamicLimit]);
+    // Intentionally NOT including dynamicLimit to prevent race conditions
+  }, [userId, excludeSwiped, matchMode, minThreshold, topN]);
 
   const triggerBackgroundFetch = (newLimit: number) => {
     console.log(`🔄 Background fetch triggered: ${newLimit} jobs`);
     setDynamicLimit(newLimit);
-    loadJobs(true); // Pass flag to indicate background fetch
+    loadJobs(true, newLimit); // Pass the new limit directly to avoid race conditions
   };
 
   return { jobs, loading, error, refetch: loadJobs, triggerBackgroundFetch, dynamicLimit, backgroundFetching };
