@@ -12,6 +12,7 @@ interface TestChatRequest {
   useToolCalling?: boolean;
   discoverModels?: boolean;
   testJobMatching?: boolean;
+  testSimpleJSON?: boolean;
 }
 
 serve(async (req) => {
@@ -22,13 +23,105 @@ serve(async (req) => {
   const startTime = Date.now();
 
   try {
-    const { message, useToolCalling, discoverModels, testJobMatching }: TestChatRequest = await req.json();
+    const { message, useToolCalling, discoverModels, testJobMatching, testSimpleJSON }: TestChatRequest = await req.json();
 
     const LLM_API_URL = Deno.env.get("MATCH_LLM_URL");
     const LLM_API_KEY = Deno.env.get("MATCH_LLM_API_KEY");
 
     if (!LLM_API_URL || !LLM_API_KEY) {
       throw new Error("LLM configuration missing");
+    }
+
+    // Handle simple JSON test
+    if (testSimpleJSON) {
+      console.log("=== SIMPLE JSON CAPABILITY TEST ===");
+      
+      const systemPrompt = "You are a JSON generator. Output ONLY valid JSON. No markdown, no explanations, no extra text.";
+      
+      const userPrompt = 'Return this exact JSON structure: { "status": "ok", "number": 42, "items": ["a", "b", "c"] }';
+
+      console.log("System:", systemPrompt);
+      console.log("User:", userPrompt);
+
+      const requestBody = {
+        model: "autoversio",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.1,  // Very deterministic
+        max_tokens: 100,    // Minimal - we only need ~30 tokens
+      };
+
+      const requestStartTime = Date.now();
+      const llmResponse = await fetch(LLM_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${LLM_API_KEY}`,
+        },
+        body: JSON.stringify(requestBody),
+        signal: AbortSignal.timeout(30000), // 30s timeout
+      });
+
+      if (!llmResponse.ok) {
+        const errorText = await llmResponse.text();
+        console.error("LLM API error:", llmResponse.status, errorText);
+        throw new Error(`LLM API error: ${llmResponse.status}`);
+      }
+
+      const responseData = await llmResponse.json();
+      const responseTime = Date.now() - requestStartTime;
+
+      console.log("Response time:", responseTime, "ms");
+      console.log("Full response:", JSON.stringify(responseData, null, 2));
+
+      const content = responseData.choices?.[0]?.message?.content || "";
+      const finish_reason = responseData.choices?.[0]?.finish_reason;
+
+      console.log("Content:", content);
+      console.log("Finish reason:", finish_reason);
+
+      let parsed_ok = false;
+      let parsed = null;
+
+      try {
+        // Try direct parse
+        parsed = JSON.parse(content);
+        parsed_ok = true;
+        console.log("✅ Direct parse successful:", parsed);
+      } catch (e1) {
+        console.warn("Direct parse failed, trying cleanup...");
+        
+        // Try stripping markdown
+        const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        try {
+          parsed = JSON.parse(cleaned);
+          parsed_ok = true;
+          console.log("✅ Parse successful after cleanup:", parsed);
+        } catch (e2) {
+          console.error("❌ Parse failed even after cleanup");
+          console.error("Raw content:", content);
+          parsed_ok = false;
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          jsonResult: {
+            parsed_ok,
+            parsed,
+            content_len: content.length,
+            finish_reason,
+            raw_content: content,
+          },
+          responseTime,
+          rawResponse: responseData,
+          request: requestBody,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Handle job matching test

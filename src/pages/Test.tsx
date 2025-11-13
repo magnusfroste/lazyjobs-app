@@ -31,6 +31,7 @@ const Test = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [availableModels, setAvailableModels] = useState<any>(null);
+  const [jsonTestResult, setJsonTestResult] = useState<any>(null);
   const { toast } = useToast();
 
   const discoverModels = async () => {
@@ -55,6 +56,63 @@ const Test = () => {
       console.error("Error discovering models:", error);
       toast({
         title: "❌ Discovery Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testSimpleJSON = async () => {
+    setIsLoading(true);
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: "🧪 Testing basic JSON output capability..." },
+    ]);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("test-llm-chat", {
+        body: { testSimpleJSON: true },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || "JSON test failed");
+      }
+
+      const result = data.jsonResult;
+      setJsonTestResult(result);
+
+      const content = result
+        ? `✅ JSON Test Result:\n\nParsed Successfully: ${result.parsed_ok ? "YES" : "NO"}\n\nExpected: { "status": "ok", "number": 42, "items": ["a","b","c"] }\n\nReceived: ${JSON.stringify(result.parsed, null, 2)}\n\nRaw Content Length: ${result.content_len} chars\n\nFinish Reason: ${result.finish_reason || "unknown"}`
+        : "No result returned";
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content,
+          responseTime: data.responseTime,
+          rawResponse: data.rawResponse,
+          request: data.request,
+        },
+      ]);
+
+      toast({
+        title: result?.parsed_ok ? "✅ JSON Test Passed" : "⚠️ JSON Test Failed",
+        description: `Response in ${data.responseTime}ms`,
+        variant: result?.parsed_ok ? "default" : "destructive",
+      });
+    } catch (error: any) {
+      console.error("Error testing JSON:", error);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: `❌ Error: ${error.message}` },
+      ]);
+      toast({
+        title: "❌ Test Failed",
         description: error.message,
         variant: "destructive",
       });
@@ -265,6 +323,41 @@ const Test = () => {
                   <pre className="text-xs bg-background p-2 rounded overflow-auto max-h-32">
                     {JSON.stringify(availableModels, null, 2)}
                   </pre>
+                )}
+              </CardContent>
+            </Card>
+
+            <Separator />
+
+            {/* Simple JSON Test */}
+            <Card className="bg-muted/50">
+              <CardContent className="pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-semibold">🔬 Simple JSON Test</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Test if model can generate valid JSON (minimal prompt, ~50 tokens)
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={testSimpleJSON}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      "Test JSON"
+                    )}
+                  </Button>
+                </div>
+                {jsonTestResult && (
+                  <div className="mt-2 text-xs">
+                    <span className={jsonTestResult.parsed_ok ? "text-green-600" : "text-red-600"}>
+                      {jsonTestResult.parsed_ok ? "✅ Valid JSON" : "❌ Invalid JSON"}
+                    </span>
+                  </div>
                 )}
               </CardContent>
             </Card>
