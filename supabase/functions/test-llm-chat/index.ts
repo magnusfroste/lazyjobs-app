@@ -179,10 +179,10 @@ serve(async (req) => {
       const job = jobs[0];
       console.log(`Testing with job: ${job.title} (${job.id})`);
 
-      // Prepare candidate profile (same trimming as match-jobs-llm)
+      // Prepare candidate profile (SIMPLIFIED - 10 skills max)
       const allCandidateSkills = profile.cv_data?.skills_flat || profile.cv_data?.skills || [];
       const candidateProfile = {
-        skills: Array.isArray(allCandidateSkills) ? allCandidateSkills.slice(0, 40) : [],
+        skills: Array.isArray(allCandidateSkills) ? allCandidateSkills.slice(0, 10) : [],
         experience_years: profile.cv_data?.experience_years || 0,
         preferred_salary_min: profile.preferences?.salary_min || 0,
         preferred_salary_max: profile.preferences?.salary_max || 200000,
@@ -191,18 +191,17 @@ serve(async (req) => {
         preferred_employment_types: profile.preferences?.employment_types || [],
       };
 
-      // Prepare job data (same trimming as match-jobs-llm)
+      // Prepare job data (SIMPLIFIED - 10 skills max, no description)
       const jobForLLM = {
         id: job.id,
         title: job.title,
         company: job.company,
-        required_skills: (job.required_skills || []).slice(0, 15),
+        required_skills: (job.required_skills || []).slice(0, 10),
         salary_min: job.salary_min,
         salary_max: job.salary_max,
         location: job.location,
         remote_option: job.remote_option,
         employment_type: job.employment_type,
-        description: job.description?.substring(0, 300),
       };
 
       console.log("Candidate skills count:", candidateProfile.skills.length);
@@ -246,9 +245,9 @@ Return a match score and analysis for this job.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.7,
-        max_tokens: 800,
-        response_format: { type: "json_object" },
+        temperature: 0.2,  // Lower for more deterministic JSON
+        max_tokens: 500,   // Reduced since we have less data
+        // response_format removed - can cause issues with vLLM
       };
 
       console.log("Calling LLM with job matching tool schema...");
