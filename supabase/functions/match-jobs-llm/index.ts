@@ -11,6 +11,31 @@ interface MatchRequest {
   limit?: number;
 }
 
+// Strip HTML and truncate text for LLM processing
+function stripHtmlAndTruncate(html: string | null | undefined, maxChars: number = 500): string {
+  if (!html) return '';
+  
+  // Strip HTML tags
+  let text = html
+    .replace(/<script[^>]*>.*?<\/script>/gi, '')
+    .replace(/<style[^>]*>.*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  // Truncate to maxChars
+  if (text.length > maxChars) {
+    text = text.substring(0, maxChars) + '...';
+  }
+  
+  return text;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -102,11 +127,12 @@ serve(async (req) => {
     console.log("Candidate skills count:", candidateProfile.skills.length);
     console.log("Processing", jobs.length, "jobs for LLM matching");
 
-    // Prepare jobs for LLM (SIMPLIFIED - 10 skills max, no description)
+    // Prepare jobs for LLM (with smart truncation - 500 chars max, HTML stripped)
     const jobsForLLM = jobs.map((job) => ({
       id: job.id,
       title: job.title,
       company: job.company,
+      description: stripHtmlAndTruncate(job.description, 500),
       required_skills: (job.required_skills || []).slice(0, 10),
       salary_min: job.salary_min,
       salary_max: job.salary_max,
@@ -114,6 +140,10 @@ serve(async (req) => {
       remote_option: job.remote_option,
       employment_type: job.employment_type,
     }));
+
+    console.log("Job descriptions preview:", jobsForLLM.map(j => 
+      `${j.title}: ${j.description?.substring(0, 50)}...`
+    ));
 
     const systemPrompt = `You are an expert job matching system. Return ONLY valid JSON.
 
@@ -138,7 +168,9 @@ serve(async (req) => {
     }
 
     Rules:
-    - Analyze all provided jobs but RETURN ONLY THE TOP 3 matches (sorted by match_score desc)
+    - Analyze all provided jobs (title, company, description, skills, salary, location, remote, employment type)
+    - Use the job description to understand the role's context and requirements beyond just the skill list
+    - RETURN ONLY THE TOP 3 matches (sorted by match_score desc)
     - match_breakdown: provide percentage scores (0-100) for each category
     - matched_skills: max 8 items per job
     - missing_skills: max 6 items per job
@@ -170,7 +202,7 @@ serve(async (req) => {
             { role: "user", content: userPrompt },
           ],
           temperature: 0.2,  // Lower for more deterministic JSON
-          max_tokens: 1200,  // Increased to handle 40 candidate skills
+          max_tokens: 1800,  // Increased to handle 40 candidate skills + job descriptions
           // response_format removed - can cause issues with vLLM
         }),
         signal: controller.signal,
