@@ -35,9 +35,9 @@ const JobCard = ({ job, onSwipe, remainingJobs, isActive = true, isFlipped = fal
     employment: 0,
   };
 
-  // Calculate matched/missing skills (simplified - shows all as matched for now)
-  const matchedSkills = job.required_skills?.slice(0, 6) || [];
-  const missingSkills = job.required_skills?.slice(6, 9) || [];
+  // Calculate matched/missing skills from LLM response (or fallback to required_skills)
+  const matchedSkills = (job as any).matched_skills || job.required_skills?.slice(0, 6) || [];
+  const missingSkills = (job as any).missing_skills || [];
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {

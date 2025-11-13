@@ -123,6 +123,13 @@ serve(async (req) => {
         {
           "job_id": "string",
           "match_score": 0.0-1.0,
+          "match_breakdown": {
+            "skills": 0-100,
+            "salary": 0-100,
+            "location": 0-100,
+            "remote": 0-100,
+            "employment": 0-100
+          },
           "matched_skills": ["skill1", "skill2", ...],
           "missing_skills": ["skill1", "skill2", ...],
           "reasoning": "brief explanation"
@@ -132,6 +139,7 @@ serve(async (req) => {
 
     Rules:
     - Analyze all provided jobs but RETURN ONLY THE TOP 3 matches (sorted by match_score desc)
+    - match_breakdown: provide percentage scores (0-100) for each category
     - matched_skills: max 8 items per job
     - missing_skills: max 6 items per job
     - reasoning: max 120 characters per job
