@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { JobWithMatch } from "@/types/job";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { isHTML, htmlToFormattedText } from "@/lib/htmlToText";
+import { cn } from "@/lib/utils";
 
 interface JobCardProps {
   job: JobWithMatch;
@@ -83,9 +84,15 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 200);
         }
       } : undefined}
-      className="relative w-full max-w-2xl mx-auto"
+      className={cn(
+        "relative w-full max-w-2xl mx-auto transition-opacity duration-300",
+        isApplied && mode === "matches" && "opacity-70"
+      )}
     >
-      <div className="bg-card border rounded-3xl shadow-xl overflow-hidden">
+      <div className={cn(
+        "bg-card border-2 rounded-3xl shadow-xl overflow-hidden transition-colors duration-300",
+        isApplied && mode === "matches" ? "border-accent" : "border-transparent"
+      )}>
         {/* Delete button for matches mode */}
         {mode === "matches" && (
           <button
@@ -280,15 +287,18 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                   </Button>
                 )}
 
-                {!isApplied && (
-                  <Button
-                    onClick={onMarkAsApplied}
-                    variant="outline"
-                    title="Mark as applied"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                  </Button>
-                )}
+                <Button
+                  onClick={onMarkAsApplied}
+                  variant={isApplied ? "default" : "outline"}
+                  title={isApplied ? "Applied" : "Mark as applied"}
+                  className={cn(
+                    "transition-all duration-300",
+                    isApplied && "bg-accent hover:bg-accent/90 text-accent-foreground border-accent"
+                  )}
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  {isApplied && <span className="ml-1.5">Applied</span>}
+                </Button>
 
                 <Button
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
