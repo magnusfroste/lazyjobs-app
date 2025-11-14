@@ -42,14 +42,6 @@ const TopBar = ({
 
   const isMobile = useIsMobile();
 
-  const getQualityBadge = () => {
-    if (keywordThreshold === 0.4) return "✨ 40%+";
-    if (keywordThreshold === 0.65) return "✨ 65%+";
-    if (keywordThreshold === 0.85) return "✨ 85%+";
-    return null;
-  };
-
-  const qualityBadge = getQualityBadge();
 
   const handleSignOut = async () => {
     await signOut();
@@ -203,12 +195,6 @@ const TopBar = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Quality Badge */}
-          {qualityBadge && (
-            <div className="text-xs text-muted-foreground">
-              {qualityBadge}
-            </div>
-          )}
         </div>
       </div>
     </div>
