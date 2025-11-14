@@ -17,7 +17,7 @@ import { FEATURES } from "@/lib/featureFlags";
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, loading, updateProfile } = useProfile(user?.id);
   const { theme, setTheme } = useTheme();
 
@@ -30,10 +30,11 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    // Only redirect if auth has finished loading and there's no user
+    if (!authLoading && !user) {
       navigate("/auth");
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (profile) {
@@ -85,12 +86,16 @@ export default function Settings() {
     }
   };
 
-  if (loading || !user) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
   }
 
   if (!profile) return null;

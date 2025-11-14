@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
@@ -14,20 +14,23 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user, signIn, signUp, signInWithGoogle } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
 
   useEffect(() => {
-    // Redirect if already logged in
-    if (user && !profileLoading) {
-      if (profile?.onboarding_completed) {
+    // Redirect if already logged in - BUT ONLY IF WE'RE ON THE AUTH PAGE
+    if (user && !profileLoading && location.pathname === "/auth") {
+      // If profile exists and onboarding is explicitly true, go to swipe
+      // Otherwise, go to onboarding (handles null, undefined, false)
+      if (profile?.onboarding_completed === true) {
         navigate("/swipe");
-      } else {
+      } else if (profile) {
         navigate("/onboarding");
       }
     }
-  }, [user, profile, profileLoading, navigate]);
+  }, [user, profile, profileLoading, navigate, location.pathname]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
