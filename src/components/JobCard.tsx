@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X, ExternalLink, CheckCircle2, FileText } from "lucide-react";
+import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X, ExternalLink, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -311,14 +311,6 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   {isApplied && <span className="ml-1.5">Applied</span>}
-                </Button>
-
-                <Button
-                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  variant="outline"
-                  title="Toggle description"
-                >
-                  <FileText className="w-4 h-4" />
                 </Button>
               </div>
 
