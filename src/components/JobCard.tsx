@@ -15,11 +15,9 @@ interface JobCardProps {
   isActive?: boolean;
   isFlipped?: boolean;
   onFlip?: () => void;
-  isBackgroundFetching?: boolean;
-  totalJobsAnalyzed?: number;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, isBackgroundFetching = false, totalJobsAnalyzed = 0 }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -231,17 +229,19 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, isB
           </div>
         </div>
 
-        {/* Job Progress Counter */}
+        {/* Match Insights Footer */}
         {isActive && (
-          <div className="bg-muted/30 px-6 py-3 text-center text-sm text-muted-foreground">
-            {isBackgroundFetching ? (
-              <div className="flex items-center justify-center gap-2">
-                <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                <span>Analyzing more jobs... ({totalJobsAnalyzed} analyzed so far)</span>
-              </div>
-            ) : (
-              <span>{totalJobsAnalyzed} jobs analyzed • Tap score for details</span>
+          <div className="bg-muted/30 px-6 py-3 text-center text-sm text-muted-foreground space-y-1">
+            <div className="font-medium">
+              Match Score: {job.match_score}%
+              {job.confidence_level && (
+                <span className="ml-2 text-xs opacity-75">• {job.confidence_level} confidence</span>
+              )}
+            </div>
+            {job.recommendation && (
+              <div className="text-xs italic line-clamp-2">"{job.recommendation}"</div>
             )}
+            <div className="text-xs opacity-60">Tap score for full breakdown</div>
           </div>
         )}
 

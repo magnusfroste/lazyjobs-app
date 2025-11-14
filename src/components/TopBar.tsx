@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai" | "llm";
+type MatchMode = "keyword" | "ai" | "llm" | "precomputed";
 
 interface TopBarProps {
   matchMode?: MatchMode;
@@ -137,6 +137,23 @@ const TopBar = ({
                   <span className="flex items-center gap-1.5">
                     <span className="text-base">🧠</span>
                     <span>LLM</span>
+                  </span>
+                )}
+              </button>
+              <button
+                onClick={() => onModeChange("precomputed")}
+                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  matchMode === "precomputed"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {isMobile ? (
+                  <span className="text-base">⚡</span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-base">⚡</span>
+                    <span>Pre-Match</span>
                   </span>
                 )}
               </button>

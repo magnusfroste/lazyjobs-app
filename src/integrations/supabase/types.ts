@@ -35,6 +35,63 @@ export type Database = {
         }
         Relationships: []
       }
+      job_matches: {
+        Row: {
+          confidence_level: string | null
+          created_at: string | null
+          id: string
+          job_id: string
+          match_breakdown: Json | null
+          match_score: number
+          matching_skills: string[] | null
+          profile_id: string
+          recommendation: string | null
+          skills_to_learn: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          confidence_level?: string | null
+          created_at?: string | null
+          id?: string
+          job_id: string
+          match_breakdown?: Json | null
+          match_score: number
+          matching_skills?: string[] | null
+          profile_id: string
+          recommendation?: string | null
+          skills_to_learn?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          confidence_level?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string
+          match_breakdown?: Json | null
+          match_score?: number
+          matching_skills?: string[] | null
+          profile_id?: string
+          recommendation?: string | null
+          skills_to_learn?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_matches_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_matches_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           company: string

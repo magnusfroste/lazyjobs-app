@@ -10,5 +10,9 @@ export interface JobWithMatch extends Job {
     location: number;
     remote: number;
     employment: number;
-  };
+  } | any; // Allow Json type from job_matches table
+  matching_skills?: string[];
+  skills_to_learn?: string[];
+  recommendation?: string;
+  confidence_level?: string;
 }
