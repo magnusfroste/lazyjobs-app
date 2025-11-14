@@ -6,6 +6,19 @@ type Job = Tables<"jobs">;
 
 export interface MatchWithJob extends Match {
   job: Job;
+  job_match?: {
+    match_breakdown: {
+      skills: number;
+      salary: number;
+      location: number;
+      remote: number;
+      type: number;
+    };
+    matching_skills: string[];
+    skills_to_learn: string[];
+    recommendation: string;
+    confidence_level: 'low' | 'medium' | 'high';
+  };
 }
 
 export class MatchServiceError extends Error {
@@ -40,7 +53,14 @@ export class MatchService {
       .from("matches")
       .select(`
         *,
-        job:jobs(*)
+        job:jobs(*),
+        job_match:job_matches(
+          match_breakdown,
+          matching_skills,
+          skills_to_learn,
+          recommendation,
+          confidence_level
+        )
       `)
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
