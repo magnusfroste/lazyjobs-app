@@ -338,6 +338,72 @@ export type Database = {
           },
         ]
       }
+      notification_history: {
+        Row: {
+          badge: string | null
+          body: string
+          clicked_at: string | null
+          created_at: string | null
+          data: Json | null
+          dismissed_at: string | null
+          icon: string | null
+          id: string
+          job_id: string
+          match_score: number
+          read_at: string | null
+          sent_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          badge?: string | null
+          body: string
+          clicked_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          dismissed_at?: string | null
+          icon?: string | null
+          id?: string
+          job_id: string
+          match_score: number
+          read_at?: string | null
+          sent_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          badge?: string | null
+          body?: string
+          clicked_at?: string | null
+          created_at?: string | null
+          data?: Json | null
+          dismissed_at?: string | null
+          icon?: string | null
+          id?: string
+          job_id?: string
+          match_score?: number
+          read_at?: string | null
+          sent_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_history_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           application_language_preference: string | null

@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase, FileText } from "lucide-react";
+import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase, FileText, Bell } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { profileService } from "@/services/profileService";
 import { FEATURES } from "@/lib/featureFlags";
@@ -488,6 +488,29 @@ const Profile = () => {
           {/* Push Notifications */}
           {user && isIOSSafari && <InstallPrompt />}
           {user && <NotificationSettings userId={user.id} />}
+          
+          {/* Notification History Link */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification History
+              </CardTitle>
+              <CardDescription>
+                View all job match notifications you've received
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => navigate("/notifications")}
+                variant="outline"
+                className="w-full"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                View Notification History
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* CV Upload */}
           <Card>

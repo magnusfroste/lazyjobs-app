@@ -11,6 +11,7 @@ import Onboarding from "./pages/Onboarding";
 import Swipe from "./pages/Swipe";
 import Matches from "./pages/Matches";
 import Profile from "./pages/Profile";
+import NotificationHistory from "./pages/NotificationHistory";
 import Test from "./pages/Test";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +43,7 @@ const App = () => {
               <Route path="/swipe" element={<Swipe />} />
               <Route path="/matches" element={<Matches />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/notifications" element={<NotificationHistory />} />
               <Route path="/test" element={<Test />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
