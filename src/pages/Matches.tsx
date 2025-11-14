@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
-import { ArrowLeft, ExternalLink, FileText, CheckCircle2, X, Sparkles, RotateCcw, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileText, CheckCircle2, X, Sparkles, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ApplicationAssistantModal } from "@/components/ApplicationAssistantModal";
 import { Job } from "@/types/job";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Matches = () => {
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
@@ -16,6 +18,7 @@ const Matches = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { matches, loading: matchesLoading, deleteMatch, markAsApplied } = useMatches(user?.id || "");
+  const isMobile = useIsMobile();
 
   const toggleFlip = (matchId: string) => {
     setFlippedCards(prev => ({
@@ -126,9 +129,47 @@ const Matches = () => {
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
-                      <Badge className="gradient-primary text-white border-0 px-3 py-1">
-                        {Math.round((match.match_score || 0) * 100)}% ✨
-                      </Badge>
+                      {isMobile ? (
+                        <button 
+                          onClick={() => toggleFlip(match.id)}
+                          className="px-4 py-2 bg-primary/10 text-primary rounded-full text-lg font-semibold active:bg-primary/30 transition-colors"
+                        >
+                          {Math.round((match.match_score || 0) * 100)}% ✨
+                        </button>
+                      ) : (
+                        <HoverCard openDelay={200}>
+                          <HoverCardTrigger asChild>
+                            <button 
+                              onClick={() => toggleFlip(match.id)}
+                              className="px-4 py-2 bg-primary/10 text-primary rounded-full text-lg font-semibold hover:bg-primary/30 transition-colors"
+                            >
+                              {Math.round((match.match_score || 0) * 100)}% ✨
+                            </button>
+                          </HoverCardTrigger>
+                          <HoverCardContent side="bottom" className="w-64">
+                            <div className="space-y-2 text-sm">
+                              <p className="font-semibold">Quick Preview</p>
+                              <div className="space-y-1">
+                                <div className="flex justify-between">
+                                  <span>Skills:</span>
+                                  <span className="font-bold">{getMatchBreakdown(match).skills}%</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Salary:</span>
+                                  <span className="font-bold">{getMatchBreakdown(match).salary}%</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Location:</span>
+                                  <span className="font-bold">{getMatchBreakdown(match).location}%</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Click for full breakdown
+                              </p>
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
+                      )}
                       <button
                         onClick={() => deleteMatch(match.id)}
                         className="text-muted-foreground hover:text-destructive transition-colors"
@@ -195,13 +236,6 @@ const Matches = () => {
                       variant="outline"
                     >
                       <FileText className="w-4 h-4" />
-                    </Button>
-
-                    <Button
-                      onClick={() => toggleFlip(match.id)}
-                      variant="outline"
-                    >
-                      <RotateCcw className="w-4 h-4" />
                     </Button>
                   </div>
 
