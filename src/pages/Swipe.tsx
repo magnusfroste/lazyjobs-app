@@ -123,6 +123,8 @@ const Swipe = () => {
                     isActive={idx === 0}
                     isFlipped={isCardFlipped(job.id)}
                     onFlip={() => flipCard(job.id)}
+                    cardsRemaining={remainingJobs}
+                    matchThreshold={keywordThreshold}
                   />
                 ))
               }
