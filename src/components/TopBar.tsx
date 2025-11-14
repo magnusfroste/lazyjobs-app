@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Briefcase, Heart, User, Sun, Moon, Menu, LogOut } from "lucide-react";
+import { Briefcase, Heart, User, Sun, Moon, Menu, LogOut, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -132,6 +132,10 @@ const TopBar = ({
               <DropdownMenuItem onClick={() => navigate("/matches")}>
                 <Heart className="w-4 h-4 mr-2" />
                 My Matches
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/notifications")}>
+                <Bell className="w-4 h-4 mr-2" />
+                Notifications
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/profile")}>
                 <User className="w-4 h-4 mr-2" />

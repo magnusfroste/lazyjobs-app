@@ -147,6 +147,28 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Push notification results: ${successCount} sent, ${failureCount} failed`);
 
+    // Log notification to history (only if at least one was sent successfully)
+    if (successCount > 0) {
+      try {
+        await supabase
+          .from("notification_history")
+          .insert({
+            user_id: user_id,
+            job_id: job_id,
+            match_score: match_score,
+            title: notificationPayload.title,
+            body: notificationPayload.body,
+            icon: notificationPayload.icon,
+            badge: notificationPayload.badge,
+            data: notificationPayload.data,
+          });
+        console.log("✅ Notification logged to history");
+      } catch (historyError: any) {
+        console.error("⚠️ Failed to log notification to history:", historyError.message);
+        // Don't fail the entire function if history logging fails
+      }
+    }
+
     return new Response(
       JSON.stringify({
         message: "Push notifications processed",
