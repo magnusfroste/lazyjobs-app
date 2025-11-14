@@ -16,3 +16,19 @@ export interface JobWithMatch extends Job {
   recommendation?: string;
   confidence_level?: string;
 }
+
+export interface MatchBreakdown {
+  skills: number;
+  salary: number;
+  location: number;
+  remote: number;
+  type: number;
+}
+
+export interface JobMatchData {
+  match_breakdown: MatchBreakdown;
+  matching_skills: string[];
+  skills_to_learn: string[];
+  recommendation: string;
+  confidence_level: 'low' | 'medium' | 'high';
+}
