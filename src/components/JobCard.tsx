@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X, ExternalLink, CheckCircle2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -27,10 +28,11 @@ interface JobCardProps {
   onMarkAsApplied?: () => void;
   isApplied?: boolean;
   matchDate?: string;
+  appliedAt?: string | null;
   hasGeneratedApplication?: boolean;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, hasGeneratedApplication = false }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -317,7 +319,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               {/* Match Date */}
               {matchDate && (
                 <p className="text-xs text-muted-foreground text-center pt-2">
-                  Matched {matchDate} • {Math.round(matchScore)}% match
+                  {isApplied && appliedAt 
+                    ? `Applied ${formatDistanceToNow(new Date(appliedAt), { addSuffix: true })}`
+                    : `Matched ${matchDate}`
+                  } • {Math.round(matchScore)}% match
                 </p>
               )}
             </>

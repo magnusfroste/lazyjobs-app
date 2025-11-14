@@ -119,6 +119,7 @@ const Matches = () => {
               isApplied={match.is_applied || false}
               hasGeneratedApplication={!!match.application}
               matchDate={new Date(match.created_at!).toLocaleDateString()}
+              appliedAt={match.applied_at}
               onSwipe={() => {}}
             />
           ))}
