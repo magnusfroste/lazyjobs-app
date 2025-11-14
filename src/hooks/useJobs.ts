@@ -28,7 +28,7 @@ export const useJobs = (
       // Call appropriate service based on match mode
       const fetchedJobs =
         matchMode === "precomputed"
-          ? await jobService.getPrecomputedMatches(userId, topN)
+          ? await jobService.getPrecomputedMatches(userId, minThreshold)
           : matchMode === "llm"
           ? await jobService.getLLMMatchedJobs(userId, topN)
           : matchMode === "ai"

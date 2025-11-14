@@ -125,6 +125,8 @@ const Swipe = () => {
                     onFlip={() => flipCard(job.id)}
                     cardsRemaining={remainingJobs}
                     matchThreshold={keywordThreshold}
+                    matchMode={matchMode}
+                    topN={aiTopN}
                   />
                 ))
               }
