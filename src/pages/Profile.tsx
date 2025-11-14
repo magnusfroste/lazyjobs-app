@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Upload, Sun, Moon, Monitor, LogOut, MapPin, DollarSign, Briefcase, FileText } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,6 +17,8 @@ import { profileService } from "@/services/profileService";
 import { FEATURES } from "@/lib/featureFlags";
 import CVDisplay from "@/components/CVDisplay";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { usePWADetection } from "@/hooks/usePWADetection";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,6 +26,7 @@ const Profile = () => {
   const { profile, updateProfile, updateSkills, refetch } = useProfile(user?.id);
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const { isIOSSafari } = usePWADetection();
   
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -482,6 +486,7 @@ const Profile = () => {
           )}
 
           {/* Push Notifications */}
+          {user && isIOSSafari && <InstallPrompt />}
           {user && <NotificationSettings userId={user.id} />}
 
           {/* CV Upload */}

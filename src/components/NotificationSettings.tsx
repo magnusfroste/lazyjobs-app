@@ -3,9 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, BellOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Bell, BellOff, AlertCircle, CheckCircle2, Smartphone } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useProfile } from "@/hooks/useProfile";
+import { usePWADetection } from "@/hooks/usePWADetection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface NotificationSettingsProps {
@@ -21,6 +22,7 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
     loading,
     toggleNotifications,
   } = usePushNotifications(userId);
+  const { isIOSSafari, isPWA, isIOS, supportsPush, iOSVersion } = usePWADetection();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -63,6 +65,59 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
   const status = getPermissionStatus();
   const matchThreshold = (profile?.preferences as any)?.match_threshold || 65;
 
+  // iOS Safari (not installed as PWA)
+  if (isIOSSafari) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Smartphone className="h-5 w-5" />
+            Push Notifications
+          </CardTitle>
+          <CardDescription>
+            Install the app to enable notifications
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              On iOS, push notifications require installing LazyJobs to your home screen. 
+              Follow the instructions above to install the app.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // iOS PWA but version too old
+  if (isIOS && isPWA && !supportsPush) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BellOff className="h-5 w-5" />
+            Push Notifications
+          </CardTitle>
+          <CardDescription>
+            iOS version not supported
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Push notifications require iOS 16.4 or later. Your current version is {iOSVersion.toFixed(1)}. 
+              Please update your iOS to enable notifications.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Other browsers without support
   if (!isSupported) {
     return (
       <Card>
@@ -72,14 +127,14 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
             Push Notifications
           </CardTitle>
           <CardDescription>
-            Real-time alerts for new job matches
+            Not supported in this browser
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Push notifications are not supported in this browser. Try using Chrome, Firefox, or Edge.
+              Please use a modern browser like Chrome, Firefox, or Edge to enable push notifications.
             </AlertDescription>
           </Alert>
         </CardContent>
