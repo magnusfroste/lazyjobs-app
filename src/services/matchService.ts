@@ -49,24 +49,39 @@ export class MatchService {
   }
 
   async getUserMatches(userId: string): Promise<MatchWithJob[]> {
-    const { data, error } = await supabase
+    // Get all matches with jobs
+    const { data: matchesData, error: matchesError } = await supabase
       .from("matches")
       .select(`
         *,
-        job:jobs(*),
-        job_match:job_matches(
-          match_breakdown,
-          matching_skills,
-          skills_to_learn,
-          recommendation,
-          confidence_level
-        )
+        job:jobs(*)
       `)
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
-    if (error) throw new MatchServiceError(error.message);
-    return (data as any) || [];
+    if (matchesError) throw new MatchServiceError(matchesError.message);
+    if (!matchesData) return [];
+
+    // Get job_matches data for these jobs
+    const jobIds = matchesData.map(m => m.job_id).filter(Boolean);
+    
+    if (jobIds.length === 0) return matchesData as any;
+
+    const { data: jobMatchesData } = await supabase
+      .from("job_matches")
+      .select("job_id, match_breakdown, matching_skills, skills_to_learn, recommendation, confidence_level")
+      .eq("profile_id", userId)
+      .in("job_id", jobIds);
+
+    // Merge the data
+    const jobMatchesMap = new Map(
+      jobMatchesData?.map(jm => [jm.job_id, jm]) || []
+    );
+
+    return matchesData.map(match => ({
+      ...match,
+      job_match: jobMatchesMap.get(match.job_id!) || undefined,
+    })) as any;
   }
 
   async deleteMatch(matchId: string): Promise<void> {
