@@ -1,0 +1,333 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useTheme } from "@/contexts/ThemeContext";
+import TopBar from "@/components/TopBar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, MapPin, DollarSign, Briefcase, Moon, Sun, Monitor, Bell } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { NotificationSettings } from "@/components/NotificationSettings";
+import { FEATURES } from "@/lib/featureFlags";
+
+export default function Settings() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { profile, loading, updateProfile } = useProfile(user?.id);
+  const { theme, setTheme } = useTheme();
+
+  const [location, setLocation] = useState("");
+  const [salaryMin, setSalaryMin] = useState("");
+  const [remote, setRemote] = useState(false);
+  const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
+  const [autoOpenApplication, setAutoOpenApplication] = useState(false);
+  const [applicationLanguage, setApplicationLanguage] = useState("auto");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (profile) {
+      const prefs = profile.preferences as any;
+      setLocation(prefs?.location || "");
+      setSalaryMin(prefs?.salary_min?.toString() || "");
+      setRemote(prefs?.remote || false);
+      setEmploymentTypes(prefs?.employment_types || []);
+      setAutoOpenApplication(prefs?.auto_open_application || false);
+      setApplicationLanguage(profile.application_language_preference || "auto");
+    }
+  }, [profile]);
+
+  const toggleEmploymentType = (type: string) => {
+    setEmploymentTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const handleSavePreferences = async () => {
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      await updateProfile({
+        preferences: {
+          ...((profile?.preferences as any) || {}),
+          location,
+          salary_min: salaryMin ? parseInt(salaryMin) : null,
+          remote,
+          employment_types: employmentTypes,
+          auto_open_application: autoOpenApplication,
+        },
+        application_language_preference: applicationLanguage,
+      });
+      toast({
+        title: "Preferences saved",
+        description: "Your settings have been updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save preferences. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!profile) return null;
+
+  const employmentTypeOptions = [
+    { value: "full-time", label: "Full-time" },
+    { value: "part-time", label: "Part-time" },
+    { value: "contract", label: "Contract" },
+    { value: "freelance", label: "Freelance" },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <TopBar />
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your job search preferences and application settings
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          {/* Job Preferences */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Job Preferences</CardTitle>
+              <CardDescription>
+                Set your job search criteria to get better matches
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="location" className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  Preferred Location
+                </Label>
+                <Input
+                  id="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g., Stockholm, Sweden"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="salary" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  Minimum Salary (SEK/month)
+                </Label>
+                <Input
+                  id="salary"
+                  type="number"
+                  value={salaryMin}
+                  onChange={(e) => setSalaryMin(e.target.value)}
+                  placeholder="e.g., 40000"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remote"
+                  checked={remote}
+                  onCheckedChange={(checked) => setRemote(checked as boolean)}
+                />
+                <Label htmlFor="remote" className="cursor-pointer">
+                  Open to remote work
+                </Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Employment Types
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {employmentTypeOptions.map((option) => (
+                    <div key={option.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={option.value}
+                        checked={employmentTypes.includes(option.value)}
+                        onCheckedChange={() => toggleEmploymentType(option.value)}
+                      />
+                      <Label htmlFor={option.value} className="cursor-pointer">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                onClick={handleSavePreferences}
+                disabled={saving}
+                className="w-full"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Preferences"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Application Assistant Settings */}
+          {FEATURES.APPLICATION_ASSISTANT && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Application Assistant</CardTitle>
+                <CardDescription>
+                  Customize how the AI application assistant works for you
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="auto-open"
+                    checked={autoOpenApplication}
+                    onCheckedChange={(checked) =>
+                      setAutoOpenApplication(checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="auto-open" className="cursor-pointer">
+                    Automatically open application assistant after matching
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="language">Default Application Language</Label>
+                  <Select value={applicationLanguage} onValueChange={setApplicationLanguage}>
+                    <SelectTrigger id="language">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">Auto-detect from job description</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="sv">Swedish</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    {applicationLanguage === "auto"
+                      ? "The assistant will automatically detect the language from the job description"
+                      : `Applications will be generated in ${
+                          applicationLanguage === "en" ? "English" : "Swedish"
+                        }`}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleSavePreferences}
+                  disabled={saving}
+                  className="w-full"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Assistant Settings"
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Push Notifications */}
+          <NotificationSettings userId={user.id} />
+
+          {/* Notification History */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notification History
+              </CardTitle>
+              <CardDescription>
+                View all your past push notifications
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate("/notifications")}
+              >
+                View Notification History
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Appearance */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Appearance</CardTitle>
+              <CardDescription>
+                Customize how the app looks on your device
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label>Theme</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    variant={theme === "light" ? "default" : "outline"}
+                    onClick={() => setTheme("light")}
+                    className="w-full"
+                  >
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light
+                  </Button>
+                  <Button
+                    variant={theme === "dark" ? "default" : "outline"}
+                    onClick={() => setTheme("dark")}
+                    className="w-full"
+                  >
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark
+                  </Button>
+                  <Button
+                    variant={theme === "system" ? "default" : "outline"}
+                    onClick={() => setTheme("system")}
+                    className="w-full"
+                  >
+                    <Monitor className="h-4 w-4 mr-2" />
+                    System
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
