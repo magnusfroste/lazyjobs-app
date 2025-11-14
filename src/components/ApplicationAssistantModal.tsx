@@ -7,6 +7,7 @@ import { useApplicationGenerator } from "@/hooks/useApplicationGenerator";
 import { Job } from "@/types/job";
 import { toast } from "sonner";
 import { MarkdownContent } from "@/components/MarkdownContent";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ApplicationAssistantModalProps {
   job: Job;
@@ -16,12 +17,59 @@ interface ApplicationAssistantModalProps {
 
 export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationAssistantModalProps) => {
   const [selectedLanguage, setSelectedLanguage] = useState<'auto' | 'en' | 'sv'>('auto');
-  const { generate, loading, result, reset } = useApplicationGenerator();
+  const { generate, loading, result, reset, setResult } = useApplicationGenerator();
+  const [existingApplication, setExistingApplication] = useState<any>(null);
+  const [loadingExisting, setLoadingExisting] = useState(true);
 
   useEffect(() => {
-    // Reset state when modal opens
+    // Load existing application if available
+    const loadExisting = async () => {
+      try {
+        const { data: matchData } = await supabase
+          .from('matches')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('job_id', job.id)
+          .maybeSingle();
+        
+        if (matchData) {
+          const { data: appData } = await supabase
+            .from('applications')
+            .select('*')
+            .eq('match_id', matchData.id)
+            .maybeSingle();
+          
+          if (appData) {
+            setExistingApplication(appData);
+            // Auto-populate result state with existing data
+            setResult({
+              success: true,
+              language: appData.language as 'en' | 'sv',
+              cv: appData.generated_cv || undefined,
+              cover_letter: appData.generated_cover_letter || undefined,
+              email: appData.generated_email_subject || appData.generated_email_body ? {
+                subject: appData.generated_email_subject || '',
+                body: appData.generated_email_body || '',
+              } : undefined,
+              job: {
+                title: job.title,
+                company: job.company,
+                location: job.location || '',
+              },
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading existing application:', error);
+      } finally {
+        setLoadingExisting(false);
+      }
+    };
+    
+    loadExisting();
+    
     return () => reset();
-  }, []);
+  }, [job.id, userId]);
 
   const handleGenerate = async () => {
     await generate(job.id, userId, {
@@ -299,7 +347,10 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
 
               {/* Generate Again Button */}
               <Button
-                onClick={() => reset()}
+                onClick={() => {
+                  setExistingApplication(null);
+                  reset();
+                }}
                 variant="outline"
                 className="w-full"
               >
@@ -311,7 +362,7 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
         </div>
 
         {/* Footer */}
-        {!result?.success && (
+        {!result?.success && !loadingExisting && (
           <div className="p-6 border-t bg-muted/20">
             <Button
               onClick={handleGenerate}
@@ -327,13 +378,25 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
               ) : (
                 <>
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Generate Application
+                  {existingApplication ? 'Regenerate Application' : 'Generate Application'}
                 </>
               )}
             </Button>
-            <p className="text-xs text-center text-muted-foreground mt-3">
-              Estimated time: 10-15 seconds
-            </p>
+            {existingApplication ? (
+              <p className="text-xs text-center text-muted-foreground mt-3">
+                You have an existing draft from {new Date(existingApplication.generated_at).toLocaleDateString()}
+              </p>
+            ) : (
+              <p className="text-xs text-center text-muted-foreground mt-3">
+                Estimated time: 10-15 seconds
+              </p>
+            )}
+          </div>
+        )}
+        {loadingExisting && (
+          <div className="p-6 border-t bg-muted/20 text-center">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Loading existing draft...</p>
           </div>
         )}
       </div>

@@ -116,6 +116,38 @@ serve(async (req) => {
       result.email = await generateEmailDraft(job, profile.cv_data, targetLanguage, openAIKey);
     }
 
+    // Save generated content to database
+    const { data: matchData } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('job_id', job_id)
+      .single();
+
+    if (matchData) {
+      const { error: saveError } = await supabase
+        .from('applications')
+        .upsert({
+          match_id: matchData.id,
+          user_id: user_id,
+          job_id: job_id,
+          generated_cv: result.cv || null,
+          generated_cover_letter: result.cover_letter || null,
+          generated_email_subject: result.email?.subject || null,
+          generated_email_body: result.email?.body || null,
+          language: targetLanguage,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'match_id'
+        });
+
+      if (saveError) {
+        console.error('Error saving application:', saveError);
+      } else {
+        console.log('Application saved successfully');
+      }
+    }
+
     return new Response(
       JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

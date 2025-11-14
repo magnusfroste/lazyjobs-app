@@ -35,6 +35,63 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          generated_at: string | null
+          generated_cover_letter: string | null
+          generated_cv: string | null
+          generated_email_body: string | null
+          generated_email_subject: string | null
+          id: string
+          job_id: string
+          language: string
+          match_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string | null
+          generated_cover_letter?: string | null
+          generated_cv?: string | null
+          generated_email_body?: string | null
+          generated_email_subject?: string | null
+          id?: string
+          job_id: string
+          language: string
+          match_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          generated_at?: string | null
+          generated_cover_letter?: string | null
+          generated_cv?: string | null
+          generated_email_body?: string | null
+          generated_email_subject?: string | null
+          id?: string
+          job_id?: string
+          language?: string
+          match_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_matches: {
         Row: {
           confidence_level: string | null

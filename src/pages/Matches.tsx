@@ -117,6 +117,7 @@ const Matches = () => {
               onApply={() => setSelectedJobForApplication(match.job as Job)}
               onMarkAsApplied={() => markAsApplied(match.id)}
               isApplied={match.is_applied || false}
+              hasGeneratedApplication={!!match.application}
               matchDate={new Date(match.created_at!).toLocaleDateString()}
               onSwipe={() => {}}
             />
