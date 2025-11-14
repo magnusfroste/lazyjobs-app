@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { profileService } from "@/services/profileService";
 import { FEATURES } from "@/lib/featureFlags";
 import CVDisplay from "@/components/CVDisplay";
+import { NotificationSettings } from "@/components/NotificationSettings";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -479,6 +480,9 @@ const Profile = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Push Notifications */}
+          {user && <NotificationSettings userId={user.id} />}
 
           {/* CV Upload */}
           <Card>
