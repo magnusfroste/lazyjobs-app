@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai" | "llm" | "precomputed";
+type MatchMode = "keyword" | "ai" | "precomputed";
 
 interface TopBarProps {
   matchMode?: MatchMode;
@@ -43,7 +43,7 @@ const TopBar = ({
   const isMobile = useIsMobile();
 
   const getQualityBadge = () => {
-    if (matchMode === "ai" || matchMode === "llm") {
+    if (matchMode === "ai") {
       if (aiTopN === 100) return "🎯 Top 100";
       if (aiTopN === 50) return "🎯 Top 50";
       if (aiTopN === 25) return "🎯 Top 25";
@@ -120,23 +120,6 @@ const TopBar = ({
                     <span className="text-base">⚡</span>
                     <span>AI-Fast</span>
                     {isPremium && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">✨</Badge>}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => onModeChange("llm")}
-                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  matchMode === "llm"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {isMobile ? (
-                  <span className="text-base">🧠</span>
-                ) : (
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-base">🧠</span>
-                    <span>LLM</span>
                   </span>
                 )}
               </button>

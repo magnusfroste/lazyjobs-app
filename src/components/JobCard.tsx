@@ -17,7 +17,7 @@ interface JobCardProps {
   onFlip?: () => void;
   cardsRemaining?: number;
   matchThreshold?: number;
-  matchMode?: "keyword" | "ai" | "llm" | "precomputed";
+  matchMode?: "keyword" | "ai" | "precomputed";
   topN?: number;
 }
 

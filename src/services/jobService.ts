@@ -89,24 +89,6 @@ export class JobService {
     }
   }
 
-  async getLLMMatchedJobs(userId: string, limit = 100): Promise<JobWithMatch[]> {
-    try {
-      const { data, error } = await supabase.functions.invoke("match-jobs-llm", {
-        body: { user_id: userId, limit },
-      });
-
-      if (error) {
-        console.error("LLM matching error:", error);
-        throw new JobServiceError("Failed to fetch LLM-matched jobs");
-      }
-
-      return data?.jobs || [];
-    } catch (error) {
-      console.error("Error fetching LLM-matched jobs:", error);
-      throw new JobServiceError("Failed to fetch LLM-matched jobs");
-    }
-  }
-
   async getPrecomputedMatches(userId: string, minThreshold = 0.65): Promise<JobWithMatch[]> {
     try {
       // Get user's pre-computed matches with job details
