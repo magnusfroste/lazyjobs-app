@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { jobService } from "@/services/jobService";
 import { JobWithMatch } from "@/types/job";
 
-type MatchMode = "keyword" | "ai" | "precomputed";
+type MatchMode = "keyword" | "precomputed";
 
 export const useJobs = (
   userId?: string,
@@ -29,12 +29,10 @@ export const useJobs = (
       const fetchedJobs =
         matchMode === "precomputed"
           ? await jobService.getPrecomputedMatches(userId, minThreshold)
-          : matchMode === "ai"
-          ? await jobService.getAIMatchedJobs(userId, topN)
           : await jobService.getMatchedJobs(userId, 5000);
 
       // For keyword mode: filter by percentage threshold
-      // For AI/precomputed modes: already filtered/limited by service
+      // For precomputed mode: already filtered/limited by service
       const filtered =
         matchMode === "keyword"
           ? fetchedJobs.filter((job) => {

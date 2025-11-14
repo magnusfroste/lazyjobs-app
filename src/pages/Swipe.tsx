@@ -12,15 +12,13 @@ import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 
-type MatchMode = "keyword" | "ai" | "precomputed";
+type MatchMode = "keyword" | "precomputed";
 
 const Swipe = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
   const [matchMode, setMatchMode] = useState<MatchMode>("precomputed");
-  const [aiMatchingEnabled, setAiMatchingEnabled] = useState(false);
-  const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
   const [keywordThreshold, setKeywordThreshold] = useState(0.65);
   const [aiTopN, setAiTopN] = useState(50);
   const { toast } = useToast();
@@ -39,29 +37,12 @@ const Swipe = () => {
 
   const handleModeChange = (newMode: MatchMode) => {
     setMatchMode(newMode);
-    const modeLabel = 
-      newMode === "precomputed" ? "Pre-Match" :
-      newMode === "ai" ? "AI-Fast" : 
-      "Keyword";
+    const modeLabel = newMode === "precomputed" ? "Pre-Match" : "Keyword";
     toast({
       title: `Switched to ${modeLabel} matching`,
       description: "Showing fresh jobs!",
     });
   };
-
-  // Load feature flags
-  useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        const config = await getAppConfig();
-        setAiMatchingEnabled(config.features.ai_matching ?? false);
-        setAiMatchingPremium(config.features.ai_matching_premium ?? false);
-      } catch (error) {
-        console.error("Failed to load feature flags:", error);
-      }
-    };
-    loadConfig();
-  }, []);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -99,12 +80,9 @@ const Swipe = () => {
       <TopBar 
           matchMode={matchMode}
           onModeChange={handleModeChange}
-          showMatchToggle={aiMatchingEnabled}
-          isPremium={aiMatchingPremium}
+          showMatchToggle={true}
           keywordThreshold={keywordThreshold}
           onKeywordThresholdChange={setKeywordThreshold}
-          aiTopN={aiTopN}
-          onAiTopNChange={setAiTopN}
       />
 
       <div className="container max-w-2xl mx-auto px-4 pt-20">

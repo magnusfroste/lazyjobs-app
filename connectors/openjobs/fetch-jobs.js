@@ -10,7 +10,6 @@
  */
 
 import 'dotenv/config'
-import { qdrantIntegration } from './qdrant-direct.js'
 
 // Configuration
 const OPENJOBS_API_URL = process.env.OPENJOBS_API_URL || 'http://localhost:8080'
@@ -20,7 +19,6 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const ENABLE_ENRICHMENT = process.env.ENABLE_ENRICHMENT !== 'false'
 const ENRICHMENT_URL = process.env.ENRICHMENT_URL
-const ENABLE_QDRANT = process.env.ENABLE_QDRANT === 'true'
 
 // Batch processing settings
 const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '50') // Process 50 jobs at a time for AI enrichment
@@ -427,13 +425,7 @@ async function main() {
     console.log('🚀 OpenJobs Connector Starting...\n')
     console.log(`📍 OpenJobs API: ${OPENJOBS_API_URL}`)
     console.log(`📍 LazyJobs Ingest: ${INGEST_URL}`)
-    console.log(`🤖 AI Enrichment: ${ENABLE_ENRICHMENT ? 'Enabled' : 'Disabled'}`)
-    console.log(`🔍 Qdrant Semantic Search: ${ENABLE_QDRANT ? 'Enabled' : 'Disabled'}\n`)
-    
-    // Initialize Qdrant if enabled
-    if (ENABLE_QDRANT) {
-      await qdrantIntegration.init()
-    }
+    console.log(`🤖 AI Enrichment: ${ENABLE_ENRICHMENT ? 'Enabled' : 'Disabled'}\n`)
     
     // Fetch ALL jobs from OpenJobs (paginate if needed)
     let allJobs = []
@@ -499,9 +491,6 @@ async function main() {
         totalUpdated += batchResult.updated || 0
         totalSkipped += batchResult.skipped || 0
 
-        // Collect all enriched jobs for Qdrant processing
-        allEnrichedJobs.push(...enrichedBatch)
-
         console.log(`✅ Batch ${i + 1}/${totalBatches} complete: ${batchResult.inserted || batchResult.new || 0} new, ${batchResult.updated || 0} updated`)
 
         // Delay between batches (except for the last one)
@@ -528,19 +517,6 @@ async function main() {
             console.error(`❌ Batch ${i + 1}/${totalBatches} retry also failed:`, retryError.message)
           }
         }
-      }
-    }
-
-    // 🔍 Store in Qdrant for semantic search (if enabled)
-    if (ENABLE_QDRANT) {
-      console.log('\n🔍 Storing jobs in Qdrant for semantic search...')
-      const qdrantResult = await qdrantIntegration.batchProcessJobs(allEnrichedJobs)
-      console.log(`✅ Qdrant: ${qdrantResult.processed} stored, ${qdrantResult.failed} failed`)
-
-      // Show stats
-      const stats = await qdrantIntegration.getStats()
-      if (stats.enabled) {
-        console.log(`📊 Qdrant total jobs: ${stats.points_count}`)
       }
     }
 
