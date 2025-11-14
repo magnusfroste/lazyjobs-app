@@ -26,7 +26,7 @@ const Matches = () => {
   const getMatchBreakdown = (match: any) => {
     if (match.job_match?.match_breakdown) {
       return {
-        overall: Math.round((match.match_score || 0) * 100),
+        overall: Math.round(match.match_score || 0),
         skills: match.job_match.match_breakdown.skills || 50,
         salary: match.job_match.match_breakdown.salary || 50,
         location: match.job_match.match_breakdown.location || 50,
@@ -36,7 +36,7 @@ const Matches = () => {
     }
     
     return {
-      overall: Math.round((match.match_score || 0) * 100),
+      overall: Math.round(match.match_score || 0),
       skills: 50,
       salary: 50,
       location: 50,
@@ -99,11 +99,11 @@ const Matches = () => {
 
         <div className="space-y-4">
           {sortedMatches.map((match) => (
-            <JobCard
+          <JobCard
               key={match.id}
               job={{
                 ...match.job,
-                match_score: match.match_score ? match.match_score * 100 : 50,
+                match_score: match.match_score || 50,
                 match_breakdown: match.job_match?.match_breakdown,
                 matching_skills: match.job_match?.matching_skills,
                 skills_to_learn: match.job_match?.skills_to_learn,
