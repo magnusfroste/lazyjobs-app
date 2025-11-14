@@ -54,6 +54,13 @@ const Matches = () => {
 
   const loading = authLoading || matchesLoading;
 
+  // Sort matches: unapplied first, applied at bottom
+  const sortedMatches = [...matches].sort((a, b) => {
+    if (a.is_applied && !b.is_applied) return 1;
+    if (!a.is_applied && b.is_applied) return -1;
+    return 0;
+  });
+
   if (!authLoading && !user) {
     return null;
   }
@@ -91,7 +98,7 @@ const Matches = () => {
         <p className="text-muted-foreground mb-6">{matches.length} matches</p>
 
         <div className="space-y-4">
-          {matches.map((match) => (
+          {sortedMatches.map((match) => (
             <JobCard
               key={match.id}
               job={{
