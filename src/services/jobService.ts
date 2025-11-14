@@ -107,7 +107,7 @@ export class JobService {
     }
   }
 
-  async getPrecomputedMatches(userId: string, limit = 100): Promise<JobWithMatch[]> {
+  async getPrecomputedMatches(userId: string, minThreshold = 0.65): Promise<JobWithMatch[]> {
     try {
       // Get user's pre-computed matches with job details
       const { data, error } = await supabase
@@ -117,8 +117,8 @@ export class JobService {
           job:jobs(*)
         `)
         .eq("profile_id", userId)
-        .order("match_score", { ascending: false })
-        .limit(limit);
+        .gte("match_score", minThreshold * 100)
+        .order("match_score", { ascending: false });
 
       if (error) throw new JobServiceError(error.message);
 

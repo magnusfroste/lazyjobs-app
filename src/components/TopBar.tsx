@@ -43,7 +43,7 @@ const TopBar = ({
   const isMobile = useIsMobile();
 
   const getQualityBadge = () => {
-    if (matchMode === "ai") {
+    if (matchMode === "ai" || matchMode === "llm") {
       if (aiTopN === 100) return "🎯 Top 100";
       if (aiTopN === 50) return "🎯 Top 50";
       if (aiTopN === 25) return "🎯 Top 25";
@@ -199,7 +199,7 @@ const TopBar = ({
               {/* Match Quality Settings */}
               <div className="px-2 py-1.5">
                 <div className="text-sm font-medium mb-2">Match Quality</div>
-                {matchMode === "keyword" ? (
+                {(matchMode === "keyword" || matchMode === "precomputed") ? (
                   <div className="space-y-1">
                     <DropdownMenuItem
                       onClick={() => onKeywordThresholdChange?.(0.4)}

@@ -17,9 +17,11 @@ interface JobCardProps {
   onFlip?: () => void;
   cardsRemaining?: number;
   matchThreshold?: number;
+  matchMode?: "keyword" | "ai" | "llm" | "precomputed";
+  topN?: number;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -235,10 +237,16 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
         </div>
 
         {/* Card Footer - Cards Remaining Counter */}
-        {isActive && cardsRemaining !== undefined && matchThreshold !== undefined && (
+        {isActive && cardsRemaining !== undefined && (
           <div className="bg-muted/30 px-6 py-3 text-center border-t border-border/50">
             <span className="text-sm font-medium text-muted-foreground">
-              {cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} above {Math.round(matchThreshold * 100)}%
+              {(matchMode === "keyword" || matchMode === "precomputed") && matchThreshold !== undefined ? (
+                <>{cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} above {Math.round(matchThreshold * 100)}%</>
+              ) : topN !== undefined ? (
+                <>{cardsRemaining} of top {topN} matches</>
+              ) : (
+                <>{cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} remaining</>
+              )}
             </span>
           </div>
         )}
