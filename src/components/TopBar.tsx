@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai" | "precomputed";
+type MatchMode = "keyword" | "precomputed";
 
 interface TopBarProps {
   matchMode?: MatchMode;
@@ -43,15 +43,9 @@ const TopBar = ({
   const isMobile = useIsMobile();
 
   const getQualityBadge = () => {
-    if (matchMode === "ai") {
-      if (aiTopN === 100) return "🎯 Top 100";
-      if (aiTopN === 50) return "🎯 Top 50";
-      if (aiTopN === 25) return "🎯 Top 25";
-    } else {
-      if (keywordThreshold === 0.4) return "✨ 40%+";
-      if (keywordThreshold === 0.65) return "✨ 65%+";
-      if (keywordThreshold === 0.85) return "✨ 85%+";
-    }
+    if (keywordThreshold === 0.4) return "✨ 40%+";
+    if (keywordThreshold === 0.65) return "✨ 65%+";
+    if (keywordThreshold === 0.85) return "✨ 85%+";
     return null;
   };
 
@@ -65,8 +59,6 @@ const TopBar = ({
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
-
-  const canUseAI = !isPremium; // isPremium means "requires premium"
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b">
@@ -96,30 +88,6 @@ const TopBar = ({
                   <span className="flex items-center gap-1.5">
                     <span className="text-base">🔤</span>
                     <span>Keyword</span>
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => canUseAI && onModeChange("ai")}
-                disabled={!canUseAI}
-                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  !canUseAI
-                    ? "opacity-50 cursor-not-allowed"
-                    : matchMode === "ai"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {isMobile ? (
-                  <span className="flex items-center gap-1">
-                    <span className="text-base">⚡</span>
-                    {isPremium && <Badge variant="secondary" className="scale-75 -ml-1 text-[10px] px-1 py-0">✨</Badge>}
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-base">⚡</span>
-                    <span>AI-Fast</span>
-                    {isPremium && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">✨</Badge>}
                   </span>
                 )}
               </button>
