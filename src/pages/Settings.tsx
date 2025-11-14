@@ -36,12 +36,6 @@ export default function Settings() {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (profile && !profile.onboarding_completed) {
-      navigate("/onboarding");
-    }
-  }, [profile, navigate]);
-
-  useEffect(() => {
     if (profile) {
       const prefs = profile.preferences as any;
       setLocation(prefs?.location || "");
