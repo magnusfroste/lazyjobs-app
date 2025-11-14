@@ -15,9 +15,11 @@ interface JobCardProps {
   isActive?: boolean;
   isFlipped?: boolean;
   onFlip?: () => void;
+  cardsRemaining?: number;
+  matchThreshold?: number;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -232,19 +234,12 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
           </div>
         </div>
 
-        {/* Match Insights Footer */}
-        {isActive && (
-          <div className="bg-muted/30 px-6 py-3 text-center text-sm text-muted-foreground space-y-1">
-            <div className="font-medium">
-              Match Score: {job.match_score}%
-              {job.confidence_level && (
-                <span className="ml-2 text-xs opacity-75">• {job.confidence_level} confidence</span>
-              )}
-            </div>
-            {job.recommendation && (
-              <div className="text-xs italic line-clamp-2">"{job.recommendation}"</div>
-            )}
-            <div className="text-xs opacity-60">Tap score for full breakdown</div>
+        {/* Card Footer - Cards Remaining Counter */}
+        {isActive && cardsRemaining !== undefined && matchThreshold !== undefined && (
+          <div className="bg-muted/30 px-6 py-3 text-center border-t border-border/50">
+            <span className="text-sm font-medium text-muted-foreground">
+              {cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} above {Math.round(matchThreshold * 100)}%
+            </span>
           </div>
         )}
 
