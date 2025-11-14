@@ -80,7 +80,7 @@ const Swipe = () => {
       <TopBar 
           matchMode={matchMode}
           onModeChange={handleModeChange}
-          showMatchToggle={true}
+          showMatchToggle={profile?.is_developer || false}
           keywordThreshold={keywordThreshold}
           onKeywordThresholdChange={setKeywordThreshold}
       />

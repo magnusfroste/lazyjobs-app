@@ -74,6 +74,12 @@ export const MatchModeToggle = ({
           ⚡ Pre-Match shows your best matches first - all jobs analyzed overnight
         </div>
       )}
+      
+      {mode === "keyword" && (
+        <div className="mt-3 text-sm text-amber-600 dark:text-amber-400 text-center">
+          🔧 Developer Mode: Testing keyword matching
+        </div>
+      )}
     </div>
   );
 };
