@@ -9,7 +9,6 @@ import { Job, JobWithMatch } from "@/types/job";
 import JobCard from "@/components/JobCard";
 
 const Matches = () => {
-  const [expandedJob, setExpandedJob] = useState<string | null>(null);
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
   const [selectedJobForApplication, setSelectedJobForApplication] = useState<Job | null>(null);
   const navigate = useNavigate();
@@ -21,28 +20,6 @@ const Matches = () => {
       ...prev,
       [matchId]: !prev[matchId],
     }));
-  };
-
-  const getMatchBreakdown = (match: any) => {
-    if (match.job_match?.match_breakdown) {
-      return {
-        overall: Math.round(match.match_score || 0),
-        skills: match.job_match.match_breakdown.skills || 50,
-        salary: match.job_match.match_breakdown.salary || 50,
-        location: match.job_match.match_breakdown.location || 50,
-        remote: match.job_match.match_breakdown.remote || 50,
-        type: match.job_match.match_breakdown.type || 50,
-      };
-    }
-    
-    return {
-      overall: Math.round(match.match_score || 0),
-      skills: 50,
-      salary: 50,
-      location: 50,
-      remote: 50,
-      type: 50,
-    };
   };
 
   // Redirect to auth if not logged in

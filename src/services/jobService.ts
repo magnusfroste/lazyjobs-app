@@ -99,7 +99,7 @@ export class JobService {
         .filter(match => match.job && !swipedIds.has(match.job_id))
         .map(match => ({
           ...match.job,
-          match_score: match.match_score, // Already 0-100
+          match_score: match.match_score, // 0-100 format
           match_breakdown: match.match_breakdown,
           matching_skills: match.matching_skills,
           skills_to_learn: match.skills_to_learn,

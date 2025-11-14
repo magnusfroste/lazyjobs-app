@@ -31,13 +31,14 @@ export const useJobs = (
           ? await jobService.getPrecomputedMatches(userId, minThreshold)
           : await jobService.getMatchedJobs(userId, 5000);
 
-      // For keyword mode: filter by percentage threshold
+      // For keyword mode: filter by percentage threshold (convert 0-1 to 0-100)
       // For precomputed mode: already filtered/limited by service
       const filtered =
         matchMode === "keyword"
           ? fetchedJobs.filter((job) => {
               const score = job.match_score ?? 0;
-              return score >= minThreshold;
+              const thresholdPercent = minThreshold * 100; // Convert 0.65 → 65
+              return score >= thresholdPercent;
             })
           : fetchedJobs;
 
