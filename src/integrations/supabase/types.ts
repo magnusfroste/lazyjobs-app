@@ -348,6 +348,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_developer: boolean
+          notifications_enabled: boolean | null
           onboarding_completed: boolean | null
           phone: string | null
           preferences: Json | null
@@ -362,6 +363,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_developer?: boolean
+          notifications_enabled?: boolean | null
           onboarding_completed?: boolean | null
           phone?: string | null
           preferences?: Json | null
@@ -376,12 +378,54 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_developer?: boolean
+          notifications_enabled?: boolean | null
           onboarding_completed?: boolean | null
           phone?: string | null
           preferences?: Json | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          endpoint: string
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       swipe_events: {
         Row: {
