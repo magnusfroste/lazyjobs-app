@@ -141,9 +141,9 @@ const Test = () => {
 
       const matchResult = data.matchResult;
       const content = matchResult
-        ? `✅ Job Match Result:\n\nJob: ${matchResult.job_title}\nMatch Score: ${(
-            matchResult.match_score * 100
-          ).toFixed(1)}%\n\nMatched Skills: ${matchResult.matched_skills.join(", ") || "None"}\nMissing Skills: ${matchResult.missing_skills.join(", ") || "None"}\n\nReasoning: ${matchResult.reasoning}`
+        ? `✅ Job Match Result:\n\nJob: ${matchResult.job_title}\nMatch Score: ${
+            matchResult.match_score.toFixed(1)
+          }%\n\nMatched Skills: ${matchResult.matched_skills.join(", ") || "None"}\nMissing Skills: ${matchResult.missing_skills.join(", ") || "None"}\n\nReasoning: ${matchResult.reasoning}`
         : "No match result returned";
 
       setMessages((prev) => [

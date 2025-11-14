@@ -28,7 +28,7 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
     if (currentIndex >= jobs.length) return;
 
     const currentJob = jobs[currentIndex];
-    const matchScore = currentJob.match_score || 0.5;
+    const matchScore = currentJob.match_score || 50;
 
     try {
       // Record swipe in swipes table

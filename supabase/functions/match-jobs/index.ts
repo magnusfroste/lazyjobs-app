@@ -239,7 +239,7 @@ serve(async (req) => {
 
       return {
         ...job,
-        match_score: Math.min(Math.max(score, 0), 1), // Clamp between 0 and 1
+        match_score: Math.round(Math.min(Math.max(score, 0), 1) * 100), // Return 0-100 range
         match_breakdown: {
           skills: Math.round(skillScore * 100),
           salary: Math.round(salaryScore * 100),

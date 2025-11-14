@@ -40,10 +40,8 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const isMobile = useIsMobile();
 
-  // Precomputed scores are 0-100, legacy AI scores are 0-1
-  const matchScore = job.match_score 
-    ? (job.match_score > 1 ? job.match_score : job.match_score * 100)
-    : 50;
+  // All scores are now standardized to 0-100
+  const matchScore = job.match_score || 50;
   const matchBreakdown = job.match_breakdown || {
     skills: 0,
     salary: 0,
