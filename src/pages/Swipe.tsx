@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useJobs } from "@/hooks/useJobs";
@@ -16,6 +16,7 @@ type MatchMode = "keyword" | "precomputed";
 
 const Swipe = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
   const [matchMode, setMatchMode] = useState<MatchMode>("precomputed");
@@ -34,6 +35,32 @@ const Swipe = () => {
     jobs
   );
   const { flipCard, isCardFlipped } = useCardFlip();
+
+  // Handle deep linking from push notifications
+  useEffect(() => {
+    const jobId = searchParams.get('jobId');
+    if (jobId && jobs.length > 0) {
+      // Find the job in the current jobs list
+      const jobIndex = jobs.findIndex(job => job.id === jobId);
+      
+      if (jobIndex >= 0) {
+        toast({
+          title: "Job Found! 🎯",
+          description: "Showing the job from your notification",
+        });
+      } else {
+        toast({
+          title: "Job Not Found",
+          description: "This job may have been swiped already or is no longer available",
+          variant: "destructive",
+        });
+      }
+      
+      // Clear the jobId from URL
+      searchParams.delete('jobId');
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, jobs, toast, setSearchParams]);
 
   const handleModeChange = (newMode: MatchMode) => {
     setMatchMode(newMode);
