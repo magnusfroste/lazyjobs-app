@@ -2,7 +2,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai" | "llm" | "precomputed";
+type MatchMode = "keyword" | "ai" | "precomputed";
 
 interface MatchModeToggleProps {
   mode: MatchMode;
@@ -80,28 +80,6 @@ export const MatchModeToggle = ({
         <div className="flex-1">
           <div
             className={`relative flex items-center space-x-2 rounded-lg border-2 p-4 cursor-pointer transition-all ${
-              mode === "llm"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
-            }`}
-            onClick={() => onChange("llm")}
-          >
-            <RadioGroupItem value="llm" id="llm" />
-            <Label
-              htmlFor="llm"
-              className="flex-1 cursor-pointer font-medium"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🧠</span>
-                <span>LLM</span>
-              </div>
-            </Label>
-          </div>
-        </div>
-
-        <div className="flex-1">
-          <div
-            className={`relative flex items-center space-x-2 rounded-lg border-2 p-4 cursor-pointer transition-all ${
               mode === "precomputed"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
@@ -125,12 +103,6 @@ export const MatchModeToggle = ({
       {mode === "ai" && (
         <div className="mt-3 text-sm text-muted-foreground text-center">
           ⚡ AI-Fast uses semantic search for quick matches
-        </div>
-      )}
-      
-      {mode === "llm" && (
-        <div className="mt-3 text-sm text-muted-foreground text-center">
-          🧠 LLM uses Qwen 80B for intelligent scoring with detailed breakdowns
         </div>
       )}
       

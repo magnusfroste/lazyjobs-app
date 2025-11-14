@@ -3,9 +3,6 @@ project_id = "arqugyvmegxonaerjbzd"
 [functions.match-jobs]
 verify_jwt = true
 
-[functions.match-jobs-llm]
-verify_jwt = true
-
 [functions.test-llm-chat]
 verify_jwt = false
 

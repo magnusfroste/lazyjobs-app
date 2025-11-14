@@ -12,7 +12,7 @@ import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 
-type MatchMode = "keyword" | "ai" | "llm" | "precomputed";
+type MatchMode = "keyword" | "ai" | "precomputed";
 
 const Swipe = () => {
   const navigate = useNavigate();
@@ -41,7 +41,6 @@ const Swipe = () => {
     setMatchMode(newMode);
     const modeLabel = 
       newMode === "precomputed" ? "Pre-Match" :
-      newMode === "llm" ? "LLM" : 
       newMode === "ai" ? "AI-Fast" : 
       "Keyword";
     toast({
