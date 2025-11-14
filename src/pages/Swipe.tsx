@@ -96,6 +96,7 @@ const Swipe = () => {
                   <JobCard
                     key={job.id}
                     job={job}
+                    mode="swipe"
                     onSwipe={idx === 0 ? handleSwipe : () => {}}
                     isActive={idx === 0}
                     isFlipped={isCardFlipped(job.id)}
