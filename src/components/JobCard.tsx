@@ -25,7 +25,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const isMobile = useIsMobile();
 
-  const matchScore = job.match_score || 0.5;
+  // Precomputed scores are 0-100, legacy AI scores are 0-1
+  const matchScore = job.match_score 
+    ? (job.match_score > 1 ? job.match_score : job.match_score * 100)
+    : 50;
   const matchBreakdown = job.match_breakdown || {
     skills: 0,
     salary: 0,
@@ -34,9 +37,9 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
     employment: 0,
   };
 
-  // Calculate matched/missing skills from LLM response (or fallback to required_skills)
-  const matchedSkills = (job as any).matched_skills || job.required_skills?.slice(0, 6) || [];
-  const missingSkills = (job as any).missing_skills || [];
+  // Use matching_skills and skills_to_learn from job_matches table
+  const matchedSkills = job.matching_skills || job.required_skills?.slice(0, 6) || [];
+  const missingSkills = job.skills_to_learn || [];
 
   const handlers = useSwipeable({
     onSwipedLeft: () => {
@@ -88,7 +91,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
                 }}
                 className="px-4 py-2 bg-primary/10 text-primary rounded-full text-lg font-semibold active:bg-primary/30 transition-colors cursor-pointer border-0"
               >
-                {Math.round(matchScore * 100)}% ✨
+                {Math.round(matchScore)}% ✨
               </button>
             ) : (
               // DESKTOP: HoverCard (quick preview) + Click (flip for deep dive)
@@ -101,7 +104,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
                     }}
                     className="px-4 py-2 bg-primary/10 text-primary rounded-full text-lg font-semibold hover:bg-primary/20 transition-colors cursor-pointer border-0"
                   >
-                    {Math.round(matchScore * 100)}% ✨
+                    {Math.round(matchScore)}% ✨
                   </button>
                 </HoverCardTrigger>
                 <HoverCardContent className="w-64" side="top">
@@ -273,7 +276,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
                 <p className="text-sm text-muted-foreground mt-1">Why this job matches your profile</p>
               </div>
               <div className="px-4 py-2 bg-primary text-primary-foreground rounded-full font-bold shadow-lg">
-                {Math.round(matchScore * 100)}% ✨
+                {Math.round(matchScore)}% ✨
               </div>
             </div>
 
@@ -380,22 +383,29 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip }: J
               </div>
             )}
 
-            {/* Actionable Insights */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mt-4">
-              <div className="flex items-start gap-2">
-                <span className="text-lg">💼</span>
-                <div className="text-xs">
-                  <p className="font-semibold text-blue-900 dark:text-blue-100">Why this match?</p>
-                  <p className="text-blue-700 dark:text-blue-300 mt-1">
-                    {matchScore >= 0.8 
-                      ? "Excellent match! Your skills and preferences align perfectly." 
-                      : matchScore >= 0.6 
-                      ? "Good match with room to grow. Consider upskilling in missing areas." 
-                      : "This role could be a stretch, but offers great learning opportunities."}
-                  </p>
+            {/* AI Recommendation */}
+            {job.recommendation && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mt-4">
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">💼</span>
+                  <div className="text-sm">
+                    <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                      AI Recommendation
+                    </p>
+                    <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
+                      {job.recommendation}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Confidence Level */}
+            {job.confidence_level && (
+              <div className="text-center text-xs text-muted-foreground mt-3">
+                Confidence: <span className="font-semibold">{job.confidence_level}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
