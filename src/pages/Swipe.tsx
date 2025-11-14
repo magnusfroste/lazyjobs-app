@@ -12,21 +12,19 @@ import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 
-type MatchMode = "keyword" | "ai" | "llm";
+type MatchMode = "keyword" | "ai" | "llm" | "precomputed";
 
 const Swipe = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
-  const [matchMode, setMatchMode] = useState<MatchMode>("keyword");
+  const [matchMode, setMatchMode] = useState<MatchMode>("precomputed");
   const [aiMatchingEnabled, setAiMatchingEnabled] = useState(false);
   const [aiMatchingPremium, setAiMatchingPremium] = useState(false);
   const [keywordThreshold, setKeywordThreshold] = useState(0.65);
   const [aiTopN, setAiTopN] = useState(50);
-  const [firstFetchTriggered, setFirstFetchTriggered] = useState(false);
-  const [totalJobsAnalyzed, setTotalJobsAnalyzed] = useState(0);
   const { toast } = useToast();
-  const { jobs, loading: jobsLoading, triggerBackgroundFetch, backgroundFetching } = useJobs(
+  const { jobs, loading: jobsLoading } = useJobs(
     user?.id,
     true,
     matchMode,
@@ -41,7 +39,11 @@ const Swipe = () => {
 
   const handleModeChange = (newMode: MatchMode) => {
     setMatchMode(newMode);
-    const modeLabel = newMode === "llm" ? "LLM" : newMode === "ai" ? "AI-Fast" : "Keyword";
+    const modeLabel = 
+      newMode === "precomputed" ? "Pre-Match" :
+      newMode === "llm" ? "LLM" : 
+      newMode === "ai" ? "AI-Fast" : 
+      "Keyword";
     toast({
       title: `Switched to ${modeLabel} matching`,
       description: "Showing fresh jobs!",
@@ -75,41 +77,6 @@ const Swipe = () => {
       navigate("/onboarding");
     }
   }, [user, profile, profileLoading, navigate]);
-
-  // Progressive loading: trigger background fetches
-  useEffect(() => {
-    // First swipe: trigger background fetch of 25 jobs
-    if (currentIndex === 1 && !firstFetchTriggered && matchMode === "llm") {
-      console.log("🚀 First swipe detected, fetching 25 more jobs...");
-      triggerBackgroundFetch?.(25);
-      setFirstFetchTriggered(true);
-    }
-
-    // Continuous fetching: When stack gets low, fetch more
-    const shouldFetchMore = 
-      matchMode === "llm" && 
-      jobs.length > 0 && 
-      remainingJobs <= 10 && 
-      !backgroundFetching;
-
-    if (shouldFetchMore) {
-      console.log(`📦 ${remainingJobs} jobs left, fetching 25 more...`);
-      triggerBackgroundFetch?.(25);
-    }
-  }, [currentIndex, matchMode, jobs.length, remainingJobs, firstFetchTriggered, backgroundFetching, triggerBackgroundFetch]);
-
-  // Update total jobs analyzed
-  useEffect(() => {
-    if (jobs.length > totalJobsAnalyzed) {
-      setTotalJobsAnalyzed(jobs.length);
-    }
-  }, [jobs.length, totalJobsAnalyzed]);
-
-  // Reset triggers and counter when match mode changes
-  useEffect(() => {
-    setFirstFetchTriggered(false);
-    setTotalJobsAnalyzed(0);
-  }, [matchMode]);
 
   const loading = authLoading || profileLoading || jobsLoading;
 
@@ -156,8 +123,6 @@ const Swipe = () => {
                     isActive={idx === 0}
                     isFlipped={isCardFlipped(job.id)}
                     onFlip={() => flipCard(job.id)}
-                    isBackgroundFetching={backgroundFetching}
-                    totalJobsAnalyzed={totalJobsAnalyzed}
                   />
                 ))
               }

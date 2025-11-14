@@ -2,7 +2,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
-type MatchMode = "keyword" | "ai" | "llm";
+type MatchMode = "keyword" | "ai" | "llm" | "precomputed";
 
 interface MatchModeToggleProps {
   mode: MatchMode;
@@ -98,6 +98,28 @@ export const MatchModeToggle = ({
             </Label>
           </div>
         </div>
+
+        <div className="flex-1">
+          <div
+            className={`relative flex items-center space-x-2 rounded-lg border-2 p-4 cursor-pointer transition-all ${
+              mode === "precomputed"
+                ? "border-primary bg-primary/5"
+                : "border-border hover:border-primary/50"
+            }`}
+            onClick={() => onChange("precomputed")}
+          >
+            <RadioGroupItem value="precomputed" id="precomputed" />
+            <Label
+              htmlFor="precomputed"
+              className="flex-1 cursor-pointer font-medium"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">⚡</span>
+                <span>Pre-Match</span>
+              </div>
+            </Label>
+          </div>
+        </div>
       </RadioGroup>
 
       {mode === "ai" && (
@@ -109,6 +131,12 @@ export const MatchModeToggle = ({
       {mode === "llm" && (
         <div className="mt-3 text-sm text-muted-foreground text-center">
           🧠 LLM uses Qwen 80B for intelligent scoring with detailed breakdowns
+        </div>
+      )}
+      
+      {mode === "precomputed" && (
+        <div className="mt-3 text-sm text-muted-foreground text-center">
+          ⚡ Pre-Match shows your best matches first - all jobs analyzed overnight
         </div>
       )}
     </div>

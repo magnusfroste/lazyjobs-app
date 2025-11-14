@@ -107,6 +107,47 @@ export class JobService {
     }
   }
 
+  async getPrecomputedMatches(userId: string, limit = 100): Promise<JobWithMatch[]> {
+    try {
+      // Get user's pre-computed matches with job details
+      const { data, error } = await supabase
+        .from("job_matches")
+        .select(`
+          *,
+          job:jobs(*)
+        `)
+        .eq("profile_id", userId)
+        .order("match_score", { ascending: false })
+        .limit(limit);
+
+      if (error) throw new JobServiceError(error.message);
+
+      // Get already swiped job IDs to filter out
+      const { data: swipedJobIds } = await supabase
+        .from("swipes")
+        .select("job_id")
+        .eq("user_id", userId);
+
+      const swipedIds = new Set(swipedJobIds?.map(s => s.job_id) || []);
+
+      // Transform to JobWithMatch format and filter out swiped
+      return (data || [])
+        .filter(match => match.job && !swipedIds.has(match.job_id))
+        .map(match => ({
+          ...match.job,
+          match_score: match.match_score, // Already 0-100
+          match_breakdown: match.match_breakdown,
+          matching_skills: match.matching_skills,
+          skills_to_learn: match.skills_to_learn,
+          recommendation: match.recommendation,
+          confidence_level: match.confidence_level,
+        }));
+    } catch (error) {
+      console.error("Error fetching precomputed matches:", error);
+      throw new JobServiceError("Failed to fetch precomputed matches");
+    }
+  }
+
   async getJobsExcludingSwipedByUser(userId: string, limit = 50): Promise<Job[]> {
     // Get jobs that user hasn't swiped on yet
     const { data: swipedJobIds, error: swipeError } = await supabase
