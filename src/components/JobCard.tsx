@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useSwipeable } from "react-swipeable";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X } from "lucide-react";
+import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X, ExternalLink, CheckCircle2, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Progress } from "@/components/ui/progress";
 import { JobWithMatch } from "@/types/job";
@@ -19,9 +20,15 @@ interface JobCardProps {
   matchThreshold?: number;
   matchMode?: "keyword" | "precomputed";
   topN?: number;
+  mode?: "swipe" | "matches";
+  onDelete?: () => void;
+  onApply?: () => void;
+  onMarkAsApplied?: () => void;
+  isApplied?: boolean;
+  matchDate?: string;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -45,7 +52,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
   const matchedSkills = job.matching_skills || job.required_skills?.slice(0, 6) || [];
   const missingSkills = job.skills_to_learn || [];
 
-  const handlers = useSwipeable({
+  const handlers = mode === "swipe" ? useSwipeable({
     onSwipedLeft: () => {
       setExitX(-1000);
       setTimeout(() => onSwipe("left"), 200);
@@ -55,30 +62,43 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
       setTimeout(() => onSwipe("right"), 200);
     },
     trackMouse: true,
-  });
+  }) : {};
 
   return (
     <motion.div
-      {...handlers}
-      style={{
+      {...(mode === "swipe" ? handlers : {})}
+      style={mode === "swipe" ? {
         x,
         rotate,
         opacity,
         cursor: isFlipped ? "default" : "grab",
-      }}
-      animate={exitX !== 0 ? { x: exitX } : {}}
+      } : {}}
+      animate={mode === "swipe" && exitX !== 0 ? { x: exitX } : {}}
       transition={{ duration: 0.2 }}
-      drag={isFlipped ? false : "x"}
+      drag={mode === "swipe" && !isFlipped ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
-      onDragEnd={(e, { offset, velocity }) => {
+      onDragEnd={mode === "swipe" ? (e, { offset, velocity }) => {
         if (Math.abs(offset.x) > 100) {
           setExitX(offset.x > 0 ? 1000 : -1000);
           setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 200);
         }
-      }}
+      } : undefined}
       className="relative w-full max-w-2xl mx-auto"
     >
       <div className="bg-card border rounded-3xl shadow-xl overflow-hidden">
+        {/* Delete button for matches mode */}
+        {mode === "matches" && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.();
+            }}
+            className="absolute top-4 right-4 z-10 text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+        
         <div className="p-6 space-y-4">
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
@@ -226,18 +246,71 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           )}
 
           {/* Action Button */}
-          <div className="pt-4">
-            <button 
-              onClick={() => job.url && window.open(job.url, "_blank")}
-              className="w-full py-3 px-6 rounded-xl gradient-primary text-white font-semibold hover:opacity-90 transition-opacity"
-            >
-              🔗 View Original Job Posting
-            </button>
-          </div>
+          {mode === "swipe" && (
+            <div className="pt-4">
+              <button 
+                onClick={() => job.url && window.open(job.url, "_blank")}
+                className="w-full py-3 px-6 rounded-xl gradient-primary text-white font-semibold hover:opacity-90 transition-opacity"
+              >
+                🔗 View Original Job Posting
+              </button>
+            </div>
+          )}
+
+          {/* Matches Mode Action Buttons */}
+          {mode === "matches" && (
+            <>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={onApply}
+                  className="flex-1 gradient-primary text-white"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Apply with AI
+                </Button>
+                
+                {job.url && (
+                  <Button
+                    onClick={() => window.open(job.url, "_blank")}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View Job
+                  </Button>
+                )}
+
+                {!isApplied && (
+                  <Button
+                    onClick={onMarkAsApplied}
+                    variant="outline"
+                    title="Mark as applied"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                  </Button>
+                )}
+
+                <Button
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  variant="outline"
+                  title="Toggle description"
+                >
+                  <FileText className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Match Date */}
+              {matchDate && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  Matched {matchDate} • {Math.round(matchScore)}% match
+                </p>
+              )}
+            </>
+          )}
         </div>
 
-        {/* Card Footer - Cards Remaining Counter */}
-        {isActive && cardsRemaining !== undefined && (
+        {/* Card Footer - Cards Remaining Counter (Swipe mode only) */}
+        {mode === "swipe" && isActive && cardsRemaining !== undefined && (
           <div className="bg-muted/30 px-6 py-3 text-center border-t border-border/50">
             <span className="text-sm font-medium text-muted-foreground">
               {(matchMode === "keyword" || matchMode === "precomputed") && matchThreshold !== undefined ? (
