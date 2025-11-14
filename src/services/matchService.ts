@@ -19,6 +19,16 @@ export interface MatchWithJob extends Match {
     recommendation: string;
     confidence_level: 'low' | 'medium' | 'high';
   };
+  application?: {
+    id: string;
+    generated_cv: string | null;
+    generated_cover_letter: string | null;
+    generated_email_subject: string | null;
+    generated_email_body: string | null;
+    language: string;
+    generated_at: string;
+    updated_at: string;
+  };
 }
 
 export class MatchServiceError extends Error {
@@ -49,12 +59,13 @@ export class MatchService {
   }
 
   async getUserMatches(userId: string): Promise<MatchWithJob[]> {
-    // Get all matches with jobs
+    // Get all matches with jobs and applications
     const { data: matchesData, error: matchesError } = await supabase
       .from("matches")
       .select(`
         *,
-        job:jobs(*)
+        job:jobs(*),
+        application:applications(*)
       `)
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
@@ -81,6 +92,9 @@ export class MatchService {
     return matchesData.map(match => ({
       ...match,
       job_match: jobMatchesMap.get(match.job_id!) || undefined,
+      application: Array.isArray(match.application) && match.application.length > 0 
+        ? match.application[0] 
+        : undefined,
     })) as any;
   }
 

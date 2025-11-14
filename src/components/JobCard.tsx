@@ -27,9 +27,10 @@ interface JobCardProps {
   onMarkAsApplied?: () => void;
   isApplied?: boolean;
   matchDate?: string;
+  hasGeneratedApplication?: boolean;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, hasGeneratedApplication = false }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -95,15 +96,27 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
       )}>
         {/* Delete button for matches mode */}
         {mode === "matches" && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete?.();
-            }}
-            className="absolute top-4 right-4 z-10 text-muted-foreground hover:text-destructive transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.();
+              }}
+              className="absolute top-4 right-4 z-10 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            
+            {/* AI Draft Ready Badge */}
+            {hasGeneratedApplication && (
+              <div className="absolute top-4 left-4 z-10">
+                <Badge className="bg-accent hover:bg-accent text-accent-foreground border-0 shadow-lg">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  AI Draft Ready
+                </Badge>
+              </div>
+            )}
+          </>
         )}
         
         <div className="p-6 space-y-4">

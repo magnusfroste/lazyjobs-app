@@ -29,6 +29,7 @@ export interface UseApplicationGeneratorReturn {
   error: string | null;
   result: GenerationResult | null;
   reset: () => void;
+  setResult: (result: GenerationResult | null) => void;
 }
 
 export const useApplicationGenerator = (): UseApplicationGeneratorReturn => {
@@ -95,6 +96,7 @@ export const useApplicationGenerator = (): UseApplicationGeneratorReturn => {
     error,
     result,
     reset,
+    setResult,
   };
 };
 
