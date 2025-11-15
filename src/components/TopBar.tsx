@@ -147,55 +147,59 @@ const TopBar = ({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               
-              {/* Match Quality Settings */}
-              <div className="px-2 py-1.5">
-                <div className="text-sm font-medium mb-2">Match Quality</div>
-                {(matchMode === "keyword" || matchMode === "precomputed") ? (
-                  <div className="space-y-1">
-                    <DropdownMenuItem
-                      onClick={() => onKeywordThresholdChange?.(0.4)}
-                      className={keywordThreshold === 0.4 ? "bg-accent" : ""}
-                    >
-                      Low (40%+)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onKeywordThresholdChange?.(0.65)}
-                      className={keywordThreshold === 0.65 ? "bg-accent" : ""}
-                    >
-                      Medium (65%+)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onKeywordThresholdChange?.(0.85)}
-                      className={keywordThreshold === 0.85 ? "bg-accent" : ""}
-                    >
-                      High (85%+)
-                    </DropdownMenuItem>
+              {/* Match Quality Settings - Only show when callbacks are provided */}
+              {(onKeywordThresholdChange || onAiTopNChange) && (
+                <>
+                  <div className="px-2 py-1.5">
+                    <div className="text-sm font-medium mb-2">Match Quality</div>
+                    {(matchMode === "keyword" || matchMode === "precomputed") ? (
+                      <div className="space-y-1">
+                        <DropdownMenuItem
+                          onClick={() => onKeywordThresholdChange?.(0.4)}
+                          className={keywordThreshold === 0.4 ? "bg-accent" : ""}
+                        >
+                          Low (40%+)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onKeywordThresholdChange?.(0.65)}
+                          className={keywordThreshold === 0.65 ? "bg-accent" : ""}
+                        >
+                          Medium (65%+)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onKeywordThresholdChange?.(0.85)}
+                          className={keywordThreshold === 0.85 ? "bg-accent" : ""}
+                        >
+                          High (85%+)
+                        </DropdownMenuItem>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <DropdownMenuItem
+                          onClick={() => onAiTopNChange?.(100)}
+                          className={aiTopN === 100 ? "bg-accent" : ""}
+                        >
+                          Low (Top 100)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onAiTopNChange?.(50)}
+                          className={aiTopN === 50 ? "bg-accent" : ""}
+                        >
+                          Medium (Top 50)
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onAiTopNChange?.(25)}
+                          className={aiTopN === 25 ? "bg-accent" : ""}
+                        >
+                          High (Top 25)
+                        </DropdownMenuItem>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="space-y-1">
-                    <DropdownMenuItem
-                      onClick={() => onAiTopNChange?.(100)}
-                      className={aiTopN === 100 ? "bg-accent" : ""}
-                    >
-                      Low (Top 100)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onAiTopNChange?.(50)}
-                      className={aiTopN === 50 ? "bg-accent" : ""}
-                    >
-                      Medium (Top 50)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onAiTopNChange?.(25)}
-                      className={aiTopN === 25 ? "bg-accent" : ""}
-                    >
-                      High (Top 25)
-                    </DropdownMenuItem>
-                  </div>
-                )}
-              </div>
 
-              <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
