@@ -74,15 +74,10 @@ export const useOnboarding = (userId: string) => {
     setStep("preferences");
   };
 
-  const handleSavePreferences = async (prefs: OnboardingPreferences, surveyAnswers?: SurveyAnswers) => {
+  const handleSavePreferences = async (prefs: OnboardingPreferences) => {
     try {
       // Save preferences
       await onboardingService.savePreferences(userId, prefs);
-
-      // Save survey if provided
-      if (surveyAnswers && Object.keys(surveyAnswers).length > 0) {
-        await onboardingService.saveSurvey(userId, surveyAnswers);
-      }
 
       // Complete onboarding
       await onboardingService.completeOnboarding(userId);
@@ -129,9 +124,7 @@ export const useOnboarding = (userId: string) => {
     error,
     cvUrl,
     preferences,
-    survey,
     setPreferences,
-    setSurvey,
     handleStart,
     handleUploadCV,
     handleSkipCV,

@@ -4,6 +4,7 @@ export interface OnboardingPreferences {
   location?: string;
   salary_min?: number;
   work_type?: string;
+  employment_types?: string[];
 }
 
 export interface SurveyAnswers {
@@ -30,35 +31,6 @@ export const onboardingService = {
 
     if (error) {
       throw new Error(`Failed to save preferences: ${error.message}`);
-    }
-  },
-
-  /**
-   * Save survey answers (merged into preferences)
-   */
-  async saveSurvey(userId: string, survey: SurveyAnswers): Promise<void> {
-    // Get current preferences
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("preferences")
-      .eq("id", userId)
-      .single();
-
-    const currentPreferences = (profile?.preferences as any) || {};
-    
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        preferences: {
-          ...currentPreferences,
-          onboarding_survey: survey,
-        } as any,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", userId);
-
-    if (error) {
-      throw new Error(`Failed to save survey: ${error.message}`);
     }
   },
 
