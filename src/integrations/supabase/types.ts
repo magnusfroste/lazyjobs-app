@@ -611,7 +611,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      send_daily_best_match_notification: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
