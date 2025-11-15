@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useSwipeable } from "react-swipeable";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X, ExternalLink, CheckCircle2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -54,21 +53,8 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
   const matchedSkills = job.matching_skills || job.required_skills?.slice(0, 6) || [];
   const missingSkills = job.skills_to_learn || [];
 
-  const handlers = mode === "swipe" ? useSwipeable({
-    onSwipedLeft: () => {
-      setExitX(-1000);
-      setTimeout(() => onSwipe("left"), 200);
-    },
-    onSwipedRight: () => {
-      setExitX(1000);
-      setTimeout(() => onSwipe("right"), 200);
-    },
-    trackMouse: true,
-  }) : {};
-
   return (
     <motion.div
-      {...(mode === "swipe" ? handlers : {})}
       style={mode === "swipe" ? {
         x,
         rotate,
