@@ -329,14 +329,33 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
         )}
 
         {/* BACK SIDE - Detailed Match Analysis */}
-        <div
-          className={`absolute inset-0 p-6 pt-16 overflow-y-auto bg-background transition-opacity duration-300 rounded-3xl ${
-            isFlipped ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={isFlipped ? { 
+            opacity: 1, 
+            scale: 1,
+            transition: {
+              duration: 0.3,
+              ease: [0.4, 0, 0.2, 1]
+            }
+          } : { 
+            opacity: 0, 
+            scale: 0.95,
+            transition: {
+              duration: 0.2,
+              ease: [0.4, 0, 1, 1]
+            }
+          }}
+          className={`absolute inset-0 p-6 pt-16 overflow-y-auto bg-background rounded-3xl ${
+            isFlipped ? 'z-10' : 'pointer-events-none z-0'
           }`}
         >
           {/* Close Button */}
           {isFlipped && (
-            <button
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
               onClick={(e) => {
                 e.stopPropagation();
                 onFlip?.();
@@ -345,11 +364,23 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               aria-label="Close match breakdown"
             >
               <X className="w-6 h-6" />
-            </button>
+            </motion.button>
           )}
 
           {/* Match Breakdown Content */}
-          <div className="space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={isFlipped ? { 
+              opacity: 1, 
+              y: 0,
+              transition: {
+                delay: 0.15,
+                duration: 0.4,
+                ease: [0.4, 0, 0.2, 1]
+              }
+            } : { opacity: 0, y: 20 }}
+            className="space-y-6"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold">Match Breakdown</h3>
@@ -486,8 +517,8 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 Confidence: <span className="font-semibold">{job.confidence_level}</span>
               </div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </motion.div>
   );
