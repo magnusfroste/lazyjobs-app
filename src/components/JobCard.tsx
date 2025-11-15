@@ -394,7 +394,19 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
             {/* Progress bars for each category */}
             <div className="space-y-4">
               {/* Skills */}
-              <div className="flex items-center gap-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={isFlipped ? { 
+                  opacity: 1, 
+                  x: 0,
+                  transition: {
+                    delay: 0.25,
+                    duration: 0.4,
+                    ease: [0.4, 0, 0.2, 1]
+                  }
+                } : { opacity: 0, x: -20 }}
+                className="flex items-center gap-3"
+              >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Skills</span>
                 <div className="flex-1 flex items-center gap-2">
                   <Progress value={matchBreakdown.skills} className="h-2 [&>div]:bg-green-500" />
@@ -402,10 +414,22 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                     {matchBreakdown.skills}%
                   </span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Salary */}
-              <div className="flex items-center gap-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={isFlipped ? { 
+                  opacity: 1, 
+                  x: 0,
+                  transition: {
+                    delay: 0.35,
+                    duration: 0.4,
+                    ease: [0.4, 0, 0.2, 1]
+                  }
+                } : { opacity: 0, x: -20 }}
+                className="flex items-center gap-3"
+              >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Salary</span>
                 <div className="flex-1 flex items-center gap-2">
                   <Progress value={matchBreakdown.salary} className="h-2 [&>div]:bg-green-500" />
@@ -413,10 +437,22 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                     {matchBreakdown.salary}%
                   </span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Location */}
-              <div className="flex items-center gap-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={isFlipped ? { 
+                  opacity: 1, 
+                  x: 0,
+                  transition: {
+                    delay: 0.45,
+                    duration: 0.4,
+                    ease: [0.4, 0, 0.2, 1]
+                  }
+                } : { opacity: 0, x: -20 }}
+                className="flex items-center gap-3"
+              >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Location</span>
                 <div className="flex-1 flex items-center gap-2">
                   <Progress value={matchBreakdown.location} className="h-2" />
@@ -424,10 +460,22 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                     {matchBreakdown.location}%
                   </span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Remote */}
-              <div className="flex items-center gap-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={isFlipped ? { 
+                  opacity: 1, 
+                  x: 0,
+                  transition: {
+                    delay: 0.55,
+                    duration: 0.4,
+                    ease: [0.4, 0, 0.2, 1]
+                  }
+                } : { opacity: 0, x: -20 }}
+                className="flex items-center gap-3"
+              >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Remote</span>
                 <div className="flex-1 flex items-center gap-2">
                   <Progress value={matchBreakdown.remote} className="h-2 [&>div]:bg-green-500" />
@@ -435,10 +483,22 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                     {matchBreakdown.remote}%
                   </span>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Employment Type */}
-              <div className="flex items-center gap-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={isFlipped ? { 
+                  opacity: 1, 
+                  x: 0,
+                  transition: {
+                    delay: 0.65,
+                    duration: 0.4,
+                    ease: [0.4, 0, 0.2, 1]
+                  }
+                } : { opacity: 0, x: -20 }}
+                className="flex items-center gap-3"
+              >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Type</span>
                 <div className="flex-1 flex items-center gap-2">
                   <Progress value={matchBreakdown.employment} className="h-2" />
@@ -446,7 +506,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                     {matchBreakdown.employment}%
                   </span>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Skills Breakdown */}
