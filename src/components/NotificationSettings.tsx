@@ -3,11 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, BellOff, AlertCircle, CheckCircle2, Smartphone } from "lucide-react";
+import { Bell, BellOff, AlertCircle, CheckCircle2, Smartphone, Send } from "lucide-react";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useProfile } from "@/hooks/useProfile";
 import { usePWADetection } from "@/hooks/usePWADetection";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface NotificationSettingsProps {
   userId: string;
@@ -25,6 +27,7 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
   const { isIOSSafari, isPWA, isIOS, supportsPush, iOSVersion } = usePWADetection();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [sendingTest, setSendingTest] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -37,6 +40,46 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
     await updateProfile({
       notifications_enabled: enabled,
     });
+  };
+
+  const handleSendTestNotification = async () => {
+    if (!isSubscribed) {
+      toast({
+        title: "Not subscribed",
+        description: "Please enable push notifications first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingTest(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-push-notification", {
+        body: {
+          user_id: userId,
+          job_id: "00000000-0000-0000-0000-000000000000", // Test job ID
+          match_score: 85,
+          job_title: "Test Notification",
+          company: "LazyJobs",
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Test notification sent! 🎉",
+        description: "Check your device for the notification",
+      });
+    } catch (error) {
+      console.error("Error sending test notification:", error);
+      toast({
+        title: "Failed to send test",
+        description: "Please check the edge function logs",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingTest(false);
+    }
   };
 
   const getPermissionStatus = () => {
@@ -222,6 +265,28 @@ export function NotificationSettings({ userId }: NotificationSettingsProps) {
                   : "Click to allow push notifications in your browser"}
               </p>
             </div>
+
+            {/* Test Notification Button */}
+            {isSubscribed && (
+              <Button
+                onClick={handleSendTestNotification}
+                disabled={sendingTest}
+                variant="secondary"
+                className="w-full"
+              >
+                {sendingTest ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Sending Test...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Test Notification
+                  </>
+                )}
+              </Button>
+            )}
 
             {/* Info Alert */}
             {isSubscribed && (
