@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, MapPin, DollarSign, Briefcase, Moon, Sun, Monitor, Bell } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { NotificationSettings } from "@/components/NotificationSettings";
@@ -23,10 +23,8 @@ export default function Settings() {
 
   const [location, setLocation] = useState("");
   const [salaryMin, setSalaryMin] = useState("");
-  const [remote, setRemote] = useState(false);
+  const [workType, setWorkType] = useState("any");
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
-  const [autoOpenApplication, setAutoOpenApplication] = useState(false);
-  const [applicationLanguage, setApplicationLanguage] = useState("auto");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -41,10 +39,8 @@ export default function Settings() {
       const prefs = profile.preferences as any;
       setLocation(prefs?.location || "");
       setSalaryMin(prefs?.salary_min?.toString() || "");
-      setRemote(prefs?.remote || false);
+      setWorkType(prefs?.work_type || "any");
       setEmploymentTypes(prefs?.employment_types || []);
-      setAutoOpenApplication(prefs?.auto_open_application || false);
-      setApplicationLanguage(profile.application_language_preference || "auto");
     }
   }, [profile]);
 
@@ -64,11 +60,9 @@ export default function Settings() {
           ...((profile?.preferences as any) || {}),
           location,
           salary_min: salaryMin ? parseInt(salaryMin) : null,
-          remote,
+          work_type: workType,
           employment_types: employmentTypes,
-          auto_open_application: autoOpenApplication,
         },
-        application_language_preference: applicationLanguage,
       });
       toast({
         title: "Preferences saved",
@@ -155,15 +149,37 @@ export default function Settings() {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remote"
-                  checked={remote}
-                  onCheckedChange={(checked) => setRemote(checked as boolean)}
-                />
-                <Label htmlFor="remote" className="cursor-pointer">
-                  Open to remote work
-                </Label>
+              <div className="space-y-2">
+                <Label>Work Type</Label>
+                <RadioGroup
+                  value={workType}
+                  onValueChange={(value) => setWorkType(value)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="remote" id="work-remote" />
+                    <Label htmlFor="work-remote" className="font-normal cursor-pointer">
+                      Remote Only
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="hybrid" id="work-hybrid" />
+                    <Label htmlFor="work-hybrid" className="font-normal cursor-pointer">
+                      Hybrid
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="office" id="work-office" />
+                    <Label htmlFor="work-office" className="font-normal cursor-pointer">
+                      Office
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="any" id="work-any" />
+                    <Label htmlFor="work-any" className="font-normal cursor-pointer">
+                      Any
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               <div className="space-y-2">
@@ -204,67 +220,6 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* Application Assistant Settings */}
-          {FEATURES.APPLICATION_ASSISTANT && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Application Assistant</CardTitle>
-                <CardDescription>
-                  Customize how the AI application assistant works for you
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="auto-open"
-                    checked={autoOpenApplication}
-                    onCheckedChange={(checked) =>
-                      setAutoOpenApplication(checked as boolean)
-                    }
-                  />
-                  <Label htmlFor="auto-open" className="cursor-pointer">
-                    Automatically open application assistant after matching
-                  </Label>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="language">Default Application Language</Label>
-                  <Select value={applicationLanguage} onValueChange={setApplicationLanguage}>
-                    <SelectTrigger id="language">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="auto">Auto-detect from job description</SelectItem>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="sv">Swedish</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {applicationLanguage === "auto"
-                      ? "The assistant will automatically detect the language from the job description"
-                      : `Applications will be generated in ${
-                          applicationLanguage === "en" ? "English" : "Swedish"
-                        }`}
-                  </p>
-                </div>
-
-                <Button
-                  onClick={handleSavePreferences}
-                  disabled={saving}
-                  className="w-full"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Assistant Settings"
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Push Notifications */}
           <NotificationSettings userId={user.id} />
