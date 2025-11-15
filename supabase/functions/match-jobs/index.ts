@@ -17,7 +17,8 @@ interface MatchRequest {
   }
   preferences?: {
     location?: string
-    remote_only?: boolean
+    remote_only?: boolean // Deprecated: kept for backward compatibility
+    work_type?: string // 'remote' | 'hybrid' | 'office' | 'any'
     salary_min?: number
     employment_types?: string[]
   }
@@ -221,14 +222,38 @@ serve(async (req) => {
       }
       score += locationScore * 0.15
 
-      // REMOTE PREFERENCE (10% weight)
-      let remoteScore = 0.5 // Neutral
-      if (userPreferences.remote_only) {
-        remoteScore = job.is_remote ? 1.0 : 0.2
-      } else if (job.is_remote) {
-        remoteScore = 0.8 // Remote is a bonus even if not required
+      // WORK TYPE PREFERENCE (10% weight)
+      // Get work type with backward compatibility fallback
+      const userWorkType = userPreferences.work_type || 
+        (userPreferences.remote_only ? 'remote' : 'any') || 
+        'any'
+      
+      let workTypeScore = 0.5 // Neutral default
+      
+      if (userWorkType === 'remote') {
+        // User only wants remote work
+        workTypeScore = job.is_remote ? 1.0 : 0.1
+      } else if (userWorkType === 'hybrid') {
+        // User wants flexible/hybrid options
+        if (job.is_remote) {
+          workTypeScore = 1.0 // Remote jobs are perfect for hybrid preference
+        } else if (job.location) {
+          workTypeScore = 0.6 // Office jobs are okay but not ideal
+        }
+      } else if (userWorkType === 'office') {
+        // User prefers office work
+        if (!job.is_remote && job.location) {
+          workTypeScore = 1.0 // Perfect match - office job with location
+        } else if (job.is_remote) {
+          workTypeScore = 0.4 // Remote is less ideal but still acceptable
+        }
+      } else {
+        // userWorkType === 'any' or not specified
+        // User is flexible - remote is a slight bonus
+        workTypeScore = job.is_remote ? 0.8 : 0.6
       }
-      score += remoteScore * 0.1
+      
+      score += workTypeScore * 0.1
 
       // EMPLOYMENT TYPE (5% weight)
       let employmentScore = 0.5 // Neutral
@@ -244,7 +269,7 @@ serve(async (req) => {
           skills: Math.round(skillScore * 100),
           salary: Math.round(salaryScore * 100),
           location: Math.round(locationScore * 100),
-          remote: Math.round(remoteScore * 100),
+          remote: Math.round(workTypeScore * 100), // Keep 'remote' key for compatibility
           employment: Math.round(employmentScore * 100)
         }
       }
