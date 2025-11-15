@@ -330,7 +330,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
         {/* BACK SIDE - Detailed Match Analysis */}
         <div
-          className={`absolute inset-0 p-6 pt-16 overflow-y-auto bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 transition-opacity duration-300 rounded-3xl ${
+          className={`absolute inset-0 p-6 pt-16 overflow-y-auto bg-background transition-opacity duration-300 rounded-3xl ${
             isFlipped ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
           }`}
         >
@@ -349,7 +349,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           )}
 
           {/* Match Breakdown Content */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold">Match Breakdown</h3>
@@ -361,13 +361,13 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
             </div>
 
             {/* Progress bars for each category */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {/* Skills */}
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-24 text-sm">Skills</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Skills</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.skills} className="h-2" />
-                  <span className="font-bold text-sm w-12 text-right text-primary">
+                  <Progress value={matchBreakdown.skills} className="h-2 [&>div]:bg-green-500" />
+                  <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
                     {matchBreakdown.skills}%
                   </span>
                 </div>
@@ -375,10 +375,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
               {/* Salary */}
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-24 text-sm">Salary</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Salary</span>
                 <div className="flex-1 flex items-center gap-2">
                   <Progress value={matchBreakdown.salary} className="h-2 [&>div]:bg-green-500" />
-                  <span className="font-bold text-sm w-12 text-right text-green-600 dark:text-green-400">
+                  <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
                     {matchBreakdown.salary}%
                   </span>
                 </div>
@@ -386,10 +386,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
               {/* Location */}
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-24 text-sm">Location</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Location</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.location} className="h-2 [&>div]:bg-purple-500" />
-                  <span className="font-bold text-sm w-12 text-right text-purple-600 dark:text-purple-400">
+                  <Progress value={matchBreakdown.location} className="h-2" />
+                  <span className="font-semibold text-sm w-12 text-right text-muted-foreground">
                     {matchBreakdown.location}%
                   </span>
                 </div>
@@ -397,10 +397,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
               {/* Remote */}
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-24 text-sm">Remote</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Remote</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.remote} className="h-2 [&>div]:bg-blue-500" />
-                  <span className="font-bold text-sm w-12 text-right text-blue-600 dark:text-blue-400">
+                  <Progress value={matchBreakdown.remote} className="h-2 [&>div]:bg-green-500" />
+                  <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
                     {matchBreakdown.remote}%
                   </span>
                 </div>
@@ -408,10 +408,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
               {/* Employment Type */}
               <div className="flex items-center gap-3">
-                <span className="font-semibold w-24 text-sm">Type</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Type</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.employment} className="h-2 [&>div]:bg-orange-500" />
-                  <span className="font-bold text-sm w-12 text-right text-orange-600 dark:text-orange-400">
+                  <Progress value={matchBreakdown.employment} className="h-2" />
+                  <span className="font-semibold text-sm w-12 text-right text-muted-foreground">
                     {matchBreakdown.employment}%
                   </span>
                 </div>
@@ -420,21 +420,21 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
             {/* Skills Breakdown */}
             {job.required_skills && job.required_skills.length > 0 && (
-              <div className="bg-card/50 rounded-lg p-4 mt-4 space-y-3">
-                <h4 className="font-semibold text-sm flex items-center gap-2">
+              <div className="bg-muted/30 rounded-lg p-5 space-y-4 border border-border/50">
+                <h4 className="font-medium text-sm flex items-center gap-2">
                   💡 Skills Analysis
                 </h4>
                 
                 {/* Matched Skills */}
                 <div>
-                  <div className="text-green-700 dark:text-green-400 font-semibold text-xs mb-2 flex items-center gap-1">
+                  <div className="text-green-700 dark:text-green-400 font-medium text-xs mb-2 flex items-center gap-1.5">
                     <span>✅</span>
-                    <span>You Have ({matchedSkills.length}):</span>
+                    <span>You Have ({matchedSkills.length})</span>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {matchedSkills.length > 0 ? (
                       matchedSkills.map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs">
+                        <Badge key={idx} variant="secondary" className="bg-green-500/10 text-green-700 dark:text-green-300 text-xs border-green-500/20">
                           {skill}
                         </Badge>
                       ))
@@ -447,13 +447,13 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 {/* Missing Skills */}
                 {missingSkills.length > 0 && (
                   <div>
-                    <div className="text-orange-700 dark:text-orange-400 font-semibold text-xs mb-2 flex items-center gap-1">
+                    <div className="text-orange-700 dark:text-orange-400 font-medium text-xs mb-2 flex items-center gap-1.5">
                       <span>📚</span>
-                      <span>To Learn ({missingSkills.length}):</span>
+                      <span>To Learn ({missingSkills.length})</span>
                     </div>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-2">
                       {missingSkills.map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs">
+                        <Badge key={idx} variant="secondary" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 text-xs border-orange-500/20">
                           {skill}
                         </Badge>
                       ))}
@@ -465,14 +465,14 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
             {/* AI Recommendation */}
             {job.recommendation && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mt-4">
-                <div className="flex items-start gap-2">
+              <div className="rounded-lg p-5 border border-border/50">
+                <div className="flex items-start gap-3">
                   <span className="text-xl">💼</span>
                   <div className="text-sm">
-                    <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    <p className="font-medium mb-2">
                       AI Recommendation
                     </p>
-                    <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
+                    <p className="text-muted-foreground leading-relaxed">
                       {job.recommendation}
                     </p>
                   </div>
