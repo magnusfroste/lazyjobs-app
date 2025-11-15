@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { MapPin, DollarSign, Briefcase, Clock, Sparkles, X, ExternalLink, CheckCircle2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,41 @@ import { JobWithMatch } from "@/types/job";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { isHTML, htmlToFormattedText } from "@/lib/htmlToText";
 import { cn } from "@/lib/utils";
+
+// Animated Progress Component
+const AnimatedProgress = ({ 
+  value, 
+  delay = 0, 
+  isFlipped,
+  className 
+}: { 
+  value: number; 
+  delay?: number; 
+  isFlipped: boolean;
+  className?: string;
+}) => {
+  const [animatedValue, setAnimatedValue] = useState(0);
+
+  useEffect(() => {
+    if (isFlipped) {
+      // Start animation after delay
+      const timer = setTimeout(() => {
+        const controls = animate(0, value, {
+          duration: 0.7,
+          ease: [0.4, 0, 0.2, 1],
+          onUpdate: (latest) => setAnimatedValue(Math.round(latest))
+        });
+        return () => controls.stop();
+      }, delay * 1000);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setAnimatedValue(0); // Reset when card flips back
+    }
+  }, [isFlipped, value, delay]);
+
+  return <Progress value={animatedValue} className={className} />;
+};
 
 interface JobCardProps {
   job: JobWithMatch;
@@ -409,7 +444,12 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Skills</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.skills} className="h-2 [&>div]:bg-green-500" />
+                  <AnimatedProgress 
+                    value={matchBreakdown.skills} 
+                    delay={0.45}
+                    isFlipped={isFlipped}
+                    className="h-2 [&>div]:bg-green-500" 
+                  />
                   <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
                     {matchBreakdown.skills}%
                   </span>
@@ -432,7 +472,12 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Salary</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.salary} className="h-2 [&>div]:bg-green-500" />
+                  <AnimatedProgress 
+                    value={matchBreakdown.salary} 
+                    delay={0.55}
+                    isFlipped={isFlipped}
+                    className="h-2 [&>div]:bg-green-500" 
+                  />
                   <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
                     {matchBreakdown.salary}%
                   </span>
@@ -455,7 +500,12 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Location</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.location} className="h-2" />
+                  <AnimatedProgress 
+                    value={matchBreakdown.location} 
+                    delay={0.65}
+                    isFlipped={isFlipped}
+                    className="h-2" 
+                  />
                   <span className="font-semibold text-sm w-12 text-right text-muted-foreground">
                     {matchBreakdown.location}%
                   </span>
@@ -478,7 +528,12 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Remote</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.remote} className="h-2 [&>div]:bg-green-500" />
+                  <AnimatedProgress 
+                    value={matchBreakdown.remote} 
+                    delay={0.75}
+                    isFlipped={isFlipped}
+                    className="h-2 [&>div]:bg-green-500" 
+                  />
                   <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
                     {matchBreakdown.remote}%
                   </span>
@@ -501,7 +556,12 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               >
                 <span className="font-medium w-24 text-sm text-muted-foreground">Type</span>
                 <div className="flex-1 flex items-center gap-2">
-                  <Progress value={matchBreakdown.employment} className="h-2" />
+                  <AnimatedProgress 
+                    value={matchBreakdown.employment} 
+                    delay={0.85}
+                    isFlipped={isFlipped}
+                    className="h-2" 
+                  />
                   <span className="font-semibold text-sm w-12 text-right text-muted-foreground">
                     {matchBreakdown.employment}%
                   </span>
