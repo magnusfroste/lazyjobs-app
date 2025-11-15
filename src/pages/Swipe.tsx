@@ -30,7 +30,7 @@ const Swipe = () => {
     keywordThreshold,
     aiTopN
   );
-  const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo } = useSwipe(
+  const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo, jumpToJob } = useSwipe(
     user?.id || "",
     jobs
   );
@@ -44,6 +44,7 @@ const Swipe = () => {
       const jobIndex = jobs.findIndex(job => job.id === jobId);
       
       if (jobIndex >= 0) {
+        jumpToJob(jobIndex);
         toast({
           title: "Job Found! 🎯",
           description: "Showing the job from your notification",
@@ -60,7 +61,7 @@ const Swipe = () => {
       searchParams.delete('jobId');
       setSearchParams(searchParams);
     }
-  }, [searchParams, jobs, toast, setSearchParams]);
+  }, [searchParams, jobs, toast, setSearchParams, jumpToJob]);
 
   const handleModeChange = (newMode: MatchMode) => {
     setMatchMode(newMode);

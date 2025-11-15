@@ -63,6 +63,13 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
     }
   };
 
+  const jumpToJob = (targetIndex: number) => {
+    if (targetIndex >= 0 && targetIndex < jobs.length) {
+      setCurrentIndex(targetIndex);
+      // Don't modify swipeHistory - user hasn't swiped yet
+    }
+  };
+
   const currentJob = jobs[currentIndex];
   const remainingJobs = jobs.length - currentIndex;
   const canUndo = currentIndex > 0;
@@ -74,5 +81,6 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
     canUndo,
     handleSwipe,
     handleUndo,
+    jumpToJob,
   };
 };
