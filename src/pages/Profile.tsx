@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, LogOut, Settings } from "lucide-react";
 import { profileService } from "@/services/profileService";
 import CVDisplay from "@/components/CVDisplay";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,6 +25,12 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Job preferences state
+  const [location, setLocation] = useState("");
+  const [salaryMin, setSalaryMin] = useState("");
+  const [workType, setWorkType] = useState("any");
+  const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -36,6 +44,15 @@ const Profile = () => {
     if (profile) {
       setFullName(profile.full_name || "");
       setPhone(profile.phone || "");
+      
+      // Load job preferences
+      const prefs = profile.preferences as any;
+      if (prefs) {
+        setLocation(prefs.location || "");
+        setSalaryMin(prefs.salary_min?.toString() || "");
+        setWorkType(prefs.work_type || "any");
+        setEmploymentTypes(prefs.employment_types || []);
+      }
     }
   }, [profile]);
 
@@ -60,6 +77,12 @@ const Profile = () => {
       await updateProfile({
         full_name: fullName,
         phone: phone,
+        preferences: {
+          location,
+          salary_min: salaryMin ? parseInt(salaryMin) : undefined,
+          work_type: workType,
+          employment_types: employmentTypes,
+        },
       });
       
       toast({
@@ -75,6 +98,14 @@ const Profile = () => {
     } finally {
       setSaving(false);
     }
+  };
+  
+  const handleEmploymentTypeToggle = (type: string) => {
+    setEmploymentTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
   };
 
   const handleCVUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -210,6 +241,114 @@ const Profile = () => {
               >
                 {saving ? "Saving..." : "Save Profile"}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Job Preferences */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Job Preferences</CardTitle>
+              <CardDescription>
+                Set your job search preferences to get better matches
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="location">Preferred Location</Label>
+                <Input
+                  id="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g., San Francisco, Remote"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="salary">Minimum Salary (Annual)</Label>
+                <Input
+                  id="salary"
+                  type="number"
+                  value={salaryMin}
+                  onChange={(e) => setSalaryMin(e.target.value)}
+                  placeholder="e.g., 80000"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Work Type</Label>
+                <RadioGroup value={workType} onValueChange={setWorkType}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="remote" id="remote" />
+                    <Label htmlFor="remote" className="font-normal cursor-pointer">
+                      Remote Only
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="hybrid" id="hybrid" />
+                    <Label htmlFor="hybrid" className="font-normal cursor-pointer">
+                      Hybrid
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="office" id="office" />
+                    <Label htmlFor="office" className="font-normal cursor-pointer">
+                      Office
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="any" id="any" />
+                    <Label htmlFor="any" className="font-normal cursor-pointer">
+                      Any
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-3">
+                <Label>Employment Types</Label>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="full-time"
+                      checked={employmentTypes.includes("full-time")}
+                      onCheckedChange={() => handleEmploymentTypeToggle("full-time")}
+                    />
+                    <Label htmlFor="full-time" className="font-normal cursor-pointer">
+                      Full-time
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="part-time"
+                      checked={employmentTypes.includes("part-time")}
+                      onCheckedChange={() => handleEmploymentTypeToggle("part-time")}
+                    />
+                    <Label htmlFor="part-time" className="font-normal cursor-pointer">
+                      Part-time
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="contract"
+                      checked={employmentTypes.includes("contract")}
+                      onCheckedChange={() => handleEmploymentTypeToggle("contract")}
+                    />
+                    <Label htmlFor="contract" className="font-normal cursor-pointer">
+                      Contract
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="freelance"
+                      checked={employmentTypes.includes("freelance")}
+                      onCheckedChange={() => handleEmploymentTypeToggle("freelance")}
+                    />
+                    <Label htmlFor="freelance" className="font-normal cursor-pointer">
+                      Freelance
+                    </Label>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
