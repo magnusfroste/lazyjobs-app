@@ -180,15 +180,15 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <TopBar />
       
-      <div className="container max-w-2xl mx-auto px-4 py-24">
-        <div className="mb-6">
+      <div className="container max-w-2xl mx-auto px-3 md:px-4 py-20 md:py-24">
+        <div className="mb-4 md:mb-6">
           <h1 className="text-3xl font-bold">Profile</h1>
           <p className="text-muted-foreground mt-2">
             Manage your personal information and CV
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Profile Information */}
           <Card>
             <CardHeader>

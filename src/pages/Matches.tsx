@@ -56,7 +56,7 @@ const Matches = () => {
   return (
     <div className="min-h-screen pb-8">
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
-        <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container max-w-2xl mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-between">
           <button
             onClick={() => navigate("/swipe")}
             className="flex items-center gap-2 text-primary font-semibold hover:underline"
@@ -71,10 +71,10 @@ const Matches = () => {
         </div>
       </div>
 
-      <div className="container max-w-2xl mx-auto px-4 pt-6">
-        <p className="text-muted-foreground mb-6">{matches.length} matches</p>
+      <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-4 md:pt-6">
+        <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} matches</p>
 
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {sortedMatches.map((match) => (
           <JobCard
               key={match.id}

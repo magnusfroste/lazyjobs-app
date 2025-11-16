@@ -91,7 +91,7 @@ export default function CVDisplay({ cvData, onReupload, onSkillsUpdate }: CVDisp
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 md:space-y-6">
         {/* Profile Summary */}
         {cvData.name && (
           <div className="p-4 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-lg">
@@ -102,7 +102,7 @@ export default function CVDisplay({ cvData, onReupload, onSkillsUpdate }: CVDisp
         )}
 
         {/* Quick Stats Bar */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-muted rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 p-3 md:p-4 bg-muted rounded-lg">
           <div>
             <p className="text-2xl font-bold">{experienceYears || 0}</p>
             <p className="text-xs text-muted-foreground">Years Experience</p>
