@@ -14,7 +14,10 @@ const SwipeControls = ({ onSwipeLeft, onSwipeRight, onUndo, canUndo }: SwipeCont
       <motion.button
         whileTap={{ scale: 0.9 }}
         whileHover={{ scale: 1.1 }}
-        onClick={onSwipeLeft}
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(50);
+          onSwipeLeft();
+        }}
         className="w-16 h-16 rounded-full gradient-danger flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-shadow"
       >
         <X className="w-8 h-8" />
@@ -33,7 +36,10 @@ const SwipeControls = ({ onSwipeLeft, onSwipeRight, onUndo, canUndo }: SwipeCont
       <motion.button
         whileTap={{ scale: 0.9 }}
         whileHover={{ scale: 1.1 }}
-        onClick={onSwipeRight}
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(50);
+          onSwipeRight();
+        }}
         className="w-16 h-16 rounded-full gradient-success flex items-center justify-center text-white shadow-lg hover:shadow-xl transition-shadow"
       >
         <Heart className="w-8 h-8" />

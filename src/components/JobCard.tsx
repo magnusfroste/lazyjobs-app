@@ -102,6 +102,10 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={mode === "swipe" ? (e, { offset, velocity }) => {
         if (Math.abs(offset.x) > 100) {
+          // Haptic feedback on mobile
+          if (navigator.vibrate) {
+            navigator.vibrate(50);
+          }
           setExitX(offset.x > 0 ? 1000 : -1000);
           setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 200);
         }
