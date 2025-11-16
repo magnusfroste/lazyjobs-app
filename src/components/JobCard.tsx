@@ -286,18 +286,6 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
             </div>
           )}
 
-          {/* Action Button */}
-          {mode === "swipe" && (
-            <div className="pt-4">
-              <button 
-                onClick={() => job.url && window.open(job.url, "_blank")}
-                className="w-full py-3 px-6 rounded-xl gradient-primary text-white font-semibold hover:opacity-90 transition-opacity"
-              >
-                🔗 View Original Job Posting
-              </button>
-            </div>
-          )}
-
           {/* Matches Mode Action Buttons */}
           {mode === "matches" && (
             <>
