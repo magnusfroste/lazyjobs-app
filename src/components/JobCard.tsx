@@ -293,13 +293,14 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           {/* Matches Mode Action Buttons */}
           {mode === "matches" && (
             <>
-              <div className="flex gap-2 pt-4">
+              <div className="flex gap-1.5 pt-3 md:pt-4">
                 <Button
                   onClick={onApply}
                   className="flex-1 gradient-primary text-white"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Apply with AI
+                  <span className="hidden sm:inline">Apply with AI</span>
+                  <span className="sm:hidden">Apply</span>
                 </Button>
                 
                 {job.url && (
