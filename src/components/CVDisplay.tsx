@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Briefcase, GraduationCap, Award, Globe, Github, Linkedin, Edit, Plus, X } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { FileText, Briefcase, GraduationCap, Award, Globe, Github, Linkedin, Edit, Plus, X, FolderGit } from "lucide-react";
 
 interface CVDisplayProps {
   cvData: any;
@@ -20,6 +21,8 @@ export default function CVDisplay({ cvData, onReupload, onSkillsUpdate }: CVDisp
 
   const skills = cvData?.skills_flat || [];
   const experienceYears = cvData?.experience_years;
+  const workExperience = cvData?.work_experience || [];
+  const projects = cvData?.projects || [];
   const education = cvData?.education?.[0];
   const languages = cvData?.languages || [];
   const certifications = cvData?.certifications || [];
@@ -98,6 +101,26 @@ export default function CVDisplay({ cvData, onReupload, onSkillsUpdate }: CVDisp
           </div>
         )}
 
+        {/* Quick Stats Bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-muted rounded-lg">
+          <div>
+            <p className="text-2xl font-bold">{experienceYears || 0}</p>
+            <p className="text-xs text-muted-foreground">Years Experience</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{workExperience.length}</p>
+            <p className="text-xs text-muted-foreground">Companies</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{skills.length}</p>
+            <p className="text-xs text-muted-foreground">Skills</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">{certifications.length}</p>
+            <p className="text-xs text-muted-foreground">Certifications</p>
+          </div>
+        </div>
+
         {/* Skills - PRIMARY SECTION */}
         {(skills.length > 0 || isEditingSkills) && (
           <div>
@@ -173,33 +196,109 @@ export default function CVDisplay({ cvData, onReupload, onSkillsUpdate }: CVDisp
 
         <Separator />
 
-        {/* Experience & Education Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Experience */}
-          {experienceYears && (
-            <div className="p-4 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Briefcase className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Experience</span>
-              </div>
-              <p className="text-lg font-bold">{experienceYears} years</p>
-            </div>
-          )}
+        {/* Work Experience - Collapsible */}
+        {workExperience.length > 0 && (
+          <Accordion type="single" collapsible>
+            <AccordionItem value="work-experience">
+              <AccordionTrigger>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5" />
+                  <span>Work Experience ({workExperience.length} {workExperience.length === 1 ? 'role' : 'roles'})</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  {workExperience.map((exp: any, idx: number) => (
+                    <div key={idx} className="border-l-2 border-primary pl-4 py-2">
+                      <h4 className="font-semibold">{exp.title}</h4>
+                      <p className="text-sm text-muted-foreground">{exp.company}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {exp.start_date} - {exp.end_date || 'Present'}
+                        {exp.location && ` • ${exp.location}`}
+                      </p>
+                      {exp.responsibilities && exp.responsibilities.length > 0 && (
+                        <ul className="mt-2 text-sm space-y-1">
+                          {exp.responsibilities.slice(0, 3).map((resp: string, i: number) => (
+                            <li key={i} className="text-muted-foreground">• {resp}</li>
+                          ))}
+                          {exp.responsibilities.length > 3 && (
+                            <li className="text-xs text-muted-foreground italic">
+                              + {exp.responsibilities.length - 3} more...
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
 
-          {/* Education */}
-          {education && (
+        {/* Projects - Collapsible */}
+        {projects.length > 0 && (
+          <Accordion type="single" collapsible>
+            <AccordionItem value="projects">
+              <AccordionTrigger>
+                <div className="flex items-center gap-2">
+                  <FolderGit className="w-5 h-5" />
+                  <span>Projects ({projects.length})</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4">
+                  {projects.map((project: any, idx: number) => (
+                    <div key={idx} className="border-l-2 border-primary pl-4 py-2">
+                      <h4 className="font-semibold">{project.name || project.title}</h4>
+                      {project.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{project.description}</p>
+                      )}
+                      {project.technologies && project.technologies.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {project.technologies.map((tech: string, i: number) => (
+                            <Badge key={i} variant="outline" className="text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      {project.url && (
+                        <a 
+                          href={project.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline mt-1 inline-block"
+                        >
+                          View Project →
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
+
+        {/* Education */}
+        {education && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <GraduationCap className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">Education</h3>
+            </div>
             <div className="p-4 bg-muted rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <GraduationCap className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">Education</span>
-              </div>
               <p className="font-semibold">{education.degree}</p>
               {education.institution && (
                 <p className="text-sm text-muted-foreground">{education.institution}</p>
               )}
+              {education.year && (
+                <p className="text-xs text-muted-foreground">{education.year}</p>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Languages */}
         {languages.length > 0 && (
