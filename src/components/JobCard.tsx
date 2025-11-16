@@ -64,9 +64,10 @@ interface JobCardProps {
   matchDate?: string;
   appliedAt?: string | null;
   hasGeneratedApplication?: boolean;
+  swipePreview?: "left" | "right" | null;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false, swipePreview }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -96,8 +97,16 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
         opacity,
         cursor: isFlipped ? "default" : "grab",
       } : {}}
-      animate={mode === "swipe" && exitX !== 0 ? { x: exitX } : {}}
-      transition={{ duration: 0.2 }}
+      animate={
+        mode === "swipe" && exitX !== 0 
+          ? { x: exitX } 
+          : swipePreview === "left"
+          ? { x: -50, rotate: -5 }
+          : swipePreview === "right"
+          ? { x: 50, rotate: 5 }
+          : { x: 0, rotate: 0 }
+      }
+      transition={{ duration: swipePreview ? 0.2 : 0.2, ease: "easeOut" }}
       drag={mode === "swipe" && !isFlipped ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
       onDragEnd={mode === "swipe" ? (e, { offset, velocity }) => {
