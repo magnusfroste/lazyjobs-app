@@ -76,16 +76,16 @@ const Swipe = () => {
   const handleButtonSwipeLeft = () => {
     setSwipePreview("left");
     setTimeout(() => {
-      setSwipePreview(null);
       handleSwipe("left");
+      setTimeout(() => setSwipePreview(null), 50);
     }, 200);
   };
 
   const handleButtonSwipeRight = () => {
     setSwipePreview("right");
     setTimeout(() => {
-      setSwipePreview(null);
       handleSwipe("right");
+      setTimeout(() => setSwipePreview(null), 50);
     }, 200);
   };
 
