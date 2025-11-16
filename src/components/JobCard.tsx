@@ -564,7 +564,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
             {/* Skills Breakdown */}
             {job.required_skills && job.required_skills.length > 0 && (
-              <div className="bg-muted/30 rounded-lg p-3 md:p-4 space-y-3 border border-border/50">
+              <div className="space-y-3">
                 <h4 className="font-medium text-sm flex items-center gap-2">
                   💡 Skills Analysis
                 </h4>
@@ -609,18 +609,11 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
             {/* AI Recommendation */}
             {job.recommendation && (
-              <div className="rounded-lg p-5 border border-border/50">
-                <div className="flex items-start gap-3">
-                  <span className="text-xl">💼</span>
-                  <div className="text-sm">
-                    <p className="font-medium mb-2">
-                      AI Recommendation
-                    </p>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {job.recommendation}
-                    </p>
-                  </div>
-                </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">AI Recommendation</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {job.recommendation}
+                </p>
               </div>
             )}
 
