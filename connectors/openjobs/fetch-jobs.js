@@ -368,28 +368,33 @@ async function getExistingJobIds(externalIds) {
   if (!externalIds || externalIds.length === 0) return []
   
   try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabaseUrl = INGEST_URL.split('/functions')[0]
-    // Use service role key to bypass RLS and check all jobs (active and inactive)
-    const supabase = createClient(supabaseUrl, SUPABASE_SERVICE_ROLE_KEY)
+    const checkExistingUrl = INGEST_URL.replace('ingest-jobs', 'check-existing-jobs')
+    console.log(`   Calling edge function: ${checkExistingUrl}`)
     
-    // Query jobs table for existing external_ids
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('external_id')
-      .in('external_id', externalIds)
+    const response = await fetch(checkExistingUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ external_ids: externalIds })
+    })
     
-    if (error) {
-      console.warn('⚠️  Could not check existing jobs:')
-      console.warn('   Message:', error.message)
-      console.warn('   Code:', error.code)
-      console.warn('   Details:', error.details)
-      console.warn('   Hint:', error.hint)
-      console.warn('   Full error:', JSON.stringify(error, null, 2))
+    if (!response.ok) {
+      console.warn('⚠️  Edge function returned non-OK status:', response.status)
+      const errorText = await response.text()
+      console.warn('   Response:', errorText)
       return []
     }
     
-    return data.map(job => job.external_id)
+    const { existing_ids, error } = await response.json()
+    
+    if (error) {
+      console.warn('⚠️  Edge function returned error:', error)
+      return []
+    }
+    
+    return existing_ids || []
   } catch (error) {
     console.warn('⚠️  Could not check existing jobs, will rely on database deduplication')
     console.warn('   Error:', error.message)
