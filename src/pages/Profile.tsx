@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, LogOut, Settings } from "lucide-react";
+import { Upload } from "lucide-react";
 import { profileService } from "@/services/profileService";
 import CVDisplay from "@/components/CVDisplay";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -175,10 +175,6 @@ const Profile = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -402,33 +398,6 @@ const Profile = () => {
             />
           )}
 
-          {/* Account Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Account</CardTitle>
-              <CardDescription>
-                Manage your account settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/settings")}
-                className="w-full"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Go to Settings
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={handleSignOut}
-                className="w-full"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
