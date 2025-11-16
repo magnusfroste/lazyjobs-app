@@ -22,6 +22,7 @@ const Swipe = () => {
   const [matchMode, setMatchMode] = useState<MatchMode>("precomputed");
   const [keywordThreshold, setKeywordThreshold] = useState(0.65);
   const [aiTopN, setAiTopN] = useState(50);
+  const [swipePreview, setSwipePreview] = useState<"left" | "right" | null>(null);
   const { toast } = useToast();
   const { jobs, loading: jobsLoading } = useJobs(
     user?.id,
@@ -70,6 +71,22 @@ const Swipe = () => {
       title: `Switched to ${modeLabel} matching`,
       description: "Showing fresh jobs!",
     });
+  };
+
+  const handleButtonSwipeLeft = () => {
+    setSwipePreview("left");
+    setTimeout(() => {
+      setSwipePreview(null);
+      handleSwipe("left");
+    }, 200);
+  };
+
+  const handleButtonSwipeRight = () => {
+    setSwipePreview("right");
+    setTimeout(() => {
+      setSwipePreview(null);
+      handleSwipe("right");
+    }, 200);
   };
 
   // Redirect to auth if not logged in
@@ -133,13 +150,14 @@ const Swipe = () => {
                     matchThreshold={keywordThreshold}
                     matchMode={matchMode}
                     topN={aiTopN}
+                    swipePreview={idx === 0 ? swipePreview : null}
                   />
                 ))
               }
             />
             <SwipeControls
-              onSwipeLeft={() => handleSwipe("left")}
-              onSwipeRight={() => handleSwipe("right")}
+              onSwipeLeft={handleButtonSwipeLeft}
+              onSwipeRight={handleButtonSwipeRight}
               onUndo={handleUndo}
               canUndo={canUndo}
             />
