@@ -562,6 +562,9 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               </motion.div>
             </div>
 
+            {/* Divider */}
+            <div className="border-t border-border/30" />
+
             {/* Skills Breakdown */}
             {job.required_skills && job.required_skills.length > 0 && (
               <div className="space-y-3">
@@ -606,6 +609,9 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 )}
               </div>
             )}
+
+            {/* Divider */}
+            {job.recommendation && <div className="border-t border-border/30" />}
 
             {/* AI Recommendation */}
             {job.recommendation && (
