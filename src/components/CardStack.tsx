@@ -25,6 +25,8 @@ export const CardStack = ({ cards, previewCount = 3 }: CardStackProps) => {
             right: 0,
             zIndex: 10 - index,
             transform: `scale(${1 - index * 0.05}) translateY(${index * 10}px)`,
+            opacity: index === 0 ? 1 : 1 - (index * 0.4),
+            filter: index === 0 ? "none" : `blur(${index * 2}px)`,
             pointerEvents: index === 0 ? "auto" : "none",
           }}
         >
