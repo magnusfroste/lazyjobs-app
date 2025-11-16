@@ -42,15 +42,15 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background">
       <TopBar />
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="mb-6">
+      <div className="container max-w-4xl mx-auto py-4 md:py-6 px-3 md:px-4">
+        <div className="mb-4 md:mb-6">
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-2">
             Manage your application settings and preferences
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Push Notifications */}
           <NotificationSettings userId={user.id} />
 
@@ -87,7 +87,7 @@ export default function Settings() {
             <CardContent>
               <div className="space-y-2">
                 <Label>Theme</Label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2 md:gap-3">
                   <Button
                     variant={theme === "light" ? "default" : "outline"}
                     onClick={() => setTheme("light")}

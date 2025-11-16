@@ -373,7 +373,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               ease: [0.4, 0, 1, 1]
             }
           }}
-          className={`absolute inset-0 p-6 pt-16 overflow-y-auto bg-background rounded-3xl ${
+          className={`absolute inset-0 p-3 pt-12 md:p-6 md:pt-16 overflow-y-auto bg-background rounded-3xl ${
             isFlipped ? 'z-10' : 'pointer-events-none z-0'
           }`}
         >
@@ -406,7 +406,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 ease: [0.4, 0, 0.2, 1]
               }
             } : { opacity: 0, y: 20 }}
-            className="space-y-6"
+            className="space-y-3 md:space-y-4"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -563,7 +563,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
 
             {/* Skills Breakdown */}
             {job.required_skills && job.required_skills.length > 0 && (
-              <div className="bg-muted/30 rounded-lg p-5 space-y-4 border border-border/50">
+              <div className="bg-muted/30 rounded-lg p-3 md:p-4 space-y-3 border border-border/50">
                 <h4 className="font-medium text-sm flex items-center gap-2">
                   💡 Skills Analysis
                 </h4>
@@ -574,7 +574,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                     <span>✅</span>
                     <span>You Have ({matchedSkills.length})</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {matchedSkills.length > 0 ? (
                       matchedSkills.map((skill, idx) => (
                         <Badge key={idx} variant="secondary" className="bg-green-500/10 text-green-700 dark:text-green-300 text-xs border-green-500/20">
@@ -594,7 +594,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                       <span>📚</span>
                       <span>To Learn ({missingSkills.length})</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {missingSkills.map((skill, idx) => (
                         <Badge key={idx} variant="secondary" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 text-xs border-orange-500/20">
                           {skill}
