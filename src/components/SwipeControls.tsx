@@ -10,7 +10,7 @@ interface SwipeControlsProps {
 
 const SwipeControls = ({ onSwipeLeft, onSwipeRight, onUndo, canUndo }: SwipeControlsProps) => {
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 z-50">
+    <div className="fixed left-1/2 -translate-x-1/2 flex items-center gap-6 z-50 safe-bottom" style={{ bottom: '2rem' }}>
       <motion.button
         whileTap={{ scale: 0.9 }}
         whileHover={{ scale: 1.1 }}

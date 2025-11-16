@@ -53,8 +53,8 @@ const TopBar = ({
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b">
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-between gap-3">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b safe-top">
+      <div className="container max-w-2xl mx-auto px-3 md:px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Briefcase className="w-6 h-6 text-primary" />
           <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
