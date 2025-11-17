@@ -14,6 +14,7 @@ import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 import MobileNavBar from "@/components/MobileNavBar";
+import { SwipeHint } from "@/components/SwipeHint";
 import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
 
 type MatchMode = "keyword" | "precomputed";
@@ -132,6 +133,7 @@ const Swipe = () => {
   return (
     <div className="min-h-screen pb-32">
         <TopBar />
+        <SwipeHint />
 
       <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-0 md:pt-20">
         {remainingJobs > 0 ? (
