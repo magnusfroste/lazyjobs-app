@@ -13,6 +13,7 @@ import { profileService } from "@/services/profileService";
 import CVDisplay from "@/components/CVDisplay";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import MobileNavBar from "@/components/MobileNavBar";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -177,7 +178,7 @@ const Profile = () => {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen pb-20 md:pb-8 bg-background">
       <TopBar />
       
       <div className="container max-w-2xl mx-auto px-3 md:px-4 py-20 md:py-24">
@@ -400,6 +401,8 @@ const Profile = () => {
 
         </div>
       </div>
+
+      <MobileNavBar />
     </div>
   );
 };

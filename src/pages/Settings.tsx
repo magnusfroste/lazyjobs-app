@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Moon, Sun, Monitor, Bell } from "lucide-react";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { FEATURES } from "@/lib/featureFlags";
+import MobileNavBar from "@/components/MobileNavBar";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ export default function Settings() {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       <TopBar />
       <div className="container max-w-4xl mx-auto py-4 md:py-6 px-3 md:px-4">
         <div className="mb-4 md:mb-6">
@@ -118,6 +119,8 @@ export default function Settings() {
           </Card>
         </div>
       </div>
+
+      <MobileNavBar />
     </div>
   );
 }

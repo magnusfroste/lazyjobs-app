@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Bell, BellOff, ExternalLink, Calendar, TrendingUp, CheckCircle2, XCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/hooks/use-toast";
+import MobileNavBar from "@/components/MobileNavBar";
 
 interface NotificationHistoryItem {
   id: string;
@@ -118,7 +119,7 @@ const NotificationHistory = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       <TopBar />
 
       <div className="container max-w-4xl mx-auto px-4 py-8">
@@ -272,6 +273,8 @@ const NotificationHistory = () => {
           </div>
         )}
       </div>
+
+      <MobileNavBar />
     </div>
   );
 };
