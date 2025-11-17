@@ -181,13 +181,26 @@ const Profile = () => {
     <div className="min-h-screen pb-20 md:pb-8 bg-background">
       <TopBar />
       
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 py-20 md:py-24">
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-3xl font-bold">Profile</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your personal information and CV
-          </p>
+      {/* Desktop header */}
+      <div className="hidden md:block">
+        <div className="container max-w-2xl mx-auto px-3 md:px-4 py-20 md:py-24">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-3xl font-bold">Profile</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage your personal information and CV
+            </p>
+          </div>
         </div>
+      </div>
+
+      {/* Mobile header - simple title only */}
+      <div className="md:hidden pt-4 pb-2">
+        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+          Profile
+        </h1>
+      </div>
+
+      <div className="container max-w-2xl mx-auto px-3 md:px-4 md:py-0 py-4">
 
         <div className="space-y-4 md:space-y-6">
           {/* Profile Information */}
