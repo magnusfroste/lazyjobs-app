@@ -56,7 +56,8 @@ const Matches = () => {
 
   return (
     <div className="min-h-screen pb-20 md:pb-8">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
+      {/* Desktop header - show back button and full header */}
+      <div className="hidden md:block sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
         <div className="container max-w-2xl mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-between">
           <button
             onClick={() => navigate("/swipe")}
@@ -70,6 +71,13 @@ const Matches = () => {
           </h1>
           <div className="w-24" />
         </div>
+      </div>
+
+      {/* Mobile header - simple title only */}
+      <div className="md:hidden pt-4 pb-2">
+        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+          My Matches
+        </h1>
       </div>
 
       <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-4 md:pt-6">
