@@ -8,8 +8,8 @@ export interface JobWithMatch extends Job {
     skills: number;
     salary: number;
     location: number;
-    remote: number;
-    employment: number;
+    work_arrangement: number;
+    type: number;
   } | any; // Allow Json type from job_matches table
   matching_skills?: string[];
   skills_to_learn?: string[];
