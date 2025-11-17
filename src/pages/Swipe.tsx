@@ -14,6 +14,7 @@ import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 import MobileNavBar from "@/components/MobileNavBar";
+import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
 
 type MatchMode = "keyword" | "precomputed";
 
@@ -22,9 +23,10 @@ const Swipe = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
-  const [matchMode, setMatchMode] = useState<MatchMode>("precomputed");
-  const [keywordThreshold, setKeywordThreshold] = useState(0.65);
-  const [aiTopN, setAiTopN] = useState(50);
+  const [matchSettings, setMatchSettings] = useState(getMatchSettings());
+  const matchMode = matchSettings.matchMode;
+  const keywordThreshold = matchSettings.keywordThreshold;
+  const aiTopN = matchSettings.aiTopN;
   const [swipePreview, setSwipePreview] = useState<"left" | "right" | null>(null);
   const { toast } = useToast();
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -36,6 +38,16 @@ const Swipe = () => {
     keywordThreshold,
     aiTopN
   );
+
+  // Listen for settings changes from Settings page
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setMatchSettings(getMatchSettings());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
   const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo, jumpToJob } = useSwipe(
     user?.id || "",
     jobs
@@ -70,10 +82,11 @@ const Swipe = () => {
   }, [searchParams, jobs, toast, setSearchParams, jumpToJob]);
 
   const handleModeChange = (newMode: MatchMode) => {
-    setMatchMode(newMode);
-    const modeLabel = newMode === "precomputed" ? "Pre-Match" : "Keyword";
+    const newSettings = { ...matchSettings, matchMode: newMode };
+    setMatchSettings(newSettings);
+    saveMatchSettings(newSettings);
     toast({
-      title: `Switched to ${modeLabel} matching`,
+      title: `Switched to ${newMode === "precomputed" ? "Pre-Match" : "Keyword"} matching`,
       description: "Showing fresh jobs!",
     });
   };
@@ -128,13 +141,11 @@ const Swipe = () => {
 
   return (
     <div className="min-h-screen pb-32">
-      <TopBar 
+        <TopBar
           matchMode={matchMode}
           onModeChange={handleModeChange}
-          showMatchToggle={profile?.is_developer || false}
-          keywordThreshold={keywordThreshold}
-          onKeywordThresholdChange={setKeywordThreshold}
-      />
+          showMatchToggle={true}
+        />
 
       <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-0 md:pt-20">
         {remainingJobs > 0 ? (

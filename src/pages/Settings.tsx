@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -12,12 +12,41 @@ import { Loader2, Moon, Sun, Monitor } from "lucide-react";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { FEATURES } from "@/lib/featureFlags";
 import MobileNavBar from "@/components/MobileNavBar";
+import { Slider } from "@/components/ui/slider";
+import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Settings() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading } = useProfile(user?.id);
   const { theme, setTheme } = useTheme();
+  const [matchSettings, setMatchSettings] = useState(getMatchSettings());
+  const { toast } = useToast();
+
+  const handleMatchModeChange = (mode: "keyword" | "precomputed") => {
+    const newSettings = { ...matchSettings, matchMode: mode };
+    setMatchSettings(newSettings);
+    saveMatchSettings(newSettings);
+    toast({
+      title: "Match mode updated",
+      description: `Switched to ${mode === "precomputed" ? "Pre-Match" : "Keyword"} mode`,
+    });
+  };
+
+  const handleKeywordThresholdChange = (value: number[]) => {
+    const threshold = value[0];
+    const newSettings = { ...matchSettings, keywordThreshold: threshold };
+    setMatchSettings(newSettings);
+    saveMatchSettings(newSettings);
+  };
+
+  const handleAiTopNChange = (value: number[]) => {
+    const topN = value[0];
+    const newSettings = { ...matchSettings, aiTopN: topN };
+    setMatchSettings(newSettings);
+    saveMatchSettings(newSettings);
+  };
 
   useEffect(() => {
     // Only redirect if auth has finished loading and there's no user
@@ -106,6 +135,90 @@ export default function Settings() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Match Quality */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Match Quality</CardTitle>
+              <CardDescription>
+                Adjust how jobs are matched to your profile
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Match Mode Selection */}
+              <div className="space-y-3">
+                <Label>Match Mode</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant={matchSettings.matchMode === "keyword" ? "default" : "outline"}
+                    onClick={() => handleMatchModeChange("keyword")}
+                    className="w-full"
+                  >
+                    <span className="mr-2">🔤</span>
+                    Keyword
+                  </Button>
+                  <Button
+                    variant={matchSettings.matchMode === "precomputed" ? "default" : "outline"}
+                    onClick={() => handleMatchModeChange("precomputed")}
+                    className="w-full"
+                  >
+                    <span className="mr-2">⚡</span>
+                    Pre-Match
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {matchSettings.matchMode === "keyword" 
+                    ? "Matches based on keyword similarity to your CV"
+                    : "AI-powered matches pre-calculated for best results"}
+                </p>
+              </div>
+
+              {/* Quality Threshold - Show based on mode */}
+              {matchSettings.matchMode === "keyword" ? (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Keyword Match Threshold</Label>
+                    <span className="text-sm font-medium">
+                      {Math.round(matchSettings.keywordThreshold * 100)}%
+                    </span>
+                  </div>
+                  <Slider
+                    value={[matchSettings.keywordThreshold]}
+                    onValueChange={handleKeywordThresholdChange}
+                    min={0.3}
+                    max={0.95}
+                    step={0.05}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>More Jobs (30%)</span>
+                    <span>Fewer, Better Jobs (95%)</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Number of Top Matches</Label>
+                    <span className="text-sm font-medium">
+                      Top {matchSettings.aiTopN}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[matchSettings.aiTopN]}
+                    onValueChange={handleAiTopNChange}
+                    min={10}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Fewer, Best Jobs (10)</span>
+                    <span>More Jobs (100)</span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

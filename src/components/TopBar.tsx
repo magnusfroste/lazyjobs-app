@@ -1,17 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Briefcase, Heart, User, Sun, Moon, Menu, LogOut, Bell, Settings } from "lucide-react";
+import { Briefcase, Heart, User, Sun, Moon, LogOut, Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type MatchMode = "keyword" | "precomputed";
 
@@ -19,22 +12,12 @@ interface TopBarProps {
   matchMode?: MatchMode;
   onModeChange?: (mode: MatchMode) => void;
   showMatchToggle?: boolean;
-  isPremium?: boolean;
-  keywordThreshold?: number;
-  onKeywordThresholdChange?: (threshold: number) => void;
-  aiTopN?: number;
-  onAiTopNChange?: (topN: number) => void;
 }
 
 const TopBar = ({
   matchMode,
   onModeChange,
   showMatchToggle = false,
-  isPremium = false,
-  keywordThreshold = 0.65,
-  onKeywordThresholdChange,
-  aiTopN = 50,
-  onAiTopNChange,
 }: TopBarProps = {}) => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
@@ -59,17 +42,18 @@ const TopBar = ({
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b safe-top">
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 py-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="container max-w-5xl mx-auto px-3 md:px-4 py-3 flex items-center justify-between gap-4">
+        {/* Logo - Left side */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <Briefcase className="w-6 h-6 text-primary" />
           <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
             LazyJobs
           </span>
         </div>
 
-        {/* Match Mode Toggle - Compact for TopBar */}
+        {/* Match Mode Toggle - Center (when shown) */}
         {showMatchToggle && matchMode && onModeChange && (
-          <div className="flex-1 flex justify-center">
+          <div className="flex-shrink-0">
             <div className="inline-flex items-center rounded-full bg-muted p-1 gap-0.5">
               <button
                 onClick={() => onModeChange("keyword")}
@@ -79,14 +63,10 @@ const TopBar = ({
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {isMobile ? (
+                <span className="flex items-center gap-1.5">
                   <span className="text-base">🔤</span>
-                ) : (
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-base">🔤</span>
-                    <span>Keyword</span>
-                  </span>
-                )}
+                  <span>Keyword</span>
+                </span>
               </button>
               <button
                 onClick={() => onModeChange("precomputed")}
@@ -96,123 +76,136 @@ const TopBar = ({
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {isMobile ? (
+                <span className="flex items-center gap-1.5">
                   <span className="text-base">⚡</span>
-                ) : (
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-base">⚡</span>
-                    <span>Pre-Match</span>
-                  </span>
-                )}
+                  <span>Pre-Match</span>
+                </span>
               </button>
             </div>
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            className="rounded-full w-10 h-10 p-0"
-          >
-            {theme === "dark" ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
-          </Button>
+        {/* Spacer */}
+        <div className="flex-1" />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
-                <Menu className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => navigate("/swipe")}>
-                <Briefcase className="w-4 h-4 mr-2" />
-                Swipe Jobs
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/matches")}>
-                <Heart className="w-4 h-4 mr-2" />
-                My Matches
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/notifications")}>
-                <Bell className="w-4 h-4 mr-2" />
-                Notifications
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/profile")}>
-                <User className="w-4 h-4 mr-2" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/settings")}>
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              
-              {/* Match Quality Settings - Only show when callbacks are provided */}
-              {(onKeywordThresholdChange || onAiTopNChange) && (
-                <>
-                  <div className="px-2 py-1.5">
-                    <div className="text-sm font-medium mb-2">Match Quality</div>
-                    {(matchMode === "keyword" || matchMode === "precomputed") ? (
-                      <div className="space-y-1">
-                        <DropdownMenuItem
-                          onClick={() => onKeywordThresholdChange?.(0.4)}
-                          className={keywordThreshold === 0.4 ? "bg-accent" : ""}
-                        >
-                          Low (40%+)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onKeywordThresholdChange?.(0.65)}
-                          className={keywordThreshold === 0.65 ? "bg-accent" : ""}
-                        >
-                          Medium (65%+)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onKeywordThresholdChange?.(0.85)}
-                          className={keywordThreshold === 0.85 ? "bg-accent" : ""}
-                        >
-                          High (85%+)
-                        </DropdownMenuItem>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <DropdownMenuItem
-                          onClick={() => onAiTopNChange?.(100)}
-                          className={aiTopN === 100 ? "bg-accent" : ""}
-                        >
-                          Low (Top 100)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onAiTopNChange?.(50)}
-                          className={aiTopN === 50 ? "bg-accent" : ""}
-                        >
-                          Medium (Top 50)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onAiTopNChange?.(25)}
-                          className={aiTopN === 25 ? "bg-accent" : ""}
-                        >
-                          High (Top 25)
-                        </DropdownMenuItem>
-                      </div>
-                    )}
-                  </div>
+        {/* Navigation Icons - Right side */}
+        <TooltipProvider>
+          <div className="flex items-center gap-1">
+            {/* Swipe Jobs */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/swipe")}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <Briefcase className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Swipe Jobs</TooltipContent>
+            </Tooltip>
 
-                  <DropdownMenuSeparator />
-                </>
-              )}
-              <DropdownMenuItem onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            {/* My Matches */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/matches")}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <Heart className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>My Matches</TooltipContent>
+            </Tooltip>
 
-        </div>
+            {/* Notifications */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/notifications")}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <Bell className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Notifications</TooltipContent>
+            </Tooltip>
+
+            {/* Profile */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/profile")}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <User className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Profile</TooltipContent>
+            </Tooltip>
+
+            {/* Settings */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/settings")}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Settings</TooltipContent>
+            </Tooltip>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-border mx-1" />
+
+            {/* Theme Toggle */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  {theme === "dark" ? (
+                    <Sun className="w-5 h-5" />
+                  ) : (
+                    <Moon className="w-5 h-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {theme === "dark" ? "Light Mode" : "Dark Mode"}
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Sign Out */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Sign Out</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </div>
     </div>
   );
