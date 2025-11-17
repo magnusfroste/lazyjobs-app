@@ -55,7 +55,6 @@ interface JobCardProps {
   cardsRemaining?: number;
   matchThreshold?: number;
   matchMode?: "keyword" | "precomputed";
-  topN?: number;
   mode?: "swipe" | "matches";
   onDelete?: () => void;
   onApply?: () => void;
@@ -67,7 +66,7 @@ interface JobCardProps {
   swipePreview?: "left" | "right" | null;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, topN, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false, swipePreview }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false, swipePreview }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -356,8 +355,6 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
             <span className="text-sm font-medium text-muted-foreground">
               {(matchMode === "keyword" || matchMode === "precomputed") && matchThreshold !== undefined ? (
                 <>{cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} above {Math.round(matchThreshold * 100)}%</>
-              ) : topN !== undefined ? (
-                <>{cardsRemaining} of top {topN} matches</>
               ) : (
                 <>{cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} remaining</>
               )}

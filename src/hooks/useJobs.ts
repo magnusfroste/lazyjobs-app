@@ -8,8 +8,7 @@ export const useJobs = (
   userId?: string,
   excludeSwiped = true,
   matchMode: MatchMode = "keyword",
-  minThreshold = 0.65,
-  topN = 50
+  minThreshold = 0.65
 ) => {
   const [jobs, setJobs] = useState<JobWithMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +52,7 @@ export const useJobs = (
 
   useEffect(() => {
     loadJobs();
-  }, [userId, excludeSwiped, matchMode, minThreshold, topN]);
+  }, [userId, excludeSwiped, matchMode, minThreshold]);
 
   return { jobs, loading, error, refetch: loadJobs };
 };
