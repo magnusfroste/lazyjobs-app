@@ -43,13 +43,26 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       <TopBar />
-      <div className="container max-w-4xl mx-auto py-4 md:py-6 px-3 md:px-4">
-        <div className="mb-4 md:mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your application settings and preferences
-          </p>
+      {/* Desktop header */}
+      <div className="hidden md:block">
+        <div className="container max-w-4xl mx-auto py-4 md:py-6 px-3 md:px-4">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+            <p className="text-muted-foreground mt-2">
+              Manage your application settings and preferences
+            </p>
+          </div>
         </div>
+      </div>
+
+      {/* Mobile header - simple title only */}
+      <div className="md:hidden pt-4 pb-2">
+        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+          Settings
+        </h1>
+      </div>
+
+      <div className="container max-w-4xl mx-auto md:py-0 py-4 px-3 md:px-4">
 
         <div className="space-y-4 md:space-y-6">
           {/* Push Notifications */}
