@@ -1,4 +1,4 @@
-import { X, RotateCcw, Heart } from "lucide-react";
+import { X, RotateCcw, Heart, Menu, Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface SwipeControlsProps {
@@ -6,12 +6,32 @@ interface SwipeControlsProps {
   onSwipeRight: () => void;
   onUndo: () => void;
   canUndo: boolean;
+  onMenuClick?: () => void;
+  onThemeToggle?: () => void;
+  currentTheme?: "light" | "dark";
+  isMobile?: boolean;
 }
 
-const SwipeControls = ({ onSwipeLeft, onSwipeRight, onUndo, canUndo }: SwipeControlsProps) => {
+const SwipeControls = ({ onSwipeLeft, onSwipeRight, onUndo, canUndo, onMenuClick, onThemeToggle, currentTheme, isMobile }: SwipeControlsProps) => {
   return (
-    <div className="fixed left-1/2 -translate-x-1/2 flex items-center gap-6 z-50 safe-bottom" style={{ bottom: '2rem' }}>
-      <motion.button
+    <div className="fixed left-0 right-0 flex items-center justify-between px-4 z-50 safe-bottom" style={{ bottom: '2rem' }}>
+      {/* Left: Hamburger Menu - Mobile Only */}
+      {isMobile && onMenuClick ? (
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
+          onClick={onMenuClick}
+          className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground shadow-lg hover:shadow-xl transition-shadow"
+        >
+          <Menu className="w-6 h-6" />
+        </motion.button>
+      ) : (
+        <div className="w-12" />
+      )}
+
+      {/* Center: Swipe Controls */}
+      <div className="flex items-center gap-6">
+        <motion.button
         whileTap={{ scale: 0.9 }}
         whileHover={{ scale: 1.1 }}
         onClick={() => {
@@ -44,6 +64,25 @@ const SwipeControls = ({ onSwipeLeft, onSwipeRight, onUndo, canUndo }: SwipeCont
       >
         <Heart className="w-8 h-8" />
       </motion.button>
+      </div>
+
+      {/* Right: Theme Toggle - Mobile Only */}
+      {isMobile && onThemeToggle ? (
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
+          onClick={onThemeToggle}
+          className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground shadow-lg hover:shadow-xl transition-shadow"
+        >
+          {currentTheme === "dark" ? (
+            <Sun className="w-6 h-6" />
+          ) : (
+            <Moon className="w-6 h-6" />
+          )}
+        </motion.button>
+      ) : (
+        <div className="w-12" />
+      )}
     </div>
   );
 };
