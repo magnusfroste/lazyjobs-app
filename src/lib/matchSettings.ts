@@ -18,7 +18,9 @@ export const getMatchSettings = (): MatchSettings => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+      const parsed = JSON.parse(stored);
+      // Force precomputed mode regardless of what's stored
+      return { ...DEFAULT_SETTINGS, ...parsed, matchMode: "precomputed" };
     }
   } catch (error) {
     console.error("Failed to load match settings:", error);

@@ -81,15 +81,7 @@ const Swipe = () => {
     }
   }, [searchParams, jobs, toast, setSearchParams, jumpToJob]);
 
-  const handleModeChange = (newMode: MatchMode) => {
-    const newSettings = { ...matchSettings, matchMode: newMode };
-    setMatchSettings(newSettings);
-    saveMatchSettings(newSettings);
-    toast({
-      title: `Switched to ${newMode === "precomputed" ? "Pre-Match" : "Keyword"} matching`,
-      description: "Showing fresh jobs!",
-    });
-  };
+  // Mode change handler removed - precomputed is now the only mode
 
 
   const handleButtonSwipeLeft = () => {
@@ -141,11 +133,7 @@ const Swipe = () => {
 
   return (
     <div className="min-h-screen pb-32">
-        <TopBar
-          matchMode={matchMode}
-          onModeChange={handleModeChange}
-          showMatchToggle={true}
-        />
+        <TopBar />
 
       <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-0 md:pt-20">
         {remainingJobs > 0 ? (
