@@ -26,7 +26,6 @@ const Swipe = () => {
   const [matchSettings, setMatchSettings] = useState(getMatchSettings());
   const matchMode = matchSettings.matchMode;
   const keywordThreshold = matchSettings.keywordThreshold;
-  const aiTopN = matchSettings.aiTopN;
   const [swipePreview, setSwipePreview] = useState<"left" | "right" | null>(null);
   const { toast } = useToast();
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -35,8 +34,7 @@ const Swipe = () => {
     user?.id,
     true,
     matchMode,
-    keywordThreshold,
-    aiTopN
+    keywordThreshold
   );
 
   // Listen for settings changes from Settings page
@@ -154,7 +152,6 @@ const Swipe = () => {
                     cardsRemaining={remainingJobs}
                     matchThreshold={keywordThreshold}
                     matchMode={matchMode}
-                    topN={aiTopN}
                     swipePreview={idx === 0 ? swipePreview : null}
                   />
                 ))
