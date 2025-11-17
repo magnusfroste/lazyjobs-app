@@ -187,6 +187,46 @@ export class ProfileService {
     }
   }
 
+  async getUserStatistics(userId: string): Promise<{
+    totalSwipes: number;
+    totalMatches: number;
+    totalApplications: number;
+  }> {
+    try {
+      // Fetch total swipes
+      const { count: swipesCount, error: swipesError } = await supabase
+        .from("swipes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (swipesError) throw new ProfileServiceError(swipesError.message);
+
+      // Fetch total matches
+      const { count: matchesCount, error: matchesError } = await supabase
+        .from("matches")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (matchesError) throw new ProfileServiceError(matchesError.message);
+
+      // Fetch total applications
+      const { count: applicationsCount, error: applicationsError } = await supabase
+        .from("applications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (applicationsError) throw new ProfileServiceError(applicationsError.message);
+
+      return {
+        totalSwipes: swipesCount || 0,
+        totalMatches: matchesCount || 0,
+        totalApplications: applicationsCount || 0,
+      };
+    } catch (error: any) {
+      throw new ProfileServiceError(error.message);
+    }
+  }
+
   private flattenSkills(skillsData: any): string[] {
     const skills: string[] = [];
     
