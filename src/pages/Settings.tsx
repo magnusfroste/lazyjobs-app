@@ -22,6 +22,7 @@ export default function Settings() {
   const { profile, loading } = useProfile(user?.id);
   const { theme, setTheme } = useTheme();
   const [matchSettings, setMatchSettings] = useState(getMatchSettings());
+  const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
   // Removed handleMatchModeChange and handleKeywordThresholdChange - precomputed is now the only mode
@@ -30,7 +31,26 @@ export default function Settings() {
     const threshold = value[0];
     const newSettings = { ...matchSettings, keywordThreshold: threshold };
     setMatchSettings(newSettings);
-    saveMatchSettings(newSettings);
+  };
+
+  const handleSavePreferences = async () => {
+    try {
+      setSaving(true);
+      saveMatchSettings(matchSettings);
+      
+      toast({
+        title: "Success",
+        description: "Preferences saved successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save preferences",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -158,6 +178,17 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Button */}
+          <div className="flex justify-end">
+            <Button 
+              onClick={handleSavePreferences} 
+              disabled={saving}
+              className="w-full md:w-auto"
+            >
+              {saving ? "Saving..." : "Save Preferences"}
+            </Button>
+          </div>
         </div>
       </div>
 
