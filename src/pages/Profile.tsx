@@ -191,7 +191,7 @@ const Profile = () => {
       
       {/* Desktop header */}
       <div className="hidden md:block">
-        <div className="container max-w-2xl mx-auto px-3 md:px-4 py-20 md:py-24">
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
           <div className="mb-4 md:mb-6">
             <h1 className="text-3xl font-bold">Profile</h1>
             <p className="text-muted-foreground mt-2">
@@ -208,7 +208,7 @@ const Profile = () => {
         </h1>
       </div>
 
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 md:py-0 py-4">
+      <div className="container max-w-4xl mx-auto px-3 md:px-4 md:py-0 py-4">
 
         <div className="space-y-4 md:space-y-6">
           {/* User Statistics */}

@@ -45,7 +45,7 @@ export default function Settings() {
       <TopBar />
       {/* Desktop header */}
       <div className="hidden md:block">
-        <div className="container max-w-4xl mx-auto py-4 md:py-6 px-3 md:px-4">
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
           <div className="mb-4 md:mb-6">
             <h1 className="text-3xl font-bold text-foreground">Settings</h1>
             <p className="text-muted-foreground mt-2">

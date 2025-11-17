@@ -124,23 +124,12 @@ const NotificationHistory = () => {
 
       {/* Desktop header */}
       <div className="hidden md:block">
-        <div className="container max-w-4xl mx-auto px-4 py-8">
-          <div className="mb-6">
-            <Button variant="ghost" onClick={() => navigate("/profile")} className="mb-4">
-              ← Back to Profile
-            </Button>
-            
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                  <Bell className="h-8 w-8" />
-                  Notification History
-                </h1>
-                <p className="text-muted-foreground mt-2">
-                  View all job match notifications you've received
-                </p>
-              </div>
-            </div>
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-3xl font-bold">Notifications</h1>
+            <p className="text-muted-foreground mt-2">
+              View and manage your notification history
+            </p>
           </div>
         </div>
       </div>

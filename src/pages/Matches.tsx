@@ -58,7 +58,7 @@ const Matches = () => {
     <div className="min-h-screen pb-20 md:pb-8">
       {/* Desktop header - show back button and full header */}
       <div className="hidden md:block sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
-        <div className="container max-w-2xl mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-between">
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between">
           <button
             onClick={() => navigate("/swipe")}
             className="flex items-center gap-2 text-primary font-semibold hover:underline"
@@ -80,7 +80,7 @@ const Matches = () => {
         </h1>
       </div>
 
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-4 md:pt-6">
+      <div className="container max-w-4xl mx-auto px-3 md:px-4 pt-4 md:pt-6">
         <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} matches</p>
 
         <div className="space-y-3 md:space-y-4">
