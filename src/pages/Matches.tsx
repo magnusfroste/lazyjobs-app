@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ApplicationAssistantModal } from "@/components/ApplicationAssistantModal";
 import { Job, JobWithMatch } from "@/types/job";
 import JobCard from "@/components/JobCard";
+import MobileNavBar from "@/components/MobileNavBar";
 
 const Matches = () => {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
@@ -54,7 +55,7 @@ const Matches = () => {
   }
 
   return (
-    <div className="min-h-screen pb-8">
+    <div className="min-h-screen pb-20 md:pb-8">
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
         <div className="container max-w-2xl mx-auto px-3 md:px-4 py-2 md:py-3 flex items-center justify-between">
           <button
@@ -126,6 +127,8 @@ const Matches = () => {
           onClose={() => setSelectedJobForApplication(null)}
         />
       )}
+
+      <MobileNavBar />
     </div>
   );
 };
