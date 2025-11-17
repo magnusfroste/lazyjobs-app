@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
-import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ApplicationAssistantModal } from "@/components/ApplicationAssistantModal";
 import { Job, JobWithMatch } from "@/types/job";
 import JobCard from "@/components/JobCard";
 import MobileNavBar from "@/components/MobileNavBar";
+import TopBar from "@/components/TopBar";
 
 const Matches = () => {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
@@ -56,20 +56,14 @@ const Matches = () => {
 
   return (
     <div className="min-h-screen pb-20 md:pb-8">
-      {/* Desktop header - show back button and full header */}
+      <TopBar />
+      
+      {/* Desktop header */}
       <div className="hidden md:block sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
-        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4 flex items-center justify-between">
-          <button
-            onClick={() => navigate("/swipe")}
-            className="flex items-center gap-2 text-primary font-semibold hover:underline"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Swipe
-          </button>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4">
+          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
             My Matches
           </h1>
-          <div className="w-24" />
         </div>
       </div>
 
