@@ -309,16 +309,29 @@ async function enrichJobs(jobs) {
         ...(enrichedData.confidence && { enrichment_confidence: enrichedData.confidence })
       }
     })
+
+    // CRITICAL: Validate that required fields are preserved after enrichment
+    const validatedJobs = mergedJobs.map((enrichedJob, index) => {
+      const originalJob = jobs[index]
+      
+      // Ensure required fields are never lost during enrichment
+      return {
+        ...enrichedJob,
+        external_id: enrichedJob.external_id || originalJob.external_id,
+        title: enrichedJob.title || originalJob.title,
+        company: enrichedJob.company || originalJob.company
+      }
+    })
     
-    console.log(`✅ AI enrichment complete (${mergedJobs.length} jobs)`)
+    console.log(`✅ AI enrichment complete (${validatedJobs.length} jobs)`)
     
     // Show sample enrichment
-    const sampleJob = mergedJobs[0]
+    const sampleJob = validatedJobs[0]
     if (sampleJob?.required_skills?.length > 0) {
       console.log(`   Sample skills: ${sampleJob.required_skills.slice(0, 5).join(', ')}...`)
     }
     
-    return mergedJobs
+    return validatedJobs
   } catch (error) {
     console.warn(`⚠️  Enrichment failed: ${error.message}, continuing with original jobs`)
     return jobs
