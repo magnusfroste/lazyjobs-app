@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Moon, Sun, Monitor, Bell } from "lucide-react";
+import { Loader2, Moon, Sun, Monitor } from "lucide-react";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { FEATURES } from "@/lib/featureFlags";
 import MobileNavBar from "@/components/MobileNavBar";
@@ -67,28 +67,6 @@ export default function Settings() {
         <div className="space-y-4 md:space-y-6">
           {/* Push Notifications */}
           <NotificationSettings userId={user.id} />
-
-          {/* Notification History */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notification History
-              </CardTitle>
-              <CardDescription>
-                View all your past push notifications
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate("/notifications")}
-              >
-                View Notification History
-              </Button>
-            </CardContent>
-          </Card>
 
           {/* Appearance */}
           <Card>
