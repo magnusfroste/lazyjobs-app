@@ -174,8 +174,9 @@ function transformJob(openJob) {
   // Deduplicate and clean (in case of any duplicates from OpenJobs)
   const uniqueSkills = [...new Set(skills.filter(s => s && s.trim()))]
   
-  // Determine if job is active (LinkedIn-style expiration)
-  const isActive = calculateJobActiveStatus(openJob)
+  // Use is_active from OpenJobs API (OpenJobs filters by is_active=true)
+  // Fallback to true if not provided (shouldn't happen with updated OpenJobs)
+  const isActive = openJob.is_active !== undefined ? openJob.is_active : true
   
   return {
     external_id: `openjobs_${openJob.id}`,
