@@ -39,6 +39,7 @@ Deno.serve(async (req) => {
 
     if (error) {
       console.error('Error querying jobs:', error)
+      console.error('Error details:', JSON.stringify(error, null, 2))
       throw error
     }
 
@@ -51,7 +52,11 @@ Deno.serve(async (req) => {
     )
   } catch (error) {
     console.error('Error in check-existing-jobs function:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : (typeof error === 'object' && error !== null)
+        ? JSON.stringify(error)
+        : 'Unknown error'
     return new Response(
       JSON.stringify({ error: errorMessage, existing_ids: [] }),
       { 
