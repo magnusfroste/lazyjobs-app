@@ -36,12 +36,13 @@ const CRON_SCHEDULE = process.env.CRON_SCHEDULE // e.g., "0 6 * * *" for 6 AM da
 /**
  * Fetch jobs from OpenJobs API with retry logic
  */
-async function fetchOpenJobs(limit = 100, offset = 0, retries = 3) {
+async function fetchOpenJobs(limit = 100, offset = 0, retries = 3, lastSync) {
   console.log(`🌐 Fetching jobs from OpenJobs (limit: ${limit}, offset: ${offset})...`)
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const url = `${OPENJOBS_API_URL}/jobs?limit=${limit}&offset=${offset}&is_active=true`
+      // Use created_after for incremental sync - only fetch jobs added to OpenJobs since last sync!
+      const url = `${OPENJOBS_API_URL}/jobs?created_after=${lastSync}&is_active=true&limit=${limit}&offset=${offset}`
       
       // Add timeout to prevent hanging
       const controller = new AbortController()
