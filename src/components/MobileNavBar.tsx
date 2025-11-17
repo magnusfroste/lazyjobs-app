@@ -15,7 +15,7 @@ const MobileNavBar = () => {
 
   const navItems = [
     { path: "/swipe", icon: Home, label: "Swipe" },
-    { path: "/matches", icon: Heart, label: "Matches" },
+    { path: "/matches", icon: Heart, label: "Saved" },
     { path: "/notifications", icon: Bell, label: "Notifs" },
     { path: "/profile", icon: User, label: "Profile" },
     { path: "/settings", icon: Settings, label: "Settings" },

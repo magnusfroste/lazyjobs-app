@@ -72,7 +72,7 @@ const TopBar = () => {
                   <Heart className="w-5 h-5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>My Matches</TooltipContent>
+              <TooltipContent>Saved Jobs</TooltipContent>
             </Tooltip>
 
             {/* Notifications */}
