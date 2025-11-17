@@ -55,7 +55,7 @@ const Matches = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 md:pb-8">
+    <div className="min-h-screen pb-20 md:pb-8 md:pt-16">
       <TopBar />
       
       {/* Desktop header */}
