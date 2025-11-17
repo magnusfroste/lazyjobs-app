@@ -79,6 +79,42 @@ export default function Settings() {
       <div className="container max-w-4xl mx-auto md:py-0 py-4 px-3 md:px-4">
 
         <div className="space-y-4 md:space-y-6">
+          {/* Match Quality */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Match Quality</CardTitle>
+              <CardDescription>
+                Control the minimum match score for jobs you see
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <Label>Minimum Match Score</Label>
+                  <span className="text-sm font-medium">
+                    {Math.round(matchSettings.keywordThreshold * 100)}%
+                  </span>
+                </div>
+                <Slider
+                  value={[matchSettings.keywordThreshold]}
+                  onValueChange={handleThresholdChange}
+                  min={0.3}
+                  max={0.95}
+                  step={0.05}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>More Jobs (30%)</span>
+                  <span>Best Matches Only (95%)</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  LazyJobs uses AI to score how well each job matches your profile. 
+                  Higher threshold = fewer jobs, but better matches.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Push Notifications */}
           <NotificationSettings userId={user.id} />
 
@@ -119,42 +155,6 @@ export default function Settings() {
                     System
                   </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Match Quality */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Match Quality</CardTitle>
-              <CardDescription>
-                Control the minimum match score for jobs you see
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <Label>Minimum Match Score</Label>
-                  <span className="text-sm font-medium">
-                    {Math.round(matchSettings.keywordThreshold * 100)}%
-                  </span>
-                </div>
-                <Slider
-                  value={[matchSettings.keywordThreshold]}
-                  onValueChange={handleThresholdChange}
-                  min={0.3}
-                  max={0.95}
-                  step={0.05}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>More Jobs (30%)</span>
-                  <span>Best Matches Only (95%)</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  LazyJobs uses AI to score how well each job matches your profile. 
-                  Higher threshold = fewer jobs, but better matches.
-                </p>
               </div>
             </CardContent>
           </Card>
