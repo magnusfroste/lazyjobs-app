@@ -122,24 +122,38 @@ const NotificationHistory = () => {
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       <TopBar />
 
-      <div className="container max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button variant="ghost" onClick={() => navigate("/profile")} className="mb-4">
-            ← Back to Profile
-          </Button>
-          
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <Bell className="h-8 w-8" />
-                Notification History
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                View all job match notifications you've received
-              </p>
+      {/* Desktop header */}
+      <div className="hidden md:block">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          <div className="mb-6">
+            <Button variant="ghost" onClick={() => navigate("/profile")} className="mb-4">
+              ← Back to Profile
+            </Button>
+            
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <Bell className="h-8 w-8" />
+                  Notification History
+                </h1>
+                <p className="text-muted-foreground mt-2">
+                  View all job match notifications you've received
+                </p>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Mobile header - simple title only */}
+      <div className="md:hidden pt-4 pb-2 px-4">
+        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+          Notifications
+        </h1>
+      </div>
+
+      <div className="container max-w-4xl mx-auto px-4 md:py-0 py-4">
+        <div className="mb-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
