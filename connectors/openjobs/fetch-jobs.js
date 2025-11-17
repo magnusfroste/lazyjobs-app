@@ -12,7 +12,7 @@
 import 'dotenv/config'
 
 // Version tracking for deployment verification
-const VERSION = '2025-11-17T03:00:00Z' // Update this manually on each deployment
+const VERSION = '2025-11-17T08:00:00Z' // Updated to filter by is_active
 const DEPLOYED_AT = new Date().toISOString() // Auto-captured on container start
 
 // Configuration
@@ -41,7 +41,7 @@ async function fetchOpenJobs(limit = 100, offset = 0, retries = 3) {
   
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const url = `${OPENJOBS_API_URL}/jobs?limit=${limit}&offset=${offset}`
+      const url = `${OPENJOBS_API_URL}/jobs?limit=${limit}&offset=${offset}&is_active=true`
       
       // Add timeout to prevent hanging
       const controller = new AbortController()

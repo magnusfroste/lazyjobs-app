@@ -94,7 +94,7 @@ serve(async (req) => {
       url: job.url || null,
       posted_at: job.posted_at || new Date().toISOString(),
       metadata: job.metadata || {},
-      is_active: true,
+      is_active: job.is_active !== undefined ? job.is_active : true, // Preserve incoming status
     }))
 
     // Upsert jobs (insert or update if external_id exists)
