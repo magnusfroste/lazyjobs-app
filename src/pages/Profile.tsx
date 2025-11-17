@@ -186,7 +186,7 @@ const Profile = () => {
 
 
   return (
-    <div className="min-h-screen pb-20 md:pb-8 bg-background">
+    <div className="min-h-screen pb-20 md:pb-8 md:pt-16 bg-background">
       <TopBar />
       
       {/* Desktop header */}
