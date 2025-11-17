@@ -8,12 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Upload } from "lucide-react";
+import { Upload, TrendingUp, Heart, FileText } from "lucide-react";
 import { profileService } from "@/services/profileService";
 import CVDisplay from "@/components/CVDisplay";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import MobileNavBar from "@/components/MobileNavBar";
+import { useQuery } from "@tanstack/react-query";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -32,6 +33,13 @@ const Profile = () => {
   const [salaryMin, setSalaryMin] = useState("");
   const [workType, setWorkType] = useState("any");
   const [employmentTypes, setEmploymentTypes] = useState<string[]>([]);
+
+  // Fetch user statistics
+  const { data: statistics, isLoading: statsLoading } = useQuery({
+    queryKey: ["userStatistics", user?.id],
+    queryFn: () => profileService.getUserStatistics(user!.id),
+    enabled: !!user?.id,
+  });
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -203,6 +211,56 @@ const Profile = () => {
       <div className="container max-w-2xl mx-auto px-3 md:px-4 md:py-0 py-4">
 
         <div className="space-y-4 md:space-y-6">
+          {/* User Statistics */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Your Activity
+              </CardTitle>
+              <CardDescription>
+                Overview of your job search progress
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="flex justify-center mb-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {statsLoading ? "..." : statistics?.totalSwipes || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Total Swipes
+                  </div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="flex justify-center mb-2">
+                    <Heart className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {statsLoading ? "..." : statistics?.totalMatches || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Matches
+                  </div>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-muted/50">
+                  <div className="flex justify-center mb-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {statsLoading ? "..." : statistics?.totalApplications || 0}
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Applications
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Profile Information */}
           <Card>
             <CardHeader>
