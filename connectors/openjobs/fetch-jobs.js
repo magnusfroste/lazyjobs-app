@@ -11,6 +11,10 @@
 
 import 'dotenv/config'
 
+// Version tracking for deployment verification
+const VERSION = '2025-11-17T03:00:00Z' // Update this manually on each deployment
+const DEPLOYED_AT = new Date().toISOString() // Auto-captured on container start
+
 // Configuration
 const OPENJOBS_API_URL = process.env.OPENJOBS_API_URL || 'http://localhost:8080'
 const INGEST_URL = process.env.INGEST_URL
@@ -440,10 +444,17 @@ async function filterNewJobs(jobs) {
  */
 async function main() {
   try {
-    console.log('🚀 OpenJobs Connector Starting...\n')
-    console.log(`📍 OpenJobs API: ${OPENJOBS_API_URL}`)
-    console.log(`📍 LazyJobs Ingest: ${INGEST_URL}`)
-    console.log(`🤖 AI Enrichment: ${ENABLE_ENRICHMENT ? 'Enabled' : 'Disabled'}\n`)
+    console.log('='.repeat(80))
+    console.log(`⏰ OpenJobs Connector v${VERSION}`)
+    console.log(`🚀 Started at: ${DEPLOYED_AT}`)
+    console.log('='.repeat(80))
+    console.log('\n📍 Configuration:')
+    console.log(`   OpenJobs API: ${OPENJOBS_API_URL}`)
+    console.log(`   LazyJobs Ingest: ${INGEST_URL}`)
+    console.log(`   AI Enrichment: ${ENABLE_ENRICHMENT ? 'Enabled' : 'Disabled'}`)
+    console.log(`   Batch Size: ${BATCH_SIZE}`)
+    console.log(`   Sync Interval: ${SYNC_INTERVAL_HOURS} hours`)
+    console.log()
     
     // Fetch ALL jobs from OpenJobs (paginate if needed)
     let allJobs = []
@@ -602,7 +613,7 @@ async function runOnSchedule() {
   // Schedule the task
   cron.schedule(CRON_SCHEDULE, async () => {
     console.log(`\n${'='.repeat(80)}`)
-    console.log(`⏰ Cron triggered at: ${new Date().toLocaleString()}`)
+    console.log(`⏰ Cron triggered at: ${new Date().toLocaleString()} (v${VERSION})`)
     console.log('='.repeat(80) + '\n')
     
     try {
