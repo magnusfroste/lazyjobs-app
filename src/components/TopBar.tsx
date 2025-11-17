@@ -6,19 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-type MatchMode = "keyword" | "precomputed";
-
-interface TopBarProps {
-  matchMode?: MatchMode;
-  onModeChange?: (mode: MatchMode) => void;
-  showMatchToggle?: boolean;
-}
-
-const TopBar = ({
-  matchMode,
-  onModeChange,
-  showMatchToggle = false,
-}: TopBarProps = {}) => {
+const TopBar = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -50,40 +38,6 @@ const TopBar = ({
             LazyJobs
           </span>
         </div>
-
-        {/* Match Mode Toggle - Center (when shown) */}
-        {showMatchToggle && matchMode && onModeChange && (
-          <div className="flex-shrink-0">
-            <div className="inline-flex items-center rounded-full bg-muted p-1 gap-0.5">
-              <button
-                onClick={() => onModeChange("keyword")}
-                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  matchMode === "keyword"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className="text-base">🔤</span>
-                  <span>Keyword</span>
-                </span>
-              </button>
-              <button
-                onClick={() => onModeChange("precomputed")}
-                className={`relative px-2.5 py-1.5 rounded-full text-sm font-medium transition-all ${
-                  matchMode === "precomputed"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <span className="flex items-center gap-1.5">
-                  <span className="text-base">⚡</span>
-                  <span>Pre-Match</span>
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Spacer */}
         <div className="flex-1" />
