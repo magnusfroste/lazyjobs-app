@@ -458,21 +458,20 @@ async function main() {
     console.log(`   Sync Interval: ${SYNC_INTERVAL_HOURS} hours`)
     console.log()
     
-    // Fetch ALL jobs from OpenJobs (paginate if needed)
-    let allJobs = []
-    let offset = 0
-    const limit = 100
+    // Get last sync time for incremental sync
+    const lastSync = await getLastSyncTime()
+    console.log(`📅 Last sync: ${lastSync}`)
     
-    while (true) {
-      const batch = await fetchOpenJobs(limit, offset)
-      if (batch.length === 0) break
-      
-      allJobs = allJobs.concat(batch)
-      console.log(`   Fetched ${batch.length} jobs (total: ${allJobs.length})`)
-      
-      if (batch.length < limit) break // Last page
-      offset += limit
+    // Fetch ONLY NEW jobs from OpenJobs (using created_after filter)
+    console.log(`🌐 Fetching jobs created after ${lastSync}...`)
+    const allJobs = await fetchOpenJobs(500, 0) // Fetch up to 500 new jobs
+    
+    if (allJobs.length === 0) {
+      console.log('\n✅ No new jobs from OpenJobs since last sync')
+      return
     }
+    
+    console.log(`📥 Fetched ${allJobs.length} new jobs from OpenJobs`)
     
     // Filter to only new jobs (not already in LazyJobs)
     const newJobs = await filterNewJobs(allJobs)
@@ -556,6 +555,9 @@ async function main() {
     console.log(`✨ New: ${totalInserted} jobs`)
     console.log(`🔄 Updated: ${totalUpdated} jobs`)
     console.log(`⏭️  Skipped: ${totalSkipped} jobs`)
+    
+    // Save last sync time for next incremental sync
+    await saveLastSyncTime(new Date().toISOString())
     
   } catch (error) {
     console.error('\n💥 Error:', error.message)
