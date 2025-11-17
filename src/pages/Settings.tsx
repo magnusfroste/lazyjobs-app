@@ -26,9 +26,9 @@ export default function Settings() {
 
   // Removed handleMatchModeChange and handleKeywordThresholdChange - precomputed is now the only mode
 
-  const handleAiTopNChange = (value: number[]) => {
-    const topN = value[0];
-    const newSettings = { ...matchSettings, aiTopN: topN };
+  const handleThresholdChange = (value: number[]) => {
+    const threshold = value[0];
+    const newSettings = { ...matchSettings, keywordThreshold: threshold };
     setMatchSettings(newSettings);
     saveMatchSettings(newSettings);
   };
@@ -128,32 +128,32 @@ export default function Settings() {
             <CardHeader>
               <CardTitle>Match Quality</CardTitle>
               <CardDescription>
-                AI-powered job matching using advanced LLM analysis
+                Control the minimum match score for jobs you see
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <Label>Number of Top Matches</Label>
+                  <Label>Minimum Match Score</Label>
                   <span className="text-sm font-medium">
-                    Top {matchSettings.aiTopN}
+                    {Math.round(matchSettings.keywordThreshold * 100)}%
                   </span>
                 </div>
                 <Slider
-                  value={[matchSettings.aiTopN]}
-                  onValueChange={handleAiTopNChange}
-                  min={10}
-                  max={100}
-                  step={5}
+                  value={[matchSettings.keywordThreshold]}
+                  onValueChange={handleThresholdChange}
+                  min={0.3}
+                  max={0.95}
+                  step={0.05}
                   className="w-full"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Fewer, Best Jobs (10)</span>
-                  <span>More Jobs (100)</span>
+                  <span>More Jobs (30%)</span>
+                  <span>Best Matches Only (95%)</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  LazyJobs uses AI to analyze your CV and find the best matching jobs. 
-                  Adjust this slider to see more or fewer top matches.
+                  LazyJobs uses AI to score how well each job matches your profile. 
+                  Higher threshold = fewer jobs, but better matches.
                 </p>
               </div>
             </CardContent>
