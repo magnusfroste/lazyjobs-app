@@ -1,4 +1,4 @@
-import { Home, Heart, Bell, User, Settings } from "lucide-react";
+import { Briefcase, Heart, Bell, User, Settings } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,7 +14,7 @@ const MobileNavBar = () => {
   }
 
   const navItems = [
-    { path: "/swipe", icon: Home, label: "Swipe" },
+    { path: "/swipe", icon: Briefcase, label: "Swipe" },
     { path: "/matches", icon: Heart, label: "Saved" },
     { path: "/notifications", icon: Bell, label: "Notifs" },
     { path: "/profile", icon: User, label: "Profile" },
