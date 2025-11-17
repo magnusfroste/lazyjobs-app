@@ -59,11 +59,14 @@ const Matches = () => {
       <TopBar />
       
       {/* Desktop header */}
-      <div className="hidden md:block sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b">
-        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-3 md:py-4">
-          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-            My Matches
-          </h1>
+      <div className="hidden md:block">
+        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
+          <div className="mb-4 md:mb-6">
+            <h1 className="text-3xl font-bold text-foreground">My Matches</h1>
+            <p className="text-muted-foreground mt-2">
+              Jobs you've matched with - apply or save for later
+            </p>
+          </div>
         </div>
       </div>
 
