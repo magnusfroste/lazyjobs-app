@@ -62,9 +62,9 @@ const Matches = () => {
       <div className="hidden md:block">
         <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">My Matches</h1>
+            <h1 className="text-3xl font-bold text-foreground">Saved Jobs</h1>
             <p className="text-muted-foreground mt-2">
-              Jobs you've matched with - apply or save for later
+              Jobs you loved - review and apply
             </p>
           </div>
         </div>
@@ -73,12 +73,12 @@ const Matches = () => {
       {/* Mobile header - simple title only */}
       <div className="md:hidden pt-4 pb-2">
         <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-          My Matches
+          Saved Jobs
         </h1>
       </div>
 
       <div className="container max-w-4xl mx-auto px-3 md:px-4 pt-4 md:pt-6">
-        <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} matches</p>
+        <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} saved {matches.length === 1 ? 'job' : 'jobs'}</p>
 
         <div className="space-y-3 md:space-y-4">
           {sortedMatches.map((match) => (

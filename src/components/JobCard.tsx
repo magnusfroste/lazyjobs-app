@@ -354,9 +354,9 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           <div className="bg-muted/30 px-6 py-3 text-center border-t border-border/50">
             <span className="text-sm font-medium text-muted-foreground">
               {(matchMode === "keyword" || matchMode === "precomputed") && matchThreshold !== undefined ? (
-                <>{cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} above {Math.round(matchThreshold * 100)}%</>
+                <>{cardsRemaining} {cardsRemaining === 1 ? 'job' : 'jobs'} above {Math.round(matchThreshold * 100)}%</>
               ) : (
-                <>{cardsRemaining} {cardsRemaining === 1 ? 'match' : 'matches'} remaining</>
+                <>{cardsRemaining} {cardsRemaining === 1 ? 'job' : 'jobs'} remaining</>
               )}
             </span>
           </div>
