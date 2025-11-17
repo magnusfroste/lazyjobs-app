@@ -80,8 +80,8 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
     skills: 0,
     salary: 0,
     location: 0,
-    remote: 0,
-    employment: 0,
+    work_arrangement: 0,
+    type: 0,
   };
 
   // Use matching_skills and skills_to_learn from job_matches table
@@ -511,7 +511,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 </div>
               </motion.div>
 
-              {/* Remote */}
+              {/* Employment Type */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={isFlipped ? { 
@@ -525,21 +525,21 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 } : { opacity: 0, x: -20 }}
                 className="flex items-center gap-3"
               >
-                <span className="font-medium w-24 text-sm text-muted-foreground">Remote</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Type</span>
                 <div className="flex-1 flex items-center gap-2">
                   <AnimatedProgress 
-                    value={matchBreakdown.remote} 
+                    value={matchBreakdown.type} 
                     delay={0.75}
                     isFlipped={isFlipped}
-                    className="h-2 [&>div]:bg-green-500" 
+                    className="h-2" 
                   />
-                  <span className="font-semibold text-sm w-12 text-right text-green-600 dark:text-green-400">
-                    {matchBreakdown.remote}%
+                  <span className="font-semibold text-sm w-12 text-right text-muted-foreground">
+                    {matchBreakdown.type}%
                   </span>
                 </div>
               </motion.div>
 
-              {/* Employment Type */}
+              {/* Work Arrangement */}
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={isFlipped ? { 
@@ -553,16 +553,16 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
                 } : { opacity: 0, x: -20 }}
                 className="flex items-center gap-3"
               >
-                <span className="font-medium w-24 text-sm text-muted-foreground">Type</span>
+                <span className="font-medium w-24 text-sm text-muted-foreground">Work</span>
                 <div className="flex-1 flex items-center gap-2">
                   <AnimatedProgress 
-                    value={matchBreakdown.employment} 
+                    value={matchBreakdown.work_arrangement} 
                     delay={0.85}
                     isFlipped={isFlipped}
                     className="h-2" 
                   />
                   <span className="font-semibold text-sm w-12 text-right text-muted-foreground">
-                    {matchBreakdown.employment}%
+                    {matchBreakdown.work_arrangement}%
                   </span>
                 </div>
               </motion.div>
