@@ -417,6 +417,14 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
+
+              <Button 
+                onClick={handleSaveProfile} 
+                disabled={saving}
+                className="w-full"
+              >
+                {saving ? "Saving..." : "Save Preferences"}
+              </Button>
             </CardContent>
           </Card>
 
