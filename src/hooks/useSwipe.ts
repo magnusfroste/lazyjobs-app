@@ -39,7 +39,7 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
         await matchService.createMatch(userId, currentJob.id, matchScore);
         
         toast({
-          title: "It's a match! 🎉",
+          title: "Love is in the air! 💕",
           description: `${currentJob.title} saved to your matches`,
         });
       }
