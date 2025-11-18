@@ -10,6 +10,13 @@
  */
 
 import 'dotenv/config'
+import { promises as fs } from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const STATE_FILE = path.join(__dirname, '.connector-state.json')
 
 // Version tracking for deployment verification
 const VERSION = '2025-11-17T08:00:00Z' // Updated to filter by is_active
@@ -157,12 +164,23 @@ function isRemoteJob(job) {
  * Transform OpenJobs format to LazyJobs format
  */
 function transformJob(openJob) {
+  // Validate required fields
+  if (!openJob.id || !openJob.title) {
+    console.warn(`⚠️  Skipping job with missing required fields:`, {
+      id: openJob.id,
+      title: openJob.title,
+      company: openJob.company
+    })
+    return null
+  }
+  
   const salary = parseSalary(openJob.salary)
   const isRemote = isRemoteJob(openJob)
   
   // Extract URL from fields or construct default
   const url = openJob.fields?.source_url || 
               openJob.fields?.url || 
+              openJob.url ||
               `${OPENJOBS_API_URL}/jobs/${openJob.id}`
   
   // OpenJobs is the SOURCE OF TRUTH for requirements
@@ -181,8 +199,8 @@ function transformJob(openJob) {
   
   return {
     external_id: `openjobs_${openJob.id}`,
-    title: openJob.title,
-    company: openJob.company || 'Unknown Company',
+    title: openJob.title || 'Untitled Position',
+    company: openJob.company || 'Company Not Specified',
     description: openJob.description || '',
     location: openJob.location || 'Not specified',
     salary_min: salary.min,
@@ -283,12 +301,18 @@ async function enrichJobs(jobs) {
   console.log(`🤖 Enriching ${jobs.length} jobs with AI...`)
   
   try {
+    // Prepare jobs for N8N - ensure each has an 'id' field for matching
+    const jobsForEnrichment = jobs.map(job => ({
+      ...job,
+      id: job.external_id  // N8N expects 'id' field
+    }))
+    
     const response = await fetch(ENRICHMENT_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ jobs })
+      body: JSON.stringify({ jobs: jobsForEnrichment })
     })
     
     if (!response.ok) {
@@ -299,80 +323,81 @@ async function enrichJobs(jobs) {
     const result = await response.json()
     
     // Handle different response formats
-    let enrichedJobs
+    let enrichmentResponse
     if (Array.isArray(result)) {
-      enrichedJobs = result
+      enrichmentResponse = result
     } else if (result.jobs) {
-      enrichedJobs = result.jobs
+      enrichmentResponse = result.jobs
     } else if (result.data) {
-      enrichedJobs = result.data
+      enrichmentResponse = result.data
     } else if (result.enriched_jobs) {
       // N8N format: { enriched_jobs: [...] }
-      enrichedJobs = result.enriched_jobs
+      enrichmentResponse = result.enriched_jobs
     } else {
       console.warn('⚠️  Unexpected enrichment response format, using original jobs')
       console.log('   Response:', JSON.stringify(result).slice(0, 200))
       return jobs
     }
 
-    // Merge enriched data back into original jobs
-    const mergedJobs = jobs.map((originalJob, index) => {
-      const enrichedData = enrichedJobs[index] || {}
+    // Create a map of enriched data by job ID for safe matching
+    const enrichmentMap = new Map()
+    enrichmentResponse.forEach(enrichedData => {
+      if (enrichedData.id) {
+        enrichmentMap.set(enrichedData.id, enrichedData)
+      }
+    })
 
-      // Handle N8N format: combine extracted_skills, extracted_tools, soft_skills, extracted_languages
-      let combinedSkills = [...(originalJob.required_skills || [])] // Start with original skills
+    // ONLY extract and add skills - NEVER replace any other fields!
+    const enrichedJobs = jobs.map((originalJob) => {
+      // Try to find enrichment by ID, fallback to empty object
+      const enrichedData = enrichmentMap.get(originalJob.external_id) || {}
+
+      // Combine all skill types from AI enrichment
+      let aiExtractedSkills = []
 
       if (enrichedData.extracted_skills && Array.isArray(enrichedData.extracted_skills)) {
-        combinedSkills.push(...enrichedData.extracted_skills)
+        aiExtractedSkills.push(...enrichedData.extracted_skills)
       }
 
       if (enrichedData.extracted_tools && Array.isArray(enrichedData.extracted_tools)) {
-        combinedSkills.push(...enrichedData.extracted_tools)
+        aiExtractedSkills.push(...enrichedData.extracted_tools)
       }
 
       if (enrichedData.soft_skills && Array.isArray(enrichedData.soft_skills)) {
-        // Add soft skills with prefix to distinguish
-        const prefixedSoftSkills = enrichedData.soft_skills.map(skill => `Soft: ${skill}`)
-        combinedSkills.push(...prefixedSoftSkills)
+        aiExtractedSkills.push(...enrichedData.soft_skills)
       }
+
+      if (enrichedData.extracted_languages && Array.isArray(enrichedData.extracted_languages)) {
+        aiExtractedSkills.push(...enrichedData.extracted_languages)
+      }
+
+      // Combine original skills + AI extracted skills
+      const combinedSkills = [
+        ...(originalJob.required_skills || []),
+        ...aiExtractedSkills
+      ]
 
       // Remove duplicates and clean
-      const uniqueSkills = [...new Set(combinedSkills.filter(skill => skill && typeof skill === 'string' && skill.trim()))]
+      const uniqueSkills = [...new Set(combinedSkills.filter(skill => 
+        skill && typeof skill === 'string' && skill.trim()
+      ))]
 
+      // Return original job with ONLY skills updated
       return {
         ...originalJob,
-        required_skills: uniqueSkills,
-        // Add other enriched fields
-        ...(enrichedData.experience_level && { experience_level: enrichedData.experience_level }),
-        ...(enrichedData.description && { description: enrichedData.description }),
-        ...(enrichedData.extracted_languages && { languages: enrichedData.extracted_languages }),
-        ...(enrichedData.extracted_tools && { tools: enrichedData.tools }),
-        ...(enrichedData.confidence && { enrichment_confidence: enrichedData.confidence })
-      }
-    })
-
-    // CRITICAL: Validate that required fields are preserved after enrichment
-    const validatedJobs = mergedJobs.map((enrichedJob, index) => {
-      const originalJob = jobs[index]
-      
-      // Ensure required fields are never lost during enrichment
-      return {
-        ...enrichedJob,
-        external_id: enrichedJob.external_id || originalJob.external_id,
-        title: enrichedJob.title || originalJob.title,
-        company: enrichedJob.company || originalJob.company
+        required_skills: uniqueSkills
       }
     })
     
-    console.log(`✅ AI enrichment complete (${validatedJobs.length} jobs)`)
+    console.log(`✅ AI enrichment complete (${enrichedJobs.length} jobs)`)
     
     // Show sample enrichment
-    const sampleJob = validatedJobs[0]
+    const sampleJob = enrichedJobs[0]
     if (sampleJob?.required_skills?.length > 0) {
       console.log(`   Sample skills: ${sampleJob.required_skills.slice(0, 5).join(', ')}...`)
     }
     
-    return validatedJobs
+    return enrichedJobs
   } catch (error) {
     console.warn(`⚠️  Enrichment failed: ${error.message}, continuing with original jobs`)
     return jobs
@@ -518,9 +543,14 @@ async function main() {
     
     console.log(`\n📦 Processing ${newJobs.length} new jobs...`)
     
-    // Transform to LazyJobs format
-    const transformedJobs = newJobs.map(transformJob)
+    // Transform to LazyJobs format (filter out nulls from failed transforms)
+    const transformedJobs = newJobs.map(transformJob).filter(job => job !== null)
     console.log(`🔄 Transformed ${transformedJobs.length} jobs`)
+    
+    if (transformedJobs.length === 0) {
+      console.log('\n⚠️  No valid jobs after transformation')
+      return
+    }
     
     // Show sample of sources
     const sources = [...new Set(transformedJobs.map(j => j.metadata.original_source))]
