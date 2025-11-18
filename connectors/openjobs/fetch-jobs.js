@@ -415,6 +415,17 @@ async function ingestJobs(jobs) {
 
   console.log(`📤 Ingesting ${jobs.length} jobs to LazyJobs...`)
   
+  // Log sample job for debugging
+  if (jobs.length > 0) {
+    const sample = jobs[0]
+    console.log(`   Sample job:`, {
+      external_id: sample.external_id,
+      title: sample.title,
+      company: sample.company,
+      skills_count: sample.required_skills?.length || 0
+    })
+  }
+  
   const response = await fetch(INGEST_URL, {
     method: 'POST',
     headers: {
@@ -435,7 +446,23 @@ async function ingestJobs(jobs) {
   }
 
   const result = await response.json()
-  console.log('✅ Ingestion complete:', result)
+  console.log('✅ Ingestion complete:', JSON.stringify(result, null, 2))
+  
+  // Log detailed results
+  if (result.inserted || result.new) {
+    console.log(`   ✨ Inserted: ${result.inserted || result.new || 0} jobs`)
+  }
+  if (result.updated) {
+    console.log(`   🔄 Updated: ${result.updated} jobs`)
+  }
+  if (result.skipped) {
+    console.log(`   ⏭️  Skipped: ${result.skipped} jobs`)
+  }
+  if (result.errors && result.errors.length > 0) {
+    console.log(`   ⚠️  Errors: ${result.errors.length}`)
+    console.log(`   First error:`, result.errors[0])
+  }
+  
   return result
 }
 
