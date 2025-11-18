@@ -3,6 +3,7 @@ import { swipeService } from "@/services/swipeService";
 import { matchService } from "@/services/matchService";
 import { useToast } from "@/hooks/use-toast";
 import { JobWithMatch } from "@/types/job";
+import confetti from "canvas-confetti";
 
 export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -37,6 +38,16 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
       // If right swipe, also create match
       if (direction === "right") {
         await matchService.createMatch(userId, currentJob.id, matchScore);
+        
+        // Trigger confetti for high-match jobs (90%+)
+        if (matchScore >= 90) {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#ff69b4', '#ff1493', '#ffc0cb', '#ff6b9d']
+          });
+        }
         
         toast({
           title: "Love is in the air! 💕",
