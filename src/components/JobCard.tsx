@@ -100,22 +100,23 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
         mode === "swipe" && exitX !== 0 
           ? { x: exitX } 
           : swipePreview === "left"
-          ? { x: -50, rotate: -5 }
+          ? { x: -window.innerWidth * 1.2, rotate: -10 }
           : swipePreview === "right"
-          ? { x: 50, rotate: 5 }
+          ? { x: window.innerWidth * 1.2, rotate: 10 }
           : { x: 0, rotate: 0 }
       }
-      transition={{ duration: swipePreview ? 0.2 : 0.2, ease: "easeOut" }}
+      transition={{ duration: exitX !== 0 ? 0.3 : swipePreview ? 0.3 : 0.2, ease: "easeOut" }}
       drag={mode === "swipe" && !isFlipped ? "x" : false}
-      dragConstraints={{ left: 0, right: 0 }}
+      dragConstraints={{ left: -300, right: 300 }}
+      dragElastic={0}
       onDragEnd={mode === "swipe" ? (e, { offset, velocity }) => {
         if (Math.abs(offset.x) > 100) {
           // Haptic feedback on mobile
           if (navigator.vibrate) {
             navigator.vibrate(50);
           }
-          setExitX(offset.x > 0 ? 1000 : -1000);
-          setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 200);
+          setExitX(offset.x > 0 ? window.innerWidth * 1.5 : -window.innerWidth * 1.5);
+          setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 300);
         }
       } : undefined}
       className={cn(
