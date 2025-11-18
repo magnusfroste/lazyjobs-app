@@ -237,6 +237,41 @@ function calculateJobActiveStatus(openJob) {
 }
 
 /**
+ * Get last sync timestamp from connector state file
+ */
+async function getLastSyncTime() {
+  try {
+    const stateData = await fs.readFile(STATE_FILE, 'utf-8')
+    const state = JSON.parse(stateData)
+    console.log(`💾 Loaded last sync time: ${state.last_sync_at}`)
+    return state.last_sync_at
+  } catch (error) {
+    // File doesn't exist or is invalid - use default (7 days ago)
+    const defaultDate = new Date()
+    defaultDate.setDate(defaultDate.getDate() - 7)
+    const defaultTime = defaultDate.toISOString()
+    console.log(`⚠️  No previous sync state found, using default: ${defaultTime}`)
+    return defaultTime
+  }
+}
+
+/**
+ * Save last sync timestamp to state file
+ */
+async function saveLastSyncTime(timestamp) {
+  try {
+    const state = {
+      last_sync_at: timestamp,
+      updated_at: new Date().toISOString()
+    }
+    await fs.writeFile(STATE_FILE, JSON.stringify(state, null, 2))
+    console.log(`💾 Saved last sync time: ${timestamp}`)
+  } catch (error) {
+    console.error(`⚠️  Failed to save sync state: ${error.message}`)
+  }
+}
+
+/**
  * Enrich jobs with AI-powered skills extraction
  */
 async function enrichJobs(jobs) {
