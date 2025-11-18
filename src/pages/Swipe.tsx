@@ -88,7 +88,7 @@ const Swipe = () => {
     setTimeout(() => {
       handleSwipe("left");
       setTimeout(() => setSwipePreview(null), 50);
-    }, 200);
+    }, 300);
   };
 
   const handleButtonSwipeRight = () => {
@@ -96,7 +96,7 @@ const Swipe = () => {
     setTimeout(() => {
       handleSwipe("right");
       setTimeout(() => setSwipePreview(null), 50);
-    }, 200);
+    }, 300);
   };
 
   // Redirect to auth if not logged in
