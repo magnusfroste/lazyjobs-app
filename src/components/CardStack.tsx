@@ -27,7 +27,7 @@ export const CardStack = ({ cards, previewCount = 3 }: CardStackProps) => {
             opacity: index === 0 ? 1 : 1 - (index * 0.4),
             filter: index === 0 ? "none" : `blur(${index * 2}px)`,
             pointerEvents: index === 0 ? "auto" : "none",
-            transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             animation: index === 0 ? "scale-in 0.3s ease-out" : "none",
           }}
         >

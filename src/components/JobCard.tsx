@@ -105,7 +105,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           ? { x: window.innerWidth * 1.2, rotate: 10 }
           : { x: 0, rotate: 0 }
       }
-      transition={{ duration: exitX !== 0 ? 0.3 : swipePreview ? 0.3 : 0.2, ease: "easeOut" }}
+      transition={{ duration: exitX !== 0 ? 0.3 : swipePreview ? 0.5 : 0.2, ease: "easeOut" }}
       drag={mode === "swipe" && !isFlipped ? "x" : false}
       dragConstraints={{ left: -300, right: 300 }}
       dragElastic={0}
@@ -116,7 +116,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
             navigator.vibrate(50);
           }
           setExitX(offset.x > 0 ? window.innerWidth * 1.5 : -window.innerWidth * 1.5);
-          setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 300);
+          setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 500);
         }
       } : undefined}
       className={cn(
