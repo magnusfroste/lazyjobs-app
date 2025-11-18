@@ -198,7 +198,7 @@ function transformJob(openJob) {
   const isActive = openJob.is_active !== undefined ? openJob.is_active : true
   
   return {
-    external_id: `openjobs_${openJob.id}`,
+    external_id: openJob.id,  // Use original OpenJobs ID (no prefix needed)
     title: openJob.title || 'Untitled Position',
     company: openJob.company || 'Company Not Specified',
     description: openJob.description || '',
