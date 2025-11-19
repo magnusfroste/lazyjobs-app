@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
-import webpush from "https://esm.sh/web-push@3.6.7";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +13,160 @@ interface PushNotificationRequest {
   match_score: number;
   job_title: string;
   company: string;
+}
+
+// Helper to convert base64url to Uint8Array
+function base64UrlToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Helper to convert Uint8Array to base64url
+function uint8ArrayToBase64Url(uint8Array: Uint8Array): string {
+  const base64 = btoa(String.fromCharCode.apply(null, Array.from(uint8Array)));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+// Generate VAPID JWT token
+async function generateVapidJWT(audience: string, privateKey: string): Promise<string> {
+  const vapidPrivateKey = base64UrlToUint8Array(privateKey);
+  
+  // Import the private key
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    vapidPrivateKey as unknown as ArrayBuffer,
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign"]
+  );
+
+  // Create JWT header and payload
+  const jwtHeader = { typ: "JWT", alg: "ES256" };
+  const jwtPayload = {
+    aud: audience,
+    exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60, // 12 hours
+    sub: "mailto:notifications@lazyjobs.ink"
+  };
+
+  // Encode header and payload
+  const encoder = new TextEncoder();
+  const headerEncoded = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(jwtHeader)));
+  const payloadEncoded = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(jwtPayload)));
+  const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
+
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    key,
+    encoder.encode(unsignedToken)
+  );
+
+  const signatureEncoded = uint8ArrayToBase64Url(new Uint8Array(signature));
+  return `${unsignedToken}.${signatureEncoded}`;
+}
+
+// Encrypt notification payload
+async function encryptPayload(
+  payload: string,
+  p256dh: string,
+  auth: string
+): Promise<{ ciphertext: Uint8Array; salt: Uint8Array; publicKey: Uint8Array }> {
+  const encoder = new TextEncoder();
+  const payloadBytes = encoder.encode(payload);
+  
+  // Generate a random salt
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  
+  // Generate a local key pair
+  const localKeyPair = await crypto.subtle.generateKey(
+    { name: "ECDH", namedCurve: "P-256" },
+    true,
+    ["deriveBits"]
+  );
+  
+  // Export the local public key
+  const localPublicKeyRaw = await crypto.subtle.exportKey("raw", localKeyPair.publicKey);
+  const localPublicKey = new Uint8Array(localPublicKeyRaw);
+  
+  // Import the subscription's public key
+  const subscriptionPublicKey = base64UrlToUint8Array(p256dh);
+  const importedSubscriptionKey = await crypto.subtle.importKey(
+    "raw",
+    subscriptionPublicKey as unknown as ArrayBuffer,
+    { name: "ECDH", namedCurve: "P-256" },
+    false,
+    []
+  );
+  
+  // Derive shared secret
+  const sharedSecret = await crypto.subtle.deriveBits(
+    { name: "ECDH", public: importedSubscriptionKey },
+    localKeyPair.privateKey,
+    256
+  );
+  
+  // Import auth secret
+  const authSecret = base64UrlToUint8Array(auth);
+  
+  // Derive encryption key using HKDF
+  const info = encoder.encode("Content-Encoding: aes128gcm\0");
+  const hkdfKey = await crypto.subtle.importKey(
+    "raw",
+    new Uint8Array(sharedSecret),
+    { name: "HKDF" },
+    false,
+    ["deriveBits"]
+  );
+  
+  const keyInfo = new Uint8Array([
+    ...authSecret,
+    ...new Uint8Array(sharedSecret),
+    ...info
+  ]);
+  
+  const contentEncryptionKey = await crypto.subtle.deriveBits(
+    {
+      name: "HKDF",
+      hash: "SHA-256",
+      salt: salt,
+      info: keyInfo
+    },
+    hkdfKey,
+    128
+  );
+  
+  // Import the derived key for AES-GCM
+  const aesKey = await crypto.subtle.importKey(
+    "raw",
+    contentEncryptionKey,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt"]
+  );
+  
+  // Generate a random nonce
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  
+  // Encrypt the payload
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: nonce },
+    aesKey,
+    payloadBytes
+  );
+  
+  return {
+    ciphertext: new Uint8Array(ciphertext),
+    salt: salt,
+    publicKey: localPublicKey
+  };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -53,15 +206,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${subscriptions.length} subscription(s) for user ${user_id}`);
 
-    // Configure VAPID details for web-push
+    // Get VAPID keys
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY")!;
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
-    
-    webpush.setVapidDetails(
-      "mailto:notifications@lazyjobs.ink",
-      vapidPublicKey,
-      vapidPrivateKey
-    );
 
     // Prepare notification payload
     const notificationPayload = {
@@ -79,36 +226,56 @@ const handler = async (req: Request): Promise<Response> => {
       ],
     };
 
-    // Send to all user's devices using web-push library
     let successCount = 0;
     let failCount = 0;
 
+    // Send to all user's devices
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
-          // Build subscription object for web-push
-          const pushSubscription = {
-            endpoint: sub.endpoint,
-            keys: {
-              p256dh: sub.p256dh,
-              auth: sub.auth,
-            },
-          };
+          // Extract audience from endpoint
+          const endpointUrl = new URL(sub.endpoint);
+          const audience = `${endpointUrl.protocol}//${endpointUrl.host}`;
+          
+          // Generate VAPID JWT
+          const vapidToken = await generateVapidJWT(audience, vapidPrivateKey);
+          
+          // Encrypt the notification payload
+          const payloadString = JSON.stringify(notificationPayload);
+          const encrypted = await encryptPayload(payloadString, sub.p256dh, sub.auth);
+          
+          // Build the request body with proper formatting
+          const body = new Uint8Array([
+            ...encrypted.salt,
+            ...new Uint8Array([0, 0, 0x10, 0x00]), // Record size
+            ...new Uint8Array([encrypted.publicKey.length]),
+            ...encrypted.publicKey,
+            ...encrypted.ciphertext
+          ]);
 
-          // Send push notification using web-push library
-          await webpush.sendNotification(
-            pushSubscription,
-            JSON.stringify(notificationPayload),
-            {
-              TTL: 86400, // 24 hours
-              urgency: "high",
-            }
-          );
+          // Send push notification
+          const response = await fetch(sub.endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/octet-stream",
+              "Content-Encoding": "aes128gcm",
+              "Authorization": `vapid t=${vapidToken}, k=${vapidPublicKey}`,
+              "TTL": "86400",
+              "Urgency": "high",
+            },
+            body: body,
+          });
+
+          if (!response.ok) {
+            const responseText = await response.text();
+            console.error(`Push failed: ${response.status} ${response.statusText}`, responseText);
+            throw new Error(`Push failed with status ${response.status}: ${responseText}`);
+          }
 
           console.log(`Push notification sent successfully to ${sub.endpoint.substring(0, 50)}...`);
           successCount++;
 
-          // Update last_used_at for successful notification
+          // Update last_used_at
           await supabase
             .from("push_subscriptions")
             .update({ last_used_at: new Date().toISOString() })
@@ -119,8 +286,8 @@ const handler = async (req: Request): Promise<Response> => {
           console.error(`Failed to send to ${sub.endpoint.substring(0, 50)}...:`, error);
           failCount++;
 
-          // If subscription is invalid (410 Gone or 404), remove it
-          if (error.statusCode === 410 || error.statusCode === 404) {
+          // Remove invalid subscriptions
+          if (error.message?.includes("410") || error.message?.includes("404")) {
             console.log(`Removing invalid subscription ${sub.id}`);
             await supabase
               .from("push_subscriptions")
@@ -133,7 +300,7 @@ const handler = async (req: Request): Promise<Response> => {
       })
     );
 
-    // Log successful notification to history
+    // Log to notification history
     if (successCount > 0) {
       await supabase.from("notification_history").insert({
         user_id,
@@ -155,7 +322,6 @@ const handler = async (req: Request): Promise<Response> => {
         message: "Push notifications processed",
         success_count: successCount,
         fail_count: failCount,
-        results: results.map((r) => r.status === "fulfilled" ? "success" : "failed"),
       }),
       {
         status: 200,
