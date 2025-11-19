@@ -178,16 +178,16 @@ const NotificationHistory = () => {
           </div>
         </PageSection>
 
-        <PageSection className={denseMode === "compact" ? "mt-2 mb-1" : "mt-4 mb-3"}>
-        {/* Filters */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
-        <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
-          <TabsTrigger value="unread">Unread ({stats.unread})</TabsTrigger>
-          <TabsTrigger value="clicked">Clicked ({stats.clicked})</TabsTrigger>
-        </TabsList>
-        </Tabs>
-        </PageSection>
+        <div className={`sticky top-0 md:top-16 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 -mx-3 md:-mx-4 px-3 md:px-4 ${denseMode === "compact" ? "py-2" : "py-4"} border-b`}>
+          {/* Filters */}
+          <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+          <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
+            <TabsTrigger value="unread">Unread ({stats.unread})</TabsTrigger>
+            <TabsTrigger value="clicked">Clicked ({stats.clicked})</TabsTrigger>
+          </TabsList>
+          </Tabs>
+        </div>
 
         <PageSection>
           {/* Notifications List */}
