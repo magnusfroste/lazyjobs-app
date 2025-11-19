@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Moon, Sun, Monitor, Minimize2, Maximize2 } from "lucide-react";
+import { Loader2, Moon, Sun, Monitor, Minimize2, Maximize2, Info } from "lucide-react";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { FEATURES } from "@/lib/featureFlags";
 import MobileNavBar from "@/components/MobileNavBar";
@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
 import { useToast } from "@/hooks/use-toast";
 import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -159,6 +160,21 @@ export default function Settings() {
                       ) : (
                         <Maximize2 className="h-4 w-4 text-muted-foreground" />
                       )}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p className="font-semibold mb-1">What is Dense Mode?</p>
+                            <p className="text-sm">
+                              Dense Mode reduces padding and spacing by 50% across all pages, 
+                              allowing you to see more content on your screen at once. Perfect for 
+                              power users who want to maximize information density.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Compact spacing for more content per screen
