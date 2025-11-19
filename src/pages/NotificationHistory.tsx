@@ -16,7 +16,7 @@ import { useDenseMode } from "@/contexts/DenseModeContext";
 
 interface NotificationHistoryItem {
   id: string;
-  job_id: string;
+  job_id: string | null;
   match_score: number;
   title: string;
   body: string;
@@ -29,7 +29,7 @@ interface NotificationHistoryItem {
     company: string;
     location: string | null;
     is_active: boolean;
-  };
+  } | null;
 }
 
 const NotificationHistory = () => {
@@ -215,29 +215,36 @@ const NotificationHistory = () => {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant={notification.jobs.is_active ? "default" : "secondary"}>
-                          {notification.match_score}% Match
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant={notification.jobs?.is_active ? "default" : "secondary"}>
+                        {notification.match_score}% Match
+                      </Badge>
+                      {notification.clicked_at && (
+                        <Badge variant="outline" className="text-green-600">
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          Viewed
                         </Badge>
-                        {notification.clicked_at && (
-                          <Badge variant="outline" className="text-green-600">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Viewed
-                          </Badge>
-                        )}
-                        {!notification.jobs.is_active && (
-                          <Badge variant="secondary">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Inactive
-                          </Badge>
-                        )}
-                      </div>
-                      <CardTitle className="text-lg">{notification.jobs.title}</CardTitle>
-                      <CardDescription className="mt-1">
-                        {notification.jobs.company}
-                        {notification.jobs.location && ` • ${notification.jobs.location}`}
-                      </CardDescription>
+                      )}
+                      {notification.jobs && !notification.jobs.is_active && (
+                        <Badge variant="secondary">
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Inactive
+                        </Badge>
+                      )}
+                      {!notification.jobs && (
+                        <Badge variant="outline">
+                          Test Notification
+                        </Badge>
+                      )}
+                    </div>
+                    <CardTitle className="text-lg">
+                      {notification.jobs?.title || notification.title}
+                    </CardTitle>
+                    <CardDescription className="mt-1">
+                      {notification.jobs?.company || notification.body}
+                      {notification.jobs?.location && ` • ${notification.jobs.location}`}
+                    </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -258,10 +265,14 @@ const NotificationHistory = () => {
                     <Button
                       onClick={() => handleNavigateToJob(notification)}
                       className="w-full"
-                      disabled={!notification.jobs.is_active}
+                      disabled={!notification.jobs?.is_active}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      {notification.jobs.is_active ? "View Job" : "Job No Longer Available"}
+                      {notification.jobs?.is_active 
+                        ? "View Job" 
+                        : notification.jobs 
+                        ? "Job No Longer Available"
+                        : "Test Notification"}
                     </Button>
                   </div>
                 </CardContent>
