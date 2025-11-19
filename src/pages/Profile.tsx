@@ -197,8 +197,8 @@ const Profile = () => {
       
       <MobilePageHeader title="Your Profile" />
 
-      <PageContainer className="pt-4 md:pt-0" spacing="compact">
-        <PageSection spacing="compact">
+      <PageContainer className="pt-4 md:pt-0">
+        <PageSection>
           {/* User Statistics */}
           <Card>
             <CardHeader>
