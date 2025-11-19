@@ -136,7 +136,7 @@ const Swipe = () => {
         <TopBar />
         <SwipeHint />
 
-      <PageContainer maxWidth="2xl" spacing="compact" className="pt-4 md:pt-20">
+      <PageContainer maxWidth="2xl" className="pt-4 md:pt-20">
         {remainingJobs > 0 ? (
           <>
             <CardStack

@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useDenseMode } from "@/contexts/DenseModeContext";
 
 /**
  * CENTRALIZED LAYOUT COMPONENTS
@@ -40,7 +41,7 @@ interface PageContainerProps {
   children: ReactNode;
   className?: string;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "4xl" | "full";
-  spacing?: "compact" | "normal" | "loose";
+  spacing?: "compact" | "normal" | "loose" | "auto";
 }
 
 /**
@@ -48,6 +49,7 @@ interface PageContainerProps {
  * Used for: All main pages (Swipe, Matches, Profile, Settings, etc.)
  * 
  * Spacing variants:
+ * - auto: Uses global dense mode setting (default)
  * - compact: px-2 md:px-3 (for dense content like card stacks)
  * - normal: px-3 md:px-4 (default for most pages)
  * - loose: px-4 md:px-6 (for content that needs breathing room)
@@ -56,8 +58,10 @@ export const PageContainer = ({
   children, 
   className,
   maxWidth = "4xl",
-  spacing = "normal"
+  spacing = "auto"
 }: PageContainerProps) => {
+  const { denseMode } = useDenseMode();
+  
   const maxWidthClasses = {
     sm: "max-w-sm",
     md: "max-w-md",
@@ -74,10 +78,13 @@ export const PageContainer = ({
     loose: "px-4 md:px-6",
   };
 
+  // Use global dense mode if spacing is "auto"
+  const effectiveSpacing = spacing === "auto" ? denseMode : spacing;
+
   return (
     <div className={cn(
       "container mx-auto",
-      spacingClasses[spacing],
+      spacingClasses[effectiveSpacing],
       maxWidthClasses[maxWidth],
       className
     )}>
@@ -89,7 +96,7 @@ export const PageContainer = ({
 interface PageSectionProps {
   children: ReactNode;
   className?: string;
-  spacing?: "compact" | "normal" | "loose";
+  spacing?: "compact" | "normal" | "loose" | "auto";
 }
 
 /**
@@ -97,6 +104,7 @@ interface PageSectionProps {
  * Used for: Spacing between cards/sections within a page
  * 
  * Spacing variants:
+ * - auto: Uses global dense mode setting (default)
  * - compact: space-y-3 md:space-y-4 (for dense lists/cards)
  * - normal: space-y-4 md:space-y-6 (default spacing)
  * - loose: space-y-6 md:space-y-8 (for separated content)
@@ -104,16 +112,21 @@ interface PageSectionProps {
 export const PageSection = ({ 
   children, 
   className,
-  spacing = "normal"
+  spacing = "auto"
 }: PageSectionProps) => {
+  const { denseMode } = useDenseMode();
+  
   const spacingClasses = {
     compact: "space-y-3 md:space-y-4",
     normal: "space-y-4 md:space-y-6",
     loose: "space-y-6 md:space-y-8",
   };
 
+  // Use global dense mode if spacing is "auto"
+  const effectiveSpacing = spacing === "auto" ? denseMode : spacing;
+
   return (
-    <div className={cn(spacingClasses[spacing], className)}>
+    <div className={cn(spacingClasses[effectiveSpacing], className)}>
       {children}
     </div>
   );
@@ -122,7 +135,7 @@ export const PageSection = ({
 interface PageHeaderProps {
   children: ReactNode;
   className?: string;
-  spacing?: "compact" | "normal" | "loose";
+  spacing?: "compact" | "normal" | "loose" | "auto";
 }
 
 /**
@@ -130,6 +143,7 @@ interface PageHeaderProps {
  * Used for: Page titles and descriptions
  * 
  * Spacing variants:
+ * - auto: Uses global dense mode setting (default)
  * - compact: py-3 md:py-4 (minimal header spacing)
  * - normal: py-4 md:py-6 (default header spacing)
  * - loose: py-6 md:py-8 (generous header spacing)
@@ -137,16 +151,21 @@ interface PageHeaderProps {
 export const PageHeader = ({ 
   children, 
   className,
-  spacing = "normal"
+  spacing = "auto"
 }: PageHeaderProps) => {
+  const { denseMode } = useDenseMode();
+  
   const spacingClasses = {
     compact: "py-3 md:py-4",
     normal: "py-4 md:py-6",
     loose: "py-6 md:py-8",
   };
 
+  // Use global dense mode if spacing is "auto"
+  const effectiveSpacing = spacing === "auto" ? denseMode : spacing;
+
   return (
-    <div className={cn(spacingClasses[spacing], className)}>
+    <div className={cn(spacingClasses[effectiveSpacing], className)}>
       {children}
     </div>
   );

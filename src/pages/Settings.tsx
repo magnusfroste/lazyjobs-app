@@ -3,16 +3,18 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useDenseMode } from "@/contexts/DenseModeContext";
 import TopBar from "@/components/TopBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Moon, Sun, Monitor } from "lucide-react";
+import { Loader2, Moon, Sun, Monitor, Minimize2, Maximize2 } from "lucide-react";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { FEATURES } from "@/lib/featureFlags";
 import MobileNavBar from "@/components/MobileNavBar";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
 import { useToast } from "@/hooks/use-toast";
 import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
@@ -22,6 +24,7 @@ export default function Settings() {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading } = useProfile(user?.id);
   const { theme, setTheme } = useTheme();
+  const { denseMode, setDenseMode } = useDenseMode();
   const [matchSettings, setMatchSettings] = useState(getMatchSettings());
   const { toast } = useToast();
 
@@ -115,7 +118,7 @@ export default function Settings() {
                 Customize how the app looks on your device
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label>Theme</Label>
                 <div className="grid grid-cols-3 gap-2 md:gap-3">
@@ -143,6 +146,37 @@ export default function Settings() {
                     <Monitor className="h-4 w-4 mr-2" />
                     System
                   </Button>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="dense-mode">Dense Mode</Label>
+                      {denseMode === "compact" ? (
+                        <Minimize2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Maximize2 className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Compact spacing for more content per screen
+                    </p>
+                  </div>
+                  <Switch
+                    id="dense-mode"
+                    checked={denseMode === "compact"}
+                    onCheckedChange={(checked) => {
+                      setDenseMode(checked ? "compact" : "normal");
+                      toast({
+                        title: checked ? "Dense mode enabled" : "Dense mode disabled",
+                        description: checked 
+                          ? "Spacing has been tightened across all pages"
+                          : "Normal spacing has been restored",
+                      });
+                    }}
+                  />
                 </div>
               </div>
             </CardContent>
