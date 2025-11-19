@@ -25,7 +25,7 @@ const MobileNavBar = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t safe-bottom">
-      <div className="flex items-center justify-around py-3">
+      <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -35,7 +35,7 @@ const MobileNavBar = () => {
               key={item.path}
               whileTap={{ scale: 0.9 }}
               onClick={() => navigate(item.path)}
-              className={`flex items-center justify-center p-3 rounded-full transition-colors ${
+              className={`flex items-center justify-center p-2 rounded-full transition-colors ${
                 active 
                   ? "text-primary bg-primary/10" 
                   : "text-muted-foreground hover:text-foreground hover:bg-accent"
