@@ -217,7 +217,7 @@ const NotificationHistory = () => {
                   !notification.clicked_at ? "border-l-4 border-l-primary" : ""
                 }`}
               >
-                <CardHeader>
+                <CardHeader className={denseMode === "compact" ? "p-4 pb-2" : "p-5 pb-3"}>
                   <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -253,10 +253,8 @@ const NotificationHistory = () => {
                   </div>
                 </CardHeader>
 
-                <CardContent>
-                  <div className="space-y-4">
-                    <p className="text-sm">{notification.body}</p>
-
+                <CardContent className={denseMode === "compact" ? "p-4 pt-2" : "p-5 pt-3"}>
+                  <div className={denseMode === "compact" ? "space-y-2" : "space-y-3"}>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       <span>
