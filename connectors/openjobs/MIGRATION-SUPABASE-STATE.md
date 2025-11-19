@@ -1,4 +1,4 @@
-# Migration: File-based State → Supabase Table
+# Migration: File-based State → Supabase History Table
 
 ## 🎯 Varför?
 
@@ -11,7 +11,7 @@
 - ❌ Ingen historik
 - ❌ Kan inte se state från flera connectors
 
-**Nu:** State sparas i Supabase `connector_state` tabell
+**Nu:** Sync history sparas i Supabase `connector_sync_history` tabell
 
 **Fördelar:**
 - ✅ Persistent storage
@@ -25,24 +25,30 @@
 
 ### 1. Kör SQL-migrationen i LazyJobs Supabase
 
+**Använd den nya history-baserade migrationen:**
+
 ```bash
 # Öppna Supabase dashboard för LazyJobs
 # Gå till SQL Editor
-# Kör innehållet i migration-connector-state.sql
+# Kör innehållet i migration-connector-sync-history.sql
 ```
 
 Eller via CLI:
 ```bash
-supabase db push --db-url "postgresql://postgres:[password]@db.[project].supabase.co:5432/postgres" < migration-connector-state.sql
+supabase db push --db-url "postgresql://postgres:[password]@db.[project].supabase.co:5432/postgres" < migration-connector-sync-history.sql
 ```
 
 ### 2. Verifiera att tabellen skapades
 
 ```sql
-SELECT * FROM connector_state;
+-- Se alla sync records
+SELECT * FROM connector_sync_history ORDER BY sync_time DESC;
+
+-- Se senaste sync per connector
+SELECT * FROM connector_latest_sync;
 ```
 
-Du bör se en rad för 'openjobs' connector med `last_sync_time` satt till 7 dagar sedan.
+Du bör se en initial rad för 'openjobs' connector med `sync_time` satt till 7 dagar sedan.
 
 ### 3. Deploy uppdaterad connector
 
@@ -75,15 +81,18 @@ volumes:
 
 ## 🔍 Hur det fungerar
 
-### Läsa state (före sync)
+### Läsa senaste sync (före sync)
 
+**Enkel REST GET:**
 ```javascript
 const lastSync = await getLastSyncTime()
-// Hämtar från: SELECT last_sync_time FROM connector_state WHERE connector_name='openjobs'
+// GET /rest/v1/connector_sync_history?connector_name=eq.openjobs&select=sync_time&order=sync_time.desc&limit=1
+// Returnerar: [{ sync_time: "2025-11-19T15:00:00Z" }]
 ```
 
-### Spara state (efter sync)
+### Spara ny sync record (efter sync)
 
+**Enkel REST POST:**
 ```javascript
 await saveLastSyncTime(new Date().toISOString(), {
   success: true,
@@ -91,68 +100,88 @@ await saveLastSyncTime(new Date().toISOString(), {
   jobs_ingested: 35,
   metadata: { processed: 40, updated: 5, skipped: 0 }
 })
-// Anropar: update_connector_state() function
+// POST /rest/v1/connector_sync_history
+// Body: { connector_name: "openjobs", sync_time: "...", success: true, ... }
+// Lägger till NY rad i tabellen
 ```
 
 ### Spara error state (vid fel)
 
+**Samma POST, men med error:**
 ```javascript
 await saveLastSyncTime(new Date().toISOString(), {
   success: false,
   error_message: "OpenJobs API error: 500",
   metadata: { error_stack: "..." }
 })
+// POST /rest/v1/connector_sync_history
+// Body: { connector_name: "openjobs", success: false, error_message: "...", ... }
 ```
 
-## 📊 Övervaka state
+**Varje sync = ny rad i tabellen!** 📊
+
+## 📊 Övervaka sync history
 
 ### Via Supabase Dashboard
 
 ```sql
--- Se senaste sync
+-- Se senaste 10 syncs
 SELECT 
   connector_name,
-  last_sync_time,
-  last_sync_success,
+  sync_time,
+  success,
   jobs_fetched,
   jobs_ingested,
   error_message,
-  updated_at
-FROM connector_state
-ORDER BY updated_at DESC;
+  created_at
+FROM connector_sync_history
+ORDER BY sync_time DESC
+LIMIT 10;
+
+-- Se senaste sync per connector (via view)
+SELECT * FROM connector_latest_sync;
+
+-- Räkna success rate
+SELECT 
+  connector_name,
+  COUNT(*) as total_syncs,
+  SUM(CASE WHEN success THEN 1 ELSE 0 END) as successful,
+  ROUND(100.0 * SUM(CASE WHEN success THEN 1 ELSE 0 END) / COUNT(*), 2) as success_rate_pct
+FROM connector_sync_history
+GROUP BY connector_name;
+
+-- Se genomsnittligt antal jobb per sync
+SELECT 
+  connector_name,
+  AVG(jobs_fetched) as avg_fetched,
+  AVG(jobs_ingested) as avg_ingested
+FROM connector_sync_history
+WHERE success = true
+GROUP BY connector_name;
 ```
 
-### Se historik (om du vill spara historik)
+### Full historik finns redan!
 
-Du kan enkelt lägga till en `connector_state_history` tabell:
+Ingen extra tabell behövs - `connector_sync_history` **ÄR** historiken!
 
-```sql
-CREATE TABLE connector_state_history AS SELECT * FROM connector_state WHERE false;
-ALTER TABLE connector_state_history ADD COLUMN id SERIAL PRIMARY KEY;
+Varje sync lägger till en ny rad, så du kan:
+- Se trends över tid
+- Identifiera när problem började
+- Räkna success rate
+- Analysera performance
 
--- Trigger för att spara historik
-CREATE OR REPLACE FUNCTION save_connector_state_history()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO connector_state_history 
-  SELECT * FROM connector_state WHERE connector_name = NEW.connector_name;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER connector_state_history_trigger
-AFTER UPDATE ON connector_state
-FOR EACH ROW
-EXECUTE FUNCTION save_connector_state_history();
-```
-
-## 🚀 Fördelar
+## 🚀 Fördelar med History-baserad approach
 
 1. **Reliability:** State försvinner aldrig
-2. **Debugging:** Se exakt när och varför syncs misslyckades
-3. **Monitoring:** Spåra success rate, antal jobb, etc
-4. **Scalability:** Fungerar med flera connector-instanser
-5. **Simplicity:** Ingen volume mount att hantera
+2. **Full historik:** Se ALLA syncs, inte bara senaste
+3. **Debugging:** Spåra när problem började, se trends
+4. **Analytics:** Success rate, genomsnitt, performance över tid
+5. **Simplicity:** 
+   - Enkel REST POST (ingen RPC)
+   - Ingen UPSERT-logik
+   - Bara INSERT för varje sync
+6. **Scalability:** Fungerar med flera connector-instanser
+7. **No volume mounts:** Ingen fil-hantering alls
 
 ## 🔄 Rollback (om något går fel)
 

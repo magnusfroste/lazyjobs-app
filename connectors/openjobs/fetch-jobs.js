@@ -268,12 +268,13 @@ function calculateJobActiveStatus(openJob) {
 }
 
 /**
- * Get last sync timestamp from Supabase connector_state table
+ * Get last sync timestamp from Supabase connector_sync_history table
+ * Reads the most recent sync record for this connector
  */
 async function getLastSyncTime() {
   try {
     const supabaseUrl = INGEST_URL.split('/functions/')[0] // Extract base Supabase URL
-    const response = await fetch(`${supabaseUrl}/rest/v1/connector_state?connector_name=eq.openjobs&select=last_sync_time`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/connector_sync_history?connector_name=eq.openjobs&select=sync_time&order=sync_time.desc&limit=1`, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -281,64 +282,66 @@ async function getLastSyncTime() {
     })
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch connector state: ${response.status}`)
+      throw new Error(`Failed to fetch connector sync history: ${response.status}`)
     }
     
     const data = await response.json()
     
-    if (data && data.length > 0 && data[0].last_sync_time) {
-      console.log(`📊 Retrieved last sync time from database: ${data[0].last_sync_time}`)
-      return data[0].last_sync_time
+    if (data && data.length > 0 && data[0].sync_time) {
+      console.log(`📊 Retrieved last sync time from database: ${data[0].sync_time}`)
+      return data[0].sync_time
     }
     
-    // Default to 7 days ago if no state exists
+    // Default to 7 days ago if no history exists
     const defaultTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    console.warn(`⚠️  No previous sync state found in database, using default: ${defaultTime}`)
+    console.warn(`⚠️  No previous sync history found in database, using default: ${defaultTime}`)
     return defaultTime
   } catch (error) {
     // If query fails, default to 7 days ago
     const defaultTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    console.warn(`⚠️  Failed to get sync state from database: ${error.message}`)
+    console.warn(`⚠️  Failed to get sync history from database: ${error.message}`)
     console.warn(`   Using default: ${defaultTime}`)
     return defaultTime
   }
 }
 
 /**
- * Save last sync timestamp to Supabase connector_state table
+ * Save sync record to Supabase connector_sync_history table
+ * Simple REST POST - appends a new row for each sync
  */
 async function saveLastSyncTime(timestamp, stats = {}) {
   try {
     const supabaseUrl = INGEST_URL.split('/functions/')[0] // Extract base Supabase URL
-    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/update_connector_state`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/connector_sync_history`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'return=minimal' // Don't return the inserted row
       },
       body: JSON.stringify({
-        p_connector_name: 'openjobs',
-        p_last_sync_time: timestamp,
-        p_success: stats.success !== false,
-        p_jobs_fetched: stats.jobs_fetched || 0,
-        p_jobs_ingested: stats.jobs_ingested || 0,
-        p_error_message: stats.error_message || null,
-        p_metadata: stats.metadata || null
+        connector_name: 'openjobs',
+        sync_time: timestamp,
+        success: stats.success !== false,
+        jobs_fetched: stats.jobs_fetched || 0,
+        jobs_ingested: stats.jobs_ingested || 0,
+        error_message: stats.error_message || null,
+        metadata: stats.metadata || null
       })
     })
     
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Failed to save connector state: ${response.status} - ${errorText}`)
+      throw new Error(`Failed to save sync history: ${response.status} - ${errorText}`)
     }
     
-    console.log(`💾 Saved sync state to database: ${timestamp}`)
+    console.log(`💾 Saved sync record to database: ${timestamp}`)
     if (stats.jobs_fetched) console.log(`   Jobs fetched: ${stats.jobs_fetched}`)
     if (stats.jobs_ingested) console.log(`   Jobs ingested: ${stats.jobs_ingested}`)
   } catch (error) {
-    console.error('❌ Failed to save sync state to database:', error.message)
-    // Don't throw - we don't want to fail the whole sync just because state save failed
+    console.error('❌ Failed to save sync history to database:', error.message)
+    // Don't throw - we don't want to fail the whole sync just because history save failed
   }
 }
 
