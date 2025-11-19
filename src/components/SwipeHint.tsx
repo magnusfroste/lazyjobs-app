@@ -5,7 +5,7 @@ export const SwipeHint = () => {
   const chevrons = [0, 1, 2, 3, 4];
   
   return (
-    <div className="w-full h-8 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 flex items-center justify-center overflow-hidden relative border-b border-border/30">
+    <div className="w-full h-8 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 flex items-center justify-center overflow-hidden relative border-b border-border/30 safe-top">
       {/* Right flowing chevrons */}
       <motion.div
         className="absolute flex items-center gap-2"
