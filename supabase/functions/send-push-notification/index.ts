@@ -36,13 +36,36 @@ function uint8ArrayToBase64Url(uint8Array: Uint8Array): string {
 }
 
 // Generate VAPID JWT token
-async function generateVapidJWT(audience: string, privateKey: string): Promise<string> {
-  const vapidPrivateKey = base64UrlToUint8Array(privateKey);
-  
-  // Import the private key
+async function generateVapidJWT(
+  audience: string,
+  publicKey: string,
+  privateKey: string
+): Promise<string> {
+  // Decode VAPID public key (uncompressed EC point: 0x04 || X || Y)
+  const publicBytes = base64UrlToUint8Array(publicKey);
+  if (publicBytes.length !== 65 || publicBytes[0] !== 4) {
+    throw new Error("Invalid VAPID public key format");
+  }
+
+  const xBytes = publicBytes.slice(1, 33);
+  const yBytes = publicBytes.slice(33, 65);
+
+  const x = uint8ArrayToBase64Url(xBytes);
+  const y = uint8ArrayToBase64Url(yBytes);
+
+  const privateJwk: JsonWebKey = {
+    kty: "EC",
+    crv: "P-256",
+    x,
+    y,
+    d: privateKey,
+    ext: true,
+  };
+
+  // Import the private key as JWK
   const key = await crypto.subtle.importKey(
-    "pkcs8",
-    vapidPrivateKey as unknown as ArrayBuffer,
+    "jwk",
+    privateJwk,
     { name: "ECDSA", namedCurve: "P-256" },
     false,
     ["sign"]
@@ -53,13 +76,17 @@ async function generateVapidJWT(audience: string, privateKey: string): Promise<s
   const jwtPayload = {
     aud: audience,
     exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60, // 12 hours
-    sub: "mailto:notifications@lazyjobs.ink"
+    sub: "mailto:notifications@lazyjobs.ink",
   };
 
   // Encode header and payload
   const encoder = new TextEncoder();
-  const headerEncoded = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(jwtHeader)));
-  const payloadEncoded = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(jwtPayload)));
+  const headerEncoded = uint8ArrayToBase64Url(
+    encoder.encode(JSON.stringify(jwtHeader))
+  );
+  const payloadEncoded = uint8ArrayToBase64Url(
+    encoder.encode(JSON.stringify(jwtPayload))
+  );
   const unsignedToken = `${headerEncoded}.${payloadEncoded}`;
 
   // Sign the token
@@ -238,7 +265,11 @@ const handler = async (req: Request): Promise<Response> => {
           const audience = `${endpointUrl.protocol}//${endpointUrl.host}`;
           
           // Generate VAPID JWT
-          const vapidToken = await generateVapidJWT(audience, vapidPrivateKey);
+          const vapidToken = await generateVapidJWT(
+            audience,
+            vapidPublicKey,
+            vapidPrivateKey
+          );
           
           // Encrypt the notification payload
           const payloadString = JSON.stringify(notificationPayload);
