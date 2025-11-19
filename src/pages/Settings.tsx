@@ -73,13 +73,13 @@ export default function Settings() {
         <PageSection>
           {/* Match Quality */}
           <Card>
-            <CardHeader>
+            <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
               <CardTitle>Match Quality</CardTitle>
               <CardDescription>
                 Control the minimum match score for jobs you see
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className={denseMode === "compact" ? "p-2 pt-0 md:p-3 space-y-3" : "space-y-6"}>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <Label>Minimum Match Score</Label>
@@ -112,13 +112,13 @@ export default function Settings() {
 
           {/* Appearance */}
           <Card>
-            <CardHeader>
+            <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
               <CardTitle>Appearance</CardTitle>
               <CardDescription>
                 Customize how the app looks on your device
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className={denseMode === "compact" ? "p-2 pt-0 md:p-3 space-y-3" : "space-y-6"}>
               <div className="space-y-2">
                 <Label>Theme</Label>
                 <div className="grid grid-cols-3 gap-2 md:gap-3">
