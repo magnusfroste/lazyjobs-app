@@ -66,10 +66,10 @@ const Matches = () => {
       
       <MobilePageHeader title="Saved Jobs" />
 
-      <PageContainer className="pt-4 md:pt-6">
+      <PageContainer className="pt-4 md:pt-6" spacing="compact">
         <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} saved {matches.length === 1 ? 'job' : 'jobs'}</p>
 
-        <PageSection className="space-y-3 md:space-y-4">
+        <PageSection spacing="compact">
           {sortedMatches.map((match) => (
           <JobCard
               key={match.id}
