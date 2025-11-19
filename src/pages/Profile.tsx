@@ -197,8 +197,8 @@ const Profile = () => {
       
       <MobilePageHeader title="Your Profile" />
 
-      <PageContainer className="pt-4 md:pt-0">
-        <PageSection>
+      <PageContainer className="pt-4 md:pt-0" spacing="compact">
+        <PageSection spacing="compact">
           {/* User Statistics */}
           <Card>
             <CardHeader>
@@ -211,10 +211,10 @@ const Profile = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 rounded-lg bg-muted/50">
-                  <div className="flex justify-center mb-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <div className="flex justify-center mb-1">
+                    <TrendingUp className="h-4 w-4 text-primary" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">
                     {statsLoading ? "..." : statistics?.totalSwipes || 0}
@@ -223,9 +223,9 @@ const Profile = () => {
                     Total Swipes
                   </div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-muted/50">
-                  <div className="flex justify-center mb-2">
-                    <Heart className="h-5 w-5 text-primary" />
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <div className="flex justify-center mb-1">
+                    <Heart className="h-4 w-4 text-primary" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">
                     {statsLoading ? "..." : statistics?.totalMatches || 0}
@@ -234,9 +234,9 @@ const Profile = () => {
                     Matches
                   </div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-muted/50">
-                  <div className="flex justify-center mb-2">
-                    <FileText className="h-5 w-5 text-primary" />
+                <div className="text-center p-3 rounded-lg bg-muted/50">
+                  <div className="flex justify-center mb-1">
+                    <FileText className="h-4 w-4 text-primary" />
                   </div>
                   <div className="text-2xl font-bold text-foreground">
                     {statsLoading ? "..." : statistics?.totalApplications || 0}
