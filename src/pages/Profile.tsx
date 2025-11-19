@@ -16,12 +16,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import MobileNavBar from "@/components/MobileNavBar";
 import { useQuery } from "@tanstack/react-query";
 import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
+import { useDenseMode } from "@/contexts/DenseModeContext";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile, updateProfile, updateSkills, refetch } = useProfile(user?.id);
   const { toast } = useToast();
+  const { denseMode } = useDenseMode();
   
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -201,7 +203,7 @@ const Profile = () => {
         <PageSection>
           {/* User Statistics */}
           <Card>
-            <CardHeader>
+            <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
                 Your Activity
@@ -210,7 +212,7 @@ const Profile = () => {
                 Overview of your job search progress
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className={denseMode === "compact" ? "p-2 pt-0 md:p-3" : ""}>
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 rounded-lg bg-muted/50">
                   <div className="flex justify-center mb-1">
@@ -251,13 +253,13 @@ const Profile = () => {
 
           {/* Profile Information */}
           <Card>
-            <CardHeader>
+            <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
                 Update your personal details
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className={denseMode === "compact" ? "p-2 pt-0 md:p-3 space-y-2" : "space-y-4"}>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -302,13 +304,13 @@ const Profile = () => {
 
           {/* Job Preferences */}
           <Card>
-            <CardHeader>
+            <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
               <CardTitle>Job Preferences</CardTitle>
               <CardDescription>
                 Set your job search preferences to get better matches
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className={denseMode === "compact" ? "p-2 pt-0 md:p-3 space-y-3" : "space-y-6"}>
               <div className="space-y-2">
                 <Label htmlFor="location">Preferred Location</Label>
                 <Input
@@ -418,13 +420,13 @@ const Profile = () => {
 
           {/* CV Upload */}
           <Card>
-            <CardHeader>
+            <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
               <CardTitle>CV Upload</CardTitle>
               <CardDescription>
                 Upload your CV for better job matching
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className={denseMode === "compact" ? "p-2 pt-0 md:p-3 space-y-2" : "space-y-4"}>
               <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary transition-colors">
                 <input
                   type="file"
