@@ -178,15 +178,15 @@ const NotificationHistory = () => {
           </div>
         </PageSection>
 
-        <PageSection>
-          {/* Filters */}
-          <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
-            <TabsTrigger value="unread">Unread ({stats.unread})</TabsTrigger>
-            <TabsTrigger value="clicked">Clicked ({stats.clicked})</TabsTrigger>
-          </TabsList>
-          </Tabs>
+        <PageSection className={denseMode === "compact" ? "mt-2 mb-1" : "mt-4 mb-3"}>
+        {/* Filters */}
+        <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+        <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
+          <TabsTrigger value="unread">Unread ({stats.unread})</TabsTrigger>
+          <TabsTrigger value="clicked">Clicked ({stats.clicked})</TabsTrigger>
+        </TabsList>
+        </Tabs>
         </PageSection>
 
         <PageSection>
