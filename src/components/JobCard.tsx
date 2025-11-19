@@ -10,6 +10,7 @@ import { JobWithMatch } from "@/types/job";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { isHTML, htmlToFormattedText } from "@/lib/htmlToText";
 import { cn } from "@/lib/utils";
+import { useDenseMode } from "@/contexts/DenseModeContext";
 
 // Animated Progress Component
 const AnimatedProgress = ({ 
@@ -73,6 +74,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
   const rotate = useTransform(x, [-200, 200], [-25, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const isMobile = useIsMobile();
+  const { denseMode } = useDenseMode();
 
   // All scores are now standardized to 0-100
   const matchScore = job.match_score || 50;
@@ -153,7 +155,7 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
           </>
         )}
         
-        <div className="p-6 space-y-4">
+        <div className={denseMode === "compact" ? "p-3 space-y-2" : "p-6 space-y-4"}>
           {/* Header */}
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -381,9 +383,9 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
               ease: [0.4, 0, 1, 1]
             }
           }}
-          className={`absolute inset-0 p-3 pt-12 md:p-6 md:pt-16 overflow-y-auto bg-background rounded-3xl ${
-            isFlipped ? 'z-10' : 'pointer-events-none z-0'
-          }`}
+          className={`absolute inset-0 overflow-y-auto bg-background rounded-3xl ${
+            denseMode === "compact" ? "p-2 pt-10 md:p-3 md:pt-12" : "p-3 pt-12 md:p-6 md:pt-16"
+          } ${isFlipped ? 'z-10' : 'pointer-events-none z-0'}`}
         >
           {/* Close Button */}
           {isFlipped && (
