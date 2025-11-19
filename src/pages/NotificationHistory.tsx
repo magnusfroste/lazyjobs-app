@@ -84,9 +84,13 @@ const NotificationHistory = () => {
 
   const markAsClicked = async (notificationId: string) => {
     try {
+      const now = new Date().toISOString();
       await supabase
         .from("notification_history")
-        .update({ clicked_at: new Date().toISOString() })
+        .update({ 
+          clicked_at: now,
+          read_at: now
+        })
         .eq("id", notificationId);
     } catch (error) {
       console.error("Failed to mark notification as clicked:", error);
