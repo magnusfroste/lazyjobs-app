@@ -1,27 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import webpush from "https://esm.sh/web-push@3.6.7";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
-// Helper function to build VAPID authentication header
-async function buildVapidHeader(
-  endpoint: string,
-  publicKey: string,
-  privateKey: string
-): Promise<{ authorization: string; cryptoKey: string }> {
-  // For simplicity, we'll use a basic VAPID header
-  // In production, you'd want to use proper JWT generation
-  const vapidKeys = `p256ecdsa=${publicKey}`;
-  
-  return {
-    authorization: `vapid t=eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9,k=${privateKey}`,
-    cryptoKey: vapidKeys,
-  };
-}
 
 interface PushNotificationRequest {
   user_id: string;
@@ -68,9 +53,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${subscriptions.length} subscription(s) for user ${user_id}`);
 
-    // Get VAPID keys
+    // Configure VAPID details for web-push
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY")!;
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY")!;
+    
+    webpush.setVapidDetails(
+      "mailto:notifications@lazyjobs.ink",
+      vapidPublicKey,
+      vapidPrivateKey
+    );
 
     // Prepare notification payload
     const notificationPayload = {
@@ -88,37 +79,36 @@ const handler = async (req: Request): Promise<Response> => {
       ],
     };
 
-    // Send to all user's devices using Web Push Protocol
+    // Send to all user's devices using web-push library
+    let successCount = 0;
+    let failCount = 0;
+
     const results = await Promise.allSettled(
       subscriptions.map(async (sub) => {
         try {
-          // Build VAPID authentication
-          const vapidHeader = await buildVapidHeader(
-            sub.endpoint,
-            vapidPublicKey,
-            vapidPrivateKey
+          // Build subscription object for web-push
+          const pushSubscription = {
+            endpoint: sub.endpoint,
+            keys: {
+              p256dh: sub.p256dh,
+              auth: sub.auth,
+            },
+          };
+
+          // Send push notification using web-push library
+          await webpush.sendNotification(
+            pushSubscription,
+            JSON.stringify(notificationPayload),
+            {
+              TTL: 86400, // 24 hours
+              urgency: "high",
+            }
           );
 
-          // Send push notification using fetch
-          const response = await fetch(sub.endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Content-Encoding": "aes128gcm",
-              Authorization: vapidHeader.authorization,
-              "Crypto-Key": vapidHeader.cryptoKey,
-              TTL: "86400", // 24 hours
-            },
-            body: JSON.stringify(notificationPayload),
-          });
+          console.log(`Push notification sent successfully to ${sub.endpoint.substring(0, 50)}...`);
+          successCount++;
 
-          if (!response.ok) {
-            throw new Error(`Push failed with status ${response.status}`);
-          }
-
-          console.log(`✅ Notification sent to endpoint: ${sub.endpoint.substring(0, 50)}...`);
-
-          // Update last_used_at
+          // Update last_used_at for successful notification
           await supabase
             .from("push_subscriptions")
             .update({ last_used_at: new Date().toISOString() })
@@ -126,7 +116,8 @@ const handler = async (req: Request): Promise<Response> => {
 
           return { success: true, subscriptionId: sub.id };
         } catch (error: any) {
-          console.error(`❌ Failed to send to subscription ${sub.id}:`, error.message);
+          console.error(`Failed to send to ${sub.endpoint.substring(0, 50)}...:`, error);
+          failCount++;
 
           // If subscription is invalid (410 Gone or 404), remove it
           if (error.statusCode === 410 || error.statusCode === 404) {
@@ -137,59 +128,50 @@ const handler = async (req: Request): Promise<Response> => {
               .eq("id", sub.id);
           }
 
-          return { success: false, subscriptionId: sub.id, error: error.message };
+          throw error;
         }
       })
     );
 
-    const successCount = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
-    const failureCount = results.length - successCount;
-
-    console.log(`Push notification results: ${successCount} sent, ${failureCount} failed`);
-
-    // Log notification to history (only if at least one was sent successfully)
+    // Log successful notification to history
     if (successCount > 0) {
-      try {
-        await supabase
-          .from("notification_history")
-          .insert({
-            user_id: user_id,
-            job_id: job_id,
-            match_score: match_score,
-            title: notificationPayload.title,
-            body: notificationPayload.body,
-            icon: notificationPayload.icon,
-            badge: notificationPayload.badge,
-            data: notificationPayload.data,
-          });
-        console.log("✅ Notification logged to history");
-      } catch (historyError: any) {
-        console.error("⚠️ Failed to log notification to history:", historyError.message);
-        // Don't fail the entire function if history logging fails
-      }
+      await supabase.from("notification_history").insert({
+        user_id,
+        job_id,
+        match_score,
+        title: notificationPayload.title,
+        body: notificationPayload.body,
+        icon: notificationPayload.icon,
+        badge: notificationPayload.badge,
+        data: notificationPayload.data,
+        sent_at: new Date().toISOString(),
+      });
     }
+
+    console.log(`Push notification results: ${successCount} succeeded, ${failCount} failed`);
 
     return new Response(
       JSON.stringify({
         message: "Push notifications processed",
-        sent: successCount,
-        failed: failureCount,
+        success_count: successCount,
+        fail_count: failCount,
+        results: results.map((r) => r.status === "fulfilled" ? "success" : "failed"),
       }),
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   } catch (error: any) {
     console.error("Error in send-push-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({
+        error: error.message,
+        details: error.toString(),
+      }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
