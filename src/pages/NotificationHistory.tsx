@@ -11,6 +11,8 @@ import { Bell, BellOff, ExternalLink, Calendar, TrendingUp, CheckCircle2, XCircl
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import MobileNavBar from "@/components/MobileNavBar";
+import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
+import { useDenseMode } from "@/contexts/DenseModeContext";
 
 interface NotificationHistoryItem {
   id: string;
@@ -33,6 +35,7 @@ interface NotificationHistoryItem {
 const NotificationHistory = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { denseMode } = useDenseMode();
   const [notifications, setNotifications] = useState<NotificationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unread" | "clicked">("all");
@@ -122,29 +125,17 @@ const NotificationHistory = () => {
     <div className="min-h-screen bg-background pb-20 md:pb-8 md:pt-16">
       <TopBar />
 
-      {/* Desktop header */}
-      <div className="hidden md:block">
-        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
-          <div className="mb-4 md:mb-6">
-            <h1 className="text-3xl font-bold">Notifications</h1>
-            <p className="text-muted-foreground mt-2">
-              View and manage your notification history
-            </p>
-          </div>
-        </div>
-      </div>
+      <MobilePageHeader title="Notifications" />
+      
+      <DesktopPageHeader
+        title="Notifications"
+        description="View and manage your notification history"
+      />
 
-      {/* Mobile header - simple title only */}
-      <div className="md:hidden pt-4 pb-2 px-4">
-        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-          Notifications
-        </h1>
-      </div>
-
-      <div className="container max-w-4xl mx-auto px-4 md:py-0 py-4">
-        <div className="mb-6">
+      <PageContainer maxWidth="4xl">
+        <PageSection>
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className={`grid grid-cols-1 md:grid-cols-3 ${denseMode === "compact" ? "gap-3" : "gap-4"}`}>
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -181,19 +172,22 @@ const NotificationHistory = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
+        </PageSection>
 
-        {/* Filters */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mb-6">
+        <PageSection>
+          {/* Filters */}
+          <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="all">All ({stats.total})</TabsTrigger>
             <TabsTrigger value="unread">Unread ({stats.unread})</TabsTrigger>
             <TabsTrigger value="clicked">Clicked ({stats.clicked})</TabsTrigger>
           </TabsList>
-        </Tabs>
+          </Tabs>
+        </PageSection>
 
-        {/* Notifications List */}
-        {loading ? (
+        <PageSection>
+          {/* Notifications List */}
+          {loading ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-muted-foreground">Loading notifications...</p>
@@ -211,7 +205,7 @@ const NotificationHistory = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className={denseMode === "compact" ? "space-y-3" : "space-y-4"}>
             {filteredNotifications.map((notification) => (
               <Card
                 key={notification.id}
@@ -275,7 +269,8 @@ const NotificationHistory = () => {
             ))}
           </div>
         )}
-      </div>
+        </PageSection>
+      </PageContainer>
 
       <MobileNavBar />
     </div>
