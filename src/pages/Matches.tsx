@@ -8,6 +8,7 @@ import { Job, JobWithMatch } from "@/types/job";
 import JobCard from "@/components/JobCard";
 import MobileNavBar from "@/components/MobileNavBar";
 import TopBar from "@/components/TopBar";
+import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
 
 const Matches = () => {
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
@@ -58,29 +59,17 @@ const Matches = () => {
     <div className="min-h-screen pb-20 md:pb-8 md:pt-16">
       <TopBar />
       
-      {/* Desktop header */}
-      <div className="hidden md:block">
-        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Saved Jobs</h1>
-            <p className="text-muted-foreground mt-2">
-              Jobs you loved - review and apply
-            </p>
-          </div>
-        </div>
-      </div>
+      <DesktopPageHeader 
+        title="Saved Jobs" 
+        description="Jobs you loved - review and apply" 
+      />
+      
+      <MobilePageHeader title="Saved Jobs" />
 
-      {/* Mobile header - simple title only */}
-      <div className="md:hidden pt-4 pb-2">
-        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-          Saved Jobs
-        </h1>
-      </div>
-
-      <div className="container max-w-4xl mx-auto px-3 md:px-4 pt-4 md:pt-6">
+      <PageContainer className="pt-4 md:pt-6">
         <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} saved {matches.length === 1 ? 'job' : 'jobs'}</p>
 
-        <div className="space-y-3 md:space-y-4">
+        <PageSection className="space-y-3 md:space-y-4">
           {sortedMatches.map((match) => (
           <JobCard
               key={match.id}
@@ -106,23 +95,25 @@ const Matches = () => {
               onSwipe={() => {}}
             />
           ))}
+        </PageSection>
 
-          {matches.length === 0 && (
-            <div className="text-center py-20 space-y-4">
-              <p className="text-xl font-semibold">No matches yet</p>
-              <p className="text-muted-foreground">
-                Start swiping to find your perfect job!
+        {matches.length === 0 && (
+          <div className="text-center py-12 px-4">
+            <div className="max-w-md mx-auto">
+              <p className="text-2xl font-bold mb-4">No saved jobs yet</p>
+              <p className="text-muted-foreground mb-6">
+                Start swiping to find jobs you love!
               </p>
               <Button
                 onClick={() => navigate("/swipe")}
-                className="gradient-primary text-white"
+                size="lg"
               >
                 Start Swiping
               </Button>
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </PageContainer>
 
       {/* Application Assistant Modal */}
       {selectedJobForApplication && user && (

@@ -8,6 +8,7 @@ import { Job } from "@/types/job";
 import { toast } from "sonner";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { supabase } from "@/integrations/supabase/client";
+import { ModalContent, ModalCard, PageSection } from "@/components/layout/LayoutComponents";
 
 interface ApplicationAssistantModalProps {
   job: Job;
@@ -106,7 +107,7 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-background border rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b">
+        <ModalContent className="flex items-start justify-between border-b">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-6 h-6 text-primary" />
@@ -122,14 +123,14 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
           >
             <X className="w-6 h-6" />
           </button>
-        </div>
+        </ModalContent>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <ModalContent className="flex-1 overflow-y-auto">
           {!result?.success && (
-            <div className="space-y-6">
+            <PageSection>
               {/* Job Info */}
-              <div className="bg-card border rounded-xl p-4">
+              <ModalCard className="bg-card border rounded-xl">
                 <h3 className="font-bold text-lg mb-1">{job.title}</h3>
                 <p className="text-muted-foreground mb-2">{job.company}</p>
                 <div className="flex flex-wrap gap-2">
@@ -138,10 +139,10 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                     <Badge variant="secondary">{job.employment_type}</Badge>
                   )}
                 </div>
-              </div>
+              </ModalCard>
 
               {/* ATS Banner */}
-              <div className="bg-accent/10 border border-accent/20 rounded-xl p-4">
+              <ModalCard className="bg-accent/10 border border-accent/20 rounded-xl">
                 <div className="flex items-start gap-3">
                   <FileText className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
                   <div>
@@ -152,7 +153,7 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                     </p>
                   </div>
                 </div>
-              </div>
+              </ModalCard>
 
               {/* Language Selection */}
               <div>
@@ -213,12 +214,12 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                   <p className="text-sm text-destructive">{result.error}</p>
                 </div>
               )}
-            </div>
+            </PageSection>
           )}
 
           {/* Results View */}
           {result?.success && (
-            <div className="space-y-6">
+            <PageSection>
               {/* Success Header */}
               <div className="text-center">
                 <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
@@ -253,10 +254,10 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 {/* CV Tab */}
                 <TabsContent value="cv" className="space-y-4">
                   {result.cv && (
-                    <>
-                <div className="bg-muted/30 border rounded-xl p-6 max-h-96 overflow-y-auto">
+                     <>
+                <ModalContent className="bg-muted/30 border rounded-xl max-h-96 overflow-y-auto">
                   <MarkdownContent content={result.cv} />
-                </div>
+                </ModalContent>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleCopy(result.cv!, 'CV')}
@@ -282,10 +283,10 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 {/* Cover Letter Tab */}
                 <TabsContent value="cover" className="space-y-4">
                   {result.cover_letter && (
-                    <>
-                <div className="bg-muted/30 border rounded-xl p-6 max-h-96 overflow-y-auto">
+                     <>
+                <ModalContent className="bg-muted/30 border rounded-xl max-h-96 overflow-y-auto">
                   <MarkdownContent content={result.cover_letter} />
-                </div>
+                </ModalContent>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleCopy(result.cover_letter!, 'Cover Letter')}
@@ -311,8 +312,8 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 {/* Email Tab */}
                 <TabsContent value="email" className="space-y-4">
                   {result.email && (
-                    <>
-                      <div className="bg-muted/30 border rounded-xl p-6">
+                     <>
+                      <ModalContent className="bg-muted/30 border rounded-xl">
                         <div className="mb-4">
                           <label className="text-xs font-semibold text-muted-foreground">Subject:</label>
                           <p className="text-sm font-medium mt-1">{result.email.subject}</p>
@@ -321,7 +322,7 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                           <label className="text-xs font-semibold text-muted-foreground">Body:</label>
                           <pre className="text-sm whitespace-pre-wrap font-sans mt-1">{result.email.body}</pre>
                         </div>
-                      </div>
+                      </ModalContent>
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleCopy(`Subject: ${result.email!.subject}\n\n${result.email!.body}`, 'Email')}
@@ -357,13 +358,13 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 <Sparkles className="w-4 h-4 mr-2" />
                 Generate Again
               </Button>
-            </div>
+            </PageSection>
           )}
-        </div>
+        </ModalContent>
 
         {/* Footer */}
         {!result?.success && !loadingExisting && (
-          <div className="p-6 border-t bg-muted/20">
+          <ModalContent className="border-t bg-muted/20">
             <Button
               onClick={handleGenerate}
               disabled={loading}
@@ -391,13 +392,13 @@ export const ApplicationAssistantModal = ({ job, userId, onClose }: ApplicationA
                 Estimated time: 10-15 seconds
               </p>
             )}
-          </div>
+          </ModalContent>
         )}
         {loadingExisting && (
-          <div className="p-6 border-t bg-muted/20 text-center">
+          <ModalContent className="border-t bg-muted/20 text-center">
             <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Loading existing draft...</p>
-          </div>
+          </ModalContent>
         )}
       </div>
     </div>
