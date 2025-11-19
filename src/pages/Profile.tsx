@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import MobileNavBar from "@/components/MobileNavBar";
 import { useQuery } from "@tanstack/react-query";
+import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -189,28 +190,15 @@ const Profile = () => {
     <div className="min-h-screen pb-20 md:pb-8 md:pt-16 bg-background">
       <TopBar />
       
-      {/* Desktop header */}
-      <div className="hidden md:block">
-        <div className="container max-w-4xl mx-auto px-3 md:px-4 py-6 md:py-8">
-          <div className="mb-4 md:mb-6">
-            <h1 className="text-3xl font-bold">Profile</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage your personal information and CV
-            </p>
-          </div>
-        </div>
-      </div>
+      <DesktopPageHeader 
+        title="Your Profile" 
+        description="Manage your profile and CV" 
+      />
+      
+      <MobilePageHeader title="Your Profile" />
 
-      {/* Mobile header - simple title only */}
-      <div className="md:hidden pt-4 pb-2">
-        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-          Profile
-        </h1>
-      </div>
-
-      <div className="container max-w-4xl mx-auto px-3 md:px-4 md:py-0 py-4">
-
-        <div className="space-y-4 md:space-y-6">
+      <PageContainer className="pt-4 md:pt-0">
+        <PageSection>
           {/* User Statistics */}
           <Card>
             <CardHeader>
@@ -478,9 +466,9 @@ const Profile = () => {
             />
           )}
 
-        </div>
-      </div>
-
+        </PageSection>
+      </PageContainer>
+      
       <MobileNavBar />
     </div>
   );
