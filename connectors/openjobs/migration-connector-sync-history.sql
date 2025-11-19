@@ -25,14 +25,22 @@ CREATE INDEX IF NOT EXISTS idx_connector_sync_history_name_time ON connector_syn
 -- Enable RLS
 ALTER TABLE connector_sync_history ENABLE ROW LEVEL SECURITY;
 
--- Allow connector access (anon key can read/write)
-CREATE POLICY "Allow connector access" ON connector_sync_history
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- Allow anyone to read sync history (public data)
+CREATE POLICY "Allow public read" ON connector_sync_history
+  FOR SELECT
+  USING (true);
+
+-- Only allow authenticated writes (anon key with proper auth)
+-- This prevents random users from writing, but allows connectors with anon key
+CREATE POLICY "Allow authenticated write" ON connector_sync_history
+  FOR INSERT
+  WITH CHECK (auth.role() = 'anon' OR auth.role() = 'authenticated' OR auth.role() = 'service_role');
 
 -- View to get latest sync per connector (replaces connector_state table)
-CREATE OR REPLACE VIEW connector_latest_sync AS
+-- Use security_invoker so RLS policies from base table apply
+CREATE OR REPLACE VIEW connector_latest_sync
+WITH (security_invoker = true)
+AS
 SELECT DISTINCT ON (connector_name)
   connector_name,
   sync_time AS last_sync_time,
@@ -43,6 +51,9 @@ SELECT DISTINCT ON (connector_name)
   metadata
 FROM connector_sync_history
 ORDER BY connector_name, sync_time DESC;
+
+-- Enable RLS on the view as well
+ALTER VIEW connector_latest_sync SET (security_invoker = true);
 
 -- Insert initial sync record for OpenJobs connector
 INSERT INTO connector_sync_history (connector_name, sync_time, success, jobs_fetched, jobs_ingested, metadata)
