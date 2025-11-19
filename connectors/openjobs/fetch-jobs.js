@@ -288,8 +288,11 @@ async function getLastSyncTime() {
     const data = await response.json()
     
     if (data && data.length > 0 && data[0].sync_time) {
+      // Convert to UTC ISO format (remove timezone offset)
+      const syncTime = new Date(data[0].sync_time).toISOString()
       console.log(`📊 Retrieved last sync time from database: ${data[0].sync_time}`)
-      return data[0].sync_time
+      console.log(`   Converted to UTC for API: ${syncTime}`)
+      return syncTime
     }
     
     // Default to 7 days ago if no history exists
