@@ -334,11 +334,15 @@ const handler = async (req: Request): Promise<Response> => {
     // Log to notification history
     if (successCount > 0) {
       console.log("Attempting to insert notification history...");
+      
+      // Use null for test notifications (dummy job_id)
+      const historyJobId = job_id === "00000000-0000-0000-0000-000000000000" ? null : job_id;
+      
       const { data: historyData, error: historyError } = await supabase
         .from("notification_history")
         .insert({
           user_id,
-          job_id,
+          job_id: historyJobId,
           match_score,
           title: notificationPayload.title,
           body: notificationPayload.body,
