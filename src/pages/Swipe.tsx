@@ -135,7 +135,7 @@ const Swipe = () => {
         <TopBar />
         <SwipeHint />
 
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-0 md:pt-20">
+      <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-4 md:pt-20">
         {remainingJobs > 0 ? (
           <>
             <CardStack

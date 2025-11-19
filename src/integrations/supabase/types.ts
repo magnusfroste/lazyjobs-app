@@ -92,6 +92,81 @@ export type Database = {
           },
         ]
       }
+      connector_state: {
+        Row: {
+          connector_name: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          jobs_fetched: number | null
+          jobs_ingested: number | null
+          last_sync_success: boolean | null
+          last_sync_time: string
+          metadata: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          connector_name: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          jobs_fetched?: number | null
+          jobs_ingested?: number | null
+          last_sync_success?: boolean | null
+          last_sync_time: string
+          metadata?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          connector_name?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          jobs_fetched?: number | null
+          jobs_ingested?: number | null
+          last_sync_success?: boolean | null
+          last_sync_time?: string
+          metadata?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      connector_sync_history: {
+        Row: {
+          connector_name: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          jobs_fetched: number | null
+          jobs_ingested: number | null
+          metadata: Json | null
+          success: boolean
+          sync_time: string
+        }
+        Insert: {
+          connector_name: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          jobs_fetched?: number | null
+          jobs_ingested?: number | null
+          metadata?: Json | null
+          success?: boolean
+          sync_time?: string
+        }
+        Update: {
+          connector_name?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          jobs_fetched?: number | null
+          jobs_ingested?: number | null
+          metadata?: Json | null
+          success?: boolean
+          sync_time?: string
+        }
+        Relationships: []
+      }
       job_matches: {
         Row: {
           confidence_level: string | null
@@ -608,10 +683,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      connector_latest_sync: {
+        Row: {
+          connector_name: string | null
+          error_message: string | null
+          jobs_fetched: number | null
+          jobs_ingested: number | null
+          last_sync_success: boolean | null
+          last_sync_time: string | null
+          metadata: Json | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       send_daily_best_match_notification: { Args: never; Returns: undefined }
+      update_connector_state: {
+        Args: {
+          p_connector_name: string
+          p_error_message?: string
+          p_jobs_fetched?: number
+          p_jobs_ingested?: number
+          p_last_sync_time: string
+          p_metadata?: Json
+          p_success?: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
