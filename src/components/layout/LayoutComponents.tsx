@@ -1,22 +1,62 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * CENTRALIZED LAYOUT COMPONENTS
+ * 
+ * These components provide a single source of truth for spacing across the app.
+ * 
+ * Usage Examples:
+ * 
+ * // Normal spacing (most pages)
+ * <PageContainer>
+ *   <PageSection>
+ *     <Card>...</Card>
+ *     <Card>...</Card>
+ *   </PageSection>
+ * </PageContainer>
+ * 
+ * // Compact spacing (dense content like card stacks)
+ * <PageContainer spacing="compact" maxWidth="2xl">
+ *   <CardStack>...</CardStack>
+ * </PageContainer>
+ * 
+ * // Loose spacing (content that needs breathing room)
+ * <PageContainer spacing="loose">
+ *   <PageSection spacing="loose">
+ *     <HeroSection>...</HeroSection>
+ *   </PageSection>
+ * </PageContainer>
+ * 
+ * // Modal with compact cards
+ * <ModalContent>
+ *   <ModalCard className="bg-muted">...</ModalCard>
+ * </ModalContent>
+ */
+
 // ============= PAGE LAYOUTS =============
 
 interface PageContainerProps {
   children: ReactNode;
   className?: string;
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "4xl" | "full";
+  spacing?: "compact" | "normal" | "loose";
 }
 
 /**
  * Standard page container with responsive padding
  * Used for: All main pages (Swipe, Matches, Profile, Settings, etc.)
+ * 
+ * Spacing variants:
+ * - compact: px-2 md:px-3 (for dense content like card stacks)
+ * - normal: px-3 md:px-4 (default for most pages)
+ * - loose: px-4 md:px-6 (for content that needs breathing room)
  */
 export const PageContainer = ({ 
   children, 
   className,
-  maxWidth = "4xl" 
+  maxWidth = "4xl",
+  spacing = "normal"
 }: PageContainerProps) => {
   const maxWidthClasses = {
     sm: "max-w-sm",
@@ -28,9 +68,16 @@ export const PageContainer = ({
     full: "max-w-full",
   };
 
+  const spacingClasses = {
+    compact: "px-2 md:px-3",
+    normal: "px-3 md:px-4",
+    loose: "px-4 md:px-6",
+  };
+
   return (
     <div className={cn(
-      "container mx-auto px-3 md:px-4",
+      "container mx-auto",
+      spacingClasses[spacing],
       maxWidthClasses[maxWidth],
       className
     )}>
@@ -39,31 +86,67 @@ export const PageContainer = ({
   );
 };
 
+interface PageSectionProps {
+  children: ReactNode;
+  className?: string;
+  spacing?: "compact" | "normal" | "loose";
+}
+
 /**
  * Section spacing wrapper
  * Used for: Spacing between cards/sections within a page
+ * 
+ * Spacing variants:
+ * - compact: space-y-3 md:space-y-4 (for dense lists/cards)
+ * - normal: space-y-4 md:space-y-6 (default spacing)
+ * - loose: space-y-6 md:space-y-8 (for separated content)
  */
 export const PageSection = ({ 
   children, 
-  className 
-}: { children: ReactNode; className?: string }) => {
+  className,
+  spacing = "normal"
+}: PageSectionProps) => {
+  const spacingClasses = {
+    compact: "space-y-3 md:space-y-4",
+    normal: "space-y-4 md:space-y-6",
+    loose: "space-y-6 md:space-y-8",
+  };
+
   return (
-    <div className={cn("space-y-4 md:space-y-6", className)}>
+    <div className={cn(spacingClasses[spacing], className)}>
       {children}
     </div>
   );
 };
 
+interface PageHeaderProps {
+  children: ReactNode;
+  className?: string;
+  spacing?: "compact" | "normal" | "loose";
+}
+
 /**
  * Page header with responsive padding
  * Used for: Page titles and descriptions
+ * 
+ * Spacing variants:
+ * - compact: py-3 md:py-4 (minimal header spacing)
+ * - normal: py-4 md:py-6 (default header spacing)
+ * - loose: py-6 md:py-8 (generous header spacing)
  */
 export const PageHeader = ({ 
   children, 
-  className 
-}: { children: ReactNode; className?: string }) => {
+  className,
+  spacing = "normal"
+}: PageHeaderProps) => {
+  const spacingClasses = {
+    compact: "py-3 md:py-4",
+    normal: "py-4 md:py-6",
+    loose: "py-6 md:py-8",
+  };
+
   return (
-    <div className={cn("py-4 md:py-6", className)}>
+    <div className={cn(spacingClasses[spacing], className)}>
       {children}
     </div>
   );

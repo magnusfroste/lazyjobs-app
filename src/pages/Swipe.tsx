@@ -16,6 +16,7 @@ import { CardStack } from "@/components/CardStack";
 import MobileNavBar from "@/components/MobileNavBar";
 import { SwipeHint } from "@/components/SwipeHint";
 import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
+import { PageContainer } from "@/components/layout/LayoutComponents";
 
 type MatchMode = "keyword" | "precomputed";
 
@@ -135,7 +136,7 @@ const Swipe = () => {
         <TopBar />
         <SwipeHint />
 
-      <div className="container max-w-2xl mx-auto px-3 md:px-4 pt-4 md:pt-20">
+      <PageContainer maxWidth="2xl" spacing="compact" className="pt-4 md:pt-20">
         {remainingJobs > 0 ? (
           <>
             <CardStack
@@ -178,7 +179,7 @@ const Swipe = () => {
             </button>
           </div>
         )}
-      </div>
+      </PageContainer>
 
       <MobileNavBar />
     </div>
