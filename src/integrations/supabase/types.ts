@@ -423,7 +423,7 @@ export type Database = {
           dismissed_at: string | null
           icon: string | null
           id: string
-          job_id: string
+          job_id: string | null
           match_score: number
           read_at: string | null
           sent_at: string | null
@@ -439,7 +439,7 @@ export type Database = {
           dismissed_at?: string | null
           icon?: string | null
           id?: string
-          job_id: string
+          job_id?: string | null
           match_score: number
           read_at?: string | null
           sent_at?: string | null
@@ -455,7 +455,7 @@ export type Database = {
           dismissed_at?: string | null
           icon?: string | null
           id?: string
-          job_id?: string
+          job_id?: string | null
           match_score?: number
           read_at?: string | null
           sent_at?: string | null
