@@ -10,13 +10,6 @@
  */
 
 import 'dotenv/config'
-import { promises as fs } from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const STATE_FILE = path.join(__dirname, '.connector-state.json')
 
 // Version tracking for deployment verification
 const VERSION = '2025-11-17T08:00:00Z' // Updated to filter by is_active
@@ -53,7 +46,7 @@ async function fetchOpenJobs(limit = 100, offset = 0, retries = 3, lastSync) {
       
       // Add timeout to prevent hanging
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout (increased for large datasets)
       
       const response = await fetch(url, {
         headers: {
@@ -65,12 +58,24 @@ async function fetchOpenJobs(limit = 100, offset = 0, retries = 3, lastSync) {
       clearTimeout(timeoutId)
       
       if (!response.ok) {
+        // Try to get error body for more details
+        let errorBody = ''
+        try {
+          errorBody = await response.text()
+        } catch (e) {
+          errorBody = 'Could not read error body'
+        }
+        console.error(`❌ API Error Details:`)
+        console.error(`   URL: ${url}`)
+        console.error(`   Status: ${response.status} ${response.statusText}`)
+        console.error(`   Body: ${errorBody.substring(0, 500)}`)
         throw new Error(`OpenJobs API error: ${response.status} ${response.statusText}`)
       }
       
       const data = await response.json()
       
       if (!data.success) {
+        console.error(`❌ API returned success=false:`, data)
         throw new Error(`OpenJobs API returned error: ${data.message}`)
       }
       
@@ -79,13 +84,21 @@ async function fetchOpenJobs(limit = 100, offset = 0, retries = 3, lastSync) {
       
       return jobs
     } catch (error) {
+      // Log detailed error info
+      if (error.name === 'AbortError') {
+        console.error(`⏱️  Request timeout after 60 seconds`)
+      }
+      
       if (attempt < retries) {
         const waitTime = Math.min(1000 * Math.pow(2, attempt), 10000) // Exponential backoff, max 10s
         console.warn(`⚠️  Attempt ${attempt}/${retries} failed: ${error.message}`)
+        console.warn(`   Error type: ${error.name}`)
         console.log(`⏳ Retrying in ${waitTime/1000}s...`)
         await new Promise(resolve => setTimeout(resolve, waitTime))
       } else {
         console.error('❌ Error fetching from OpenJobs:', error.message)
+        console.error('   Error type:', error.name)
+        console.error('   Stack:', error.stack)
         throw error
       }
     }
@@ -255,37 +268,77 @@ function calculateJobActiveStatus(openJob) {
 }
 
 /**
- * Get last sync timestamp from connector state file
+ * Get last sync timestamp from Supabase connector_state table
  */
 async function getLastSyncTime() {
   try {
-    const stateData = await fs.readFile(STATE_FILE, 'utf-8')
-    const state = JSON.parse(stateData)
-    console.log(`💾 Loaded last sync time: ${state.last_sync_at}`)
-    return state.last_sync_at
+    const supabaseUrl = INGEST_URL.split('/functions/')[0] // Extract base Supabase URL
+    const response = await fetch(`${supabaseUrl}/rest/v1/connector_state?connector_name=eq.openjobs&select=last_sync_time`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch connector state: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    
+    if (data && data.length > 0 && data[0].last_sync_time) {
+      console.log(`📊 Retrieved last sync time from database: ${data[0].last_sync_time}`)
+      return data[0].last_sync_time
+    }
+    
+    // Default to 7 days ago if no state exists
+    const defaultTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    console.warn(`⚠️  No previous sync state found in database, using default: ${defaultTime}`)
+    return defaultTime
   } catch (error) {
-    // File doesn't exist or is invalid - use default (7 days ago)
-    const defaultDate = new Date()
-    defaultDate.setDate(defaultDate.getDate() - 7)
-    const defaultTime = defaultDate.toISOString()
-    console.log(`⚠️  No previous sync state found, using default: ${defaultTime}`)
+    // If query fails, default to 7 days ago
+    const defaultTime = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    console.warn(`⚠️  Failed to get sync state from database: ${error.message}`)
+    console.warn(`   Using default: ${defaultTime}`)
     return defaultTime
   }
 }
 
 /**
- * Save last sync timestamp to state file
+ * Save last sync timestamp to Supabase connector_state table
  */
-async function saveLastSyncTime(timestamp) {
+async function saveLastSyncTime(timestamp, stats = {}) {
   try {
-    const state = {
-      last_sync_at: timestamp,
-      updated_at: new Date().toISOString()
+    const supabaseUrl = INGEST_URL.split('/functions/')[0] // Extract base Supabase URL
+    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/update_connector_state`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({
+        p_connector_name: 'openjobs',
+        p_last_sync_time: timestamp,
+        p_success: stats.success !== false,
+        p_jobs_fetched: stats.jobs_fetched || 0,
+        p_jobs_ingested: stats.jobs_ingested || 0,
+        p_error_message: stats.error_message || null,
+        p_metadata: stats.metadata || null
+      })
+    })
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Failed to save connector state: ${response.status} - ${errorText}`)
     }
-    await fs.writeFile(STATE_FILE, JSON.stringify(state, null, 2))
-    console.log(`💾 Saved last sync time: ${timestamp}`)
+    
+    console.log(`💾 Saved sync state to database: ${timestamp}`)
+    if (stats.jobs_fetched) console.log(`   Jobs fetched: ${stats.jobs_fetched}`)
+    if (stats.jobs_ingested) console.log(`   Jobs ingested: ${stats.jobs_ingested}`)
   } catch (error) {
-    console.error(`⚠️  Failed to save sync state: ${error.message}`)
+    console.error('❌ Failed to save sync state to database:', error.message)
+    // Don't throw - we don't want to fail the whole sync just because state save failed
   }
 }
 
@@ -545,13 +598,30 @@ async function main() {
     console.log(`   Sync Interval: ${SYNC_INTERVAL_HOURS} hours`)
     console.log()
     
+    // Health check OpenJobs API
+    console.log('🏥 Checking OpenJobs API health...')
+    try {
+      const healthResponse = await fetch(`${OPENJOBS_API_URL}/health`, {
+        headers: { 'Accept': 'application/json' }
+      })
+      if (healthResponse.ok) {
+        const healthData = await healthResponse.json()
+        console.log(`✅ OpenJobs API is healthy (status: ${healthData.data?.status})`)
+      } else {
+        console.warn(`⚠️  OpenJobs API health check returned: ${healthResponse.status}`)
+      }
+    } catch (error) {
+      console.error(`❌ OpenJobs API health check failed: ${error.message}`)
+      throw new Error('Cannot connect to OpenJobs API')
+    }
+    
     // Get last sync time for incremental sync
     const lastSync = await getLastSyncTime()
     console.log(`📅 Last sync: ${lastSync}`)
     
     // Fetch ONLY NEW jobs from OpenJobs (using created_after filter)
     console.log(`🌐 Fetching jobs created after ${lastSync}...`)
-    const allJobs = await fetchOpenJobs(500, 0) // Fetch up to 500 new jobs
+    const allJobs = await fetchOpenJobs(500, 0, 3, lastSync) // Fetch up to 500 new jobs
     
     if (allJobs.length === 0) {
       console.log('\n✅ No new jobs from OpenJobs since last sync')
@@ -648,12 +718,32 @@ async function main() {
     console.log(`🔄 Updated: ${totalUpdated} jobs`)
     console.log(`⏭️  Skipped: ${totalSkipped} jobs`)
     
-    // Save last sync time for next incremental sync
-    await saveLastSyncTime(new Date().toISOString())
+    // Save last sync time and stats for next incremental sync
+    await saveLastSyncTime(new Date().toISOString(), {
+      success: true,
+      jobs_fetched: allJobs.length,
+      jobs_ingested: totalInserted,
+      metadata: {
+        processed: totalProcessed,
+        updated: totalUpdated,
+        skipped: totalSkipped,
+        batches: totalBatches
+      }
+    })
     
   } catch (error) {
     console.error('\n💥 Error:', error.message)
     console.error(error.stack)
+    
+    // Save error state
+    await saveLastSyncTime(new Date().toISOString(), {
+      success: false,
+      error_message: error.message,
+      metadata: {
+        error_stack: error.stack?.substring(0, 500) // Truncate stack trace
+      }
+    })
+    
     if (!RUN_CONTINUOUSLY) {
       process.exit(1)
     }
