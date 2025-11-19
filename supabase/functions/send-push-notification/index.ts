@@ -333,17 +333,27 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Log to notification history
     if (successCount > 0) {
-      await supabase.from("notification_history").insert({
-        user_id,
-        job_id,
-        match_score,
-        title: notificationPayload.title,
-        body: notificationPayload.body,
-        icon: notificationPayload.icon,
-        badge: notificationPayload.badge,
-        data: notificationPayload.data,
-        sent_at: new Date().toISOString(),
-      });
+      console.log("Attempting to insert notification history...");
+      const { data: historyData, error: historyError } = await supabase
+        .from("notification_history")
+        .insert({
+          user_id,
+          job_id,
+          match_score,
+          title: notificationPayload.title,
+          body: notificationPayload.body,
+          icon: notificationPayload.icon,
+          badge: notificationPayload.badge,
+          data: notificationPayload.data,
+          sent_at: new Date().toISOString(),
+        })
+        .select();
+
+      if (historyError) {
+        console.error("Failed to insert notification history:", historyError);
+      } else {
+        console.log("Notification history inserted successfully:", historyData);
+      }
     }
 
     console.log(`Push notification results: ${successCount} succeeded, ${failCount} failed`);
