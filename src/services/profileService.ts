@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables, Json } from "@/integrations/supabase/types";
 import { getConfig } from "@/lib/config";
 
 type Profile = Tables<"profiles">;
@@ -57,8 +57,12 @@ export class ProfileService {
     await this.updateProfile(userId, { onboarding_completed: true });
   }
 
-  async updatePreferences(userId: string, preferences: any): Promise<void> {
-    await this.updateProfile(userId, { preferences });
+  async updatePreferences(userId: string, updates: Record<string, unknown>): Promise<void> {
+    // Merge with existing preferences instead of replacing
+    const profile = await this.getProfile(userId);
+    const currentPrefs = (profile?.preferences as Record<string, unknown>) || {};
+    const mergedPrefs = { ...currentPrefs, ...updates } as { [key: string]: Json | undefined };
+    await this.updateProfile(userId, { preferences: mergedPrefs });
   }
 
   async updateSkills(userId: string, skills: string[]): Promise<Profile> {

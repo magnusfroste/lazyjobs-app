@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -8,14 +8,13 @@ import { useCardFlip } from "@/hooks/useCardFlip";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getAppConfig } from "@/lib/config";
 import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 import MobileNavBar from "@/components/MobileNavBar";
 import { SwipeHint } from "@/components/SwipeHint";
-import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
+import { getMatchSettings } from "@/lib/matchSettings";
 import { PageContainer } from "@/components/layout/LayoutComponents";
 
 type MatchMode = "keyword" | "precomputed";
@@ -25,13 +24,22 @@ const Swipe = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
-  const [matchSettings, setMatchSettings] = useState(getMatchSettings());
-  const matchMode = matchSettings.matchMode;
-  const keywordThreshold = matchSettings.keywordThreshold;
   const [swipePreview, setSwipePreview] = useState<"left" | "right" | null>(null);
   const { toast } = useToast();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
+
+  // Get threshold from profile preferences, fall back to localStorage
+  const keywordThreshold = useMemo(() => {
+    const prefs = profile?.preferences as Record<string, unknown> | null;
+    if (prefs?.match_threshold && typeof prefs.match_threshold === "number") {
+      return prefs.match_threshold;
+    }
+    return getMatchSettings().keywordThreshold;
+  }, [profile?.preferences]);
+
+  const matchMode: MatchMode = "precomputed";
+
   const { jobs, loading: jobsLoading } = useJobs(
     user?.id,
     true,
@@ -39,15 +47,6 @@ const Swipe = () => {
     keywordThreshold
   );
 
-  // Listen for settings changes from Settings page
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setMatchSettings(getMatchSettings());
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
   const { currentJob, currentIndex, remainingJobs, canUndo, handleSwipe, handleUndo, jumpToJob } = useSwipe(
     user?.id || "",
     jobs
@@ -58,7 +57,6 @@ const Swipe = () => {
   useEffect(() => {
     const jobId = searchParams.get('jobId');
     if (jobId && jobs.length > 0) {
-      // Find the job in the current jobs list
       const jobIndex = jobs.findIndex(job => job.id === jobId);
       
       if (jobIndex >= 0) {
@@ -75,14 +73,10 @@ const Swipe = () => {
         });
       }
       
-      // Clear the jobId from URL
       searchParams.delete('jobId');
       setSearchParams(searchParams);
     }
   }, [searchParams, jobs, toast, setSearchParams, jumpToJob]);
-
-  // Mode change handler removed - precomputed is now the only mode
-
 
   const handleButtonSwipeLeft = () => {
     setSwipePreview("left");
