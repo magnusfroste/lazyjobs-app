@@ -2,29 +2,44 @@ import { useState, useEffect } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { authService } from "@/services/authService";
 
+/**
+ * Hook for managing authentication state.
+ * Handles session persistence, auth state changes, and provides auth methods.
+ * 
+ * @returns Auth state and methods (user, session, loading, signIn, signUp, signInWithGoogle, signOut)
+ */
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
+    // Set up auth state listener FIRST
     const { data: { subscription } } = authService.onAuthStateChange(
       (event, session) => {
+        if (mounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    authService.getSession().then((session) => {
+      if (mounted) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
-    );
-
-    // Check for existing session
-    authService.getSession().then((session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

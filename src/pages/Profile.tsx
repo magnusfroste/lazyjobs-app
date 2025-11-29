@@ -86,10 +86,13 @@ const Profile = () => {
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
+      // Merge with existing preferences to avoid overwriting settings like match_threshold
+      const currentPrefs = (profile?.preferences as Record<string, unknown>) || {};
       await updateProfile({
         full_name: fullName,
         phone: phone,
         preferences: {
+          ...currentPrefs,
           location,
           salary_min: salaryMin ? parseInt(salaryMin) : undefined,
           work_type: workType,

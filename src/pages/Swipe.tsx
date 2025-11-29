@@ -14,8 +14,9 @@ import TopBar from "@/components/TopBar";
 import { CardStack } from "@/components/CardStack";
 import MobileNavBar from "@/components/MobileNavBar";
 import { SwipeHint } from "@/components/SwipeHint";
-import { getMatchSettings } from "@/lib/matchSettings";
 import { PageContainer } from "@/components/layout/LayoutComponents";
+
+const DEFAULT_MATCH_THRESHOLD = 0.65;
 
 type MatchMode = "keyword" | "precomputed";
 
@@ -29,13 +30,13 @@ const Swipe = () => {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
 
-  // Get threshold from profile preferences, fall back to localStorage
+  // Get threshold from profile preferences, fall back to default
   const keywordThreshold = useMemo(() => {
     const prefs = profile?.preferences as Record<string, unknown> | null;
     if (prefs?.match_threshold && typeof prefs.match_threshold === "number") {
       return prefs.match_threshold;
     }
-    return getMatchSettings().keywordThreshold;
+    return DEFAULT_MATCH_THRESHOLD;
   }, [profile?.preferences]);
 
   const matchMode: MatchMode = "precomputed";
