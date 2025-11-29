@@ -29,14 +29,16 @@ export const SwipeFooter = ({ remainingJobs, matchThreshold, isIOSSafari = false
   return (
     <div className="mt-8 pb-8 md:hidden">
       {/* Stats */}
-      <div className="text-center mb-6">
-        <p className="text-muted-foreground text-sm">
-          <span className="font-semibold text-foreground">{remainingJobs}</span>
-          {matchThreshold !== undefined 
-            ? <> jobs above <span className="font-semibold text-foreground">{Math.round(matchThreshold * 100)}%</span></>
-            : <> jobs to explore</>
-          }
-        </p>
+      <div className="flex justify-center mb-6">
+        <div className="bg-muted/50 backdrop-blur-sm rounded-full px-4 py-2 border border-border/30">
+          <p className="text-muted-foreground text-sm">
+            <span className="font-semibold text-foreground">{remainingJobs}</span>
+            {matchThreshold !== undefined 
+              ? <> jobs above <span className="font-semibold text-foreground">{Math.round(matchThreshold * 100)}%</span></>
+              : <> jobs to explore</>
+            }
+          </p>
+        </div>
       </div>
 
       {/* Rotating tip */}
