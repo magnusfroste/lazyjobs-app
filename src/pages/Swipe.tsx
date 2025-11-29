@@ -16,6 +16,8 @@ import { SwipeHint } from "@/components/SwipeHint";
 import { PageContainer } from "@/components/layout/LayoutComponents";
 import { SafariInstallBanner } from "@/components/SafariInstallBanner";
 import { SwipeFooter } from "@/components/SwipeFooter";
+import { MatchDetailsOverlay } from "@/components/MatchDetailsOverlay";
+import { AnimatePresence } from "framer-motion";
 
 const DEFAULT_MATCH_THRESHOLD = 0.65;
 
@@ -56,7 +58,7 @@ const Swipe = () => {
     user?.id || "",
     jobs
   );
-  const { flipCard, isCardFlipped, isAnyCardFlipped } = useCardFlip();
+  const { flipCard, closeFlip, isCardFlipped, isAnyCardFlipped } = useCardFlip();
 
   // Handle deep linking from push notifications
   useEffect(() => {
@@ -168,6 +170,11 @@ const Swipe = () => {
                 canUndo={canUndo}
               />
             )}
+            <AnimatePresence>
+              {isAnyCardFlipped && currentJob && (
+                <MatchDetailsOverlay job={currentJob} onClose={closeFlip} />
+              )}
+            </AnimatePresence>
           </>
         ) : (
           <div className="text-center py-20 space-y-4">
