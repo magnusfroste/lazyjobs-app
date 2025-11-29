@@ -40,8 +40,11 @@ const Swipe = () => {
 
   const matchMode: MatchMode = "precomputed";
 
+  // Only fetch jobs when profile is loaded to ensure threshold is stable
+  // This prevents the race condition where jobs load with localStorage threshold
+  // then reload with profile threshold, causing jobs to "appear then disappear"
   const { jobs, loading: jobsLoading } = useJobs(
-    user?.id,
+    profileLoading ? undefined : user?.id,
     true,
     matchMode,
     keywordThreshold
