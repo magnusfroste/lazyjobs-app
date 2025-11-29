@@ -1,14 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { matchService, MatchWithJob } from "@/services/matchService";
 import { useToast } from "@/hooks/use-toast";
 
-export const useMatches = (userId: string) => {
+/**
+ * Hook for managing user's job matches.
+ * Provides CRUD operations and state management for saved matches.
+ * 
+ * @param userId - The user's ID to fetch matches for
+ * @returns Matches state and operations (matches, loading, error, refetch, deleteMatch, markAsApplied, updateNotes)
+ */
+export const useMatches = (userId: string | undefined) => {
   const [matches, setMatches] = useState<MatchWithJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
 
-  const loadMatches = async () => {
+  const loadMatches = useCallback(async () => {
+    // Guard inside async function to prevent race conditions
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -20,13 +33,11 @@ export const useMatches = (userId: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      loadMatches();
-    }
-  }, [userId]);
+    loadMatches();
+  }, [loadMatches]);
 
   const deleteMatch = async (matchId: string) => {
     try {

@@ -4,6 +4,9 @@ import { Tables } from "@/integrations/supabase/types";
 
 type Profile = Tables<"profiles">;
 
+/**
+ * User settings structure for theme, display, and matching preferences.
+ */
 export interface UserSettings {
   theme: "light" | "dark" | "system";
   dense_mode: "normal" | "compact";
@@ -22,7 +25,9 @@ const STORAGE_KEYS = {
   match_threshold: "lazyjobs_match_settings",
 };
 
-// Load from localStorage (for immediate effect and fallback)
+/**
+ * Load settings from localStorage (for immediate effect and fallback).
+ */
 const loadFromLocalStorage = (): Partial<UserSettings> => {
   try {
     const theme = localStorage.getItem(STORAGE_KEYS.theme) as UserSettings["theme"] | null;
@@ -40,7 +45,9 @@ const loadFromLocalStorage = (): Partial<UserSettings> => {
   }
 };
 
-// Save to localStorage
+/**
+ * Save settings to localStorage for immediate persistence.
+ */
 const saveToLocalStorage = (settings: Partial<UserSettings>) => {
   try {
     if (settings.theme !== undefined) {
@@ -62,7 +69,9 @@ const saveToLocalStorage = (settings: Partial<UserSettings>) => {
   }
 };
 
-// Extract settings from profile preferences
+/**
+ * Extract settings from profile preferences JSON.
+ */
 const extractSettingsFromProfile = (profile: Profile | null): Partial<UserSettings> => {
   if (!profile?.preferences) return {};
   
@@ -74,6 +83,15 @@ const extractSettingsFromProfile = (profile: Profile | null): Partial<UserSettin
   };
 };
 
+/**
+ * Hook for managing user settings with localStorage + database persistence.
+ * Settings are saved to localStorage immediately for responsiveness,
+ * then synced to database with debounce for cross-device consistency.
+ * 
+ * @param userId - The user's ID for database persistence
+ * @param profile - The user's profile (source of truth for settings)
+ * @returns Settings state and update methods
+ */
 export const useUserSettings = (userId: string | undefined, profile: Profile | null) => {
   const [settings, setSettings] = useState<UserSettings>(() => {
     // Initial load: prefer profile, fallback to localStorage, then defaults
@@ -89,6 +107,15 @@ export const useUserSettings = (userId: string | undefined, profile: Profile | n
 
   const [isSyncing, setIsSyncing] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   // Sync settings from profile when it loads
   useEffect(() => {
@@ -124,7 +151,10 @@ export const useUserSettings = (userId: string | undefined, profile: Profile | n
     }, 500); // 500ms debounce
   }, [userId]);
 
-  // Update a single setting
+  /**
+   * Update a single setting.
+   * Immediately updates state and localStorage, debounced to database.
+   */
   const updateSetting = useCallback(<K extends keyof UserSettings>(
     key: K,
     value: UserSettings[K]
@@ -141,7 +171,10 @@ export const useUserSettings = (userId: string | undefined, profile: Profile | n
     saveToDatabase(update);
   }, [saveToDatabase]);
 
-  // Update multiple settings at once
+  /**
+   * Update multiple settings at once.
+   * Immediately updates state and localStorage, debounced to database.
+   */
   const updateSettings = useCallback((updates: Partial<UserSettings>) => {
     // Update local state immediately
     setSettings(prev => ({ ...prev, ...updates }));
