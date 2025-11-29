@@ -3,6 +3,7 @@ import { Lightbulb, Heart, Sparkles, Zap } from "lucide-react";
 
 interface SwipeFooterProps {
   remainingJobs: number;
+  matchThreshold?: number;
   isIOSSafari?: boolean;
 }
 
@@ -13,7 +14,7 @@ const tips = [
   { icon: Zap, text: "Higher match % = better fit for you" },
 ];
 
-export const SwipeFooter = ({ remainingJobs, isIOSSafari = false }: SwipeFooterProps) => {
+export const SwipeFooter = ({ remainingJobs, matchThreshold, isIOSSafari = false }: SwipeFooterProps) => {
   const [tipIndex, setTipIndex] = useState(0);
 
   useEffect(() => {
@@ -30,7 +31,11 @@ export const SwipeFooter = ({ remainingJobs, isIOSSafari = false }: SwipeFooterP
       {/* Stats */}
       <div className="text-center mb-6">
         <p className="text-muted-foreground text-sm">
-          <span className="font-semibold text-foreground">{remainingJobs}</span> jobs to explore
+          <span className="font-semibold text-foreground">{remainingJobs}</span>
+          {matchThreshold !== undefined 
+            ? <> jobs above <span className="font-semibold text-foreground">{Math.round(matchThreshold * 100)}%</span></>
+            : <> jobs to explore</>
+          }
         </p>
       </div>
 
