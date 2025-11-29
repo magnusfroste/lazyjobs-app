@@ -15,6 +15,7 @@ import MobileNavBar from "@/components/MobileNavBar";
 import { SwipeHint } from "@/components/SwipeHint";
 import { PageContainer } from "@/components/layout/LayoutComponents";
 import { SafariInstallBanner } from "@/components/SafariInstallBanner";
+import { SwipeFooter } from "@/components/SwipeFooter";
 
 const DEFAULT_MATCH_THRESHOLD = 0.65;
 
@@ -161,6 +162,7 @@ const Swipe = () => {
                 ))
               }
             />
+            <SwipeFooter remainingJobs={remainingJobs} />
             <SwipeControls
               onSwipeLeft={handleButtonSwipeLeft}
               onSwipeRight={handleButtonSwipeRight}
