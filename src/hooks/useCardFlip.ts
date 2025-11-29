@@ -13,5 +13,7 @@ export const useCardFlip = () => {
   
   const isCardFlipped = (cardId: string) => flippedCardId === cardId;
   
-  return { flipCard, closeFlip, isCardFlipped };
+  const isAnyCardFlipped = flippedCardId !== null;
+  
+  return { flipCard, closeFlip, isCardFlipped, isAnyCardFlipped };
 };

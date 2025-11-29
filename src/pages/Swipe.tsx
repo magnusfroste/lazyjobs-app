@@ -56,7 +56,7 @@ const Swipe = () => {
     user?.id || "",
     jobs
   );
-  const { flipCard, isCardFlipped } = useCardFlip();
+  const { flipCard, isCardFlipped, isAnyCardFlipped } = useCardFlip();
 
   // Handle deep linking from push notifications
   useEffect(() => {
@@ -160,12 +160,14 @@ const Swipe = () => {
               }
             />
             <SwipeFooter remainingJobs={remainingJobs} matchThreshold={keywordThreshold} isIOSSafari={isIOSSafari} />
-            <SwipeControls
-              onSwipeLeft={handleButtonSwipeLeft}
-              onSwipeRight={handleButtonSwipeRight}
-              onUndo={handleUndo}
-              canUndo={canUndo}
-            />
+            {!isAnyCardFlipped && (
+              <SwipeControls
+                onSwipeLeft={handleButtonSwipeLeft}
+                onSwipeRight={handleButtonSwipeRight}
+                onUndo={handleUndo}
+                canUndo={canUndo}
+              />
+            )}
           </>
         ) : (
           <div className="text-center py-20 space-y-4">
