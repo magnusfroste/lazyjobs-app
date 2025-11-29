@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { jobService } from "@/services/jobService";
 import { JobWithMatch } from "@/types/job";
+import { supabase } from "@/integrations/supabase/client";
 
 type MatchMode = "keyword" | "precomputed";
 
@@ -24,16 +25,31 @@ export const useJobs = (
         return;
       }
 
-      // Call appropriate service based on match mode
+      // For precomputed mode: check if user has AI matches, fallback to keyword if not
+      let effectiveMode = matchMode;
+      
+      if (matchMode === "precomputed") {
+        const { count } = await supabase
+          .from("job_matches")
+          .select("id", { count: "exact", head: true })
+          .eq("profile_id", userId);
+        
+        // No AI matches yet → fallback to keyword matching
+        if (!count || count === 0) {
+          effectiveMode = "keyword";
+        }
+      }
+
+      // Call appropriate service based on effective mode
       const fetchedJobs =
-        matchMode === "precomputed"
+        effectiveMode === "precomputed"
           ? await jobService.getPrecomputedMatches(userId, minThreshold)
           : await jobService.getMatchedJobs(userId, 5000);
 
       // For keyword mode: filter by percentage threshold (convert 0-1 to 0-100)
       // For precomputed mode: already filtered/limited by service
       const filtered =
-        matchMode === "keyword"
+        effectiveMode === "keyword"
           ? fetchedJobs.filter((job) => {
               const score = job.match_score ?? 0;
               const thresholdPercent = minThreshold * 100; // Convert 0.65 → 65

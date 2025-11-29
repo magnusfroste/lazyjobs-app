@@ -697,6 +697,7 @@ export type Database = {
       }
     }
     Functions: {
+      expire_old_jobs: { Args: never; Returns: undefined }
       send_daily_best_match_notification: { Args: never; Returns: undefined }
       update_connector_state: {
         Args: {
