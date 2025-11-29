@@ -11,7 +11,8 @@ export const useProfile = (userId: string | undefined) => {
 
   const loadProfile = async () => {
     if (!userId) {
-      setLoading(false);
+      // Keep loading=true when no userId - prevents race condition where
+      // consumers think profile is "loaded" when it hasn't been fetched yet
       return;
     }
 
