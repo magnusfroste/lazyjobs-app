@@ -1,21 +1,19 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useDenseMode } from "@/contexts/DenseModeContext";
+import { useUserSettings } from "@/hooks/useUserSettings";
 import TopBar from "@/components/TopBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, Moon, Sun, Monitor, Minimize2, Maximize2, Info } from "lucide-react";
+import { Loader2, Moon, Sun, Monitor, Minimize2, Maximize2, Info, Cloud } from "lucide-react";
 import { NotificationSettings } from "@/components/NotificationSettings";
-import { FEATURES } from "@/lib/featureFlags";
 import MobileNavBar from "@/components/MobileNavBar";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { getMatchSettings, saveMatchSettings } from "@/lib/matchSettings";
 import { useToast } from "@/hooks/use-toast";
 import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,22 +22,47 @@ export default function Settings() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading } = useProfile(user?.id);
-  const { theme, setTheme } = useTheme();
-  const { denseMode, setDenseMode } = useDenseMode();
-  const [matchSettings, setMatchSettings] = useState(getMatchSettings());
+  const { theme, setTheme, setThemeFromProfile } = useTheme();
+  const { denseMode, setDenseMode, setDenseModeFromProfile } = useDenseMode();
+  const { settings, updateSetting, isSyncing } = useUserSettings(user?.id, profile);
   const { toast } = useToast();
 
-  // Removed handleMatchModeChange and handleKeywordThresholdChange - precomputed is now the only mode
+  // Sync contexts with profile settings when profile loads
+  useEffect(() => {
+    if (profile?.preferences) {
+      const prefs = profile.preferences as Record<string, unknown>;
+      if (prefs.theme && typeof prefs.theme === "string") {
+        setThemeFromProfile(prefs.theme as "light" | "dark" | "system");
+      }
+      if (prefs.dense_mode && typeof prefs.dense_mode === "string") {
+        setDenseModeFromProfile(prefs.dense_mode as "normal" | "compact");
+      }
+    }
+  }, [profile, setThemeFromProfile, setDenseModeFromProfile]);
+
+  const handleThemeChange = (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+    updateSetting("theme", newTheme);
+  };
+
+  const handleDenseModeChange = (checked: boolean) => {
+    const newMode = checked ? "compact" : "normal";
+    setDenseMode(newMode);
+    updateSetting("dense_mode", newMode);
+    toast({
+      title: checked ? "Dense mode enabled" : "Dense mode disabled",
+      description: checked 
+        ? "Spacing has been tightened across all pages"
+        : "Normal spacing has been restored",
+    });
+  };
 
   const handleThresholdChange = (value: number[]) => {
     const threshold = value[0];
-    const newSettings = { ...matchSettings, keywordThreshold: threshold };
-    setMatchSettings(newSettings);
-    saveMatchSettings(newSettings);
+    updateSetting("match_threshold", threshold);
   };
 
   useEffect(() => {
-    // Only redirect if auth has finished loading and there's no user
     if (!authLoading && !user) {
       navigate("/auth");
     }
@@ -54,7 +77,7 @@ export default function Settings() {
   }
 
   if (!user) {
-    return null; // Will redirect via useEffect
+    return null;
   }
 
   if (!profile) return null;
@@ -75,7 +98,12 @@ export default function Settings() {
           {/* Match Quality */}
           <Card>
             <CardHeader className={denseMode === "compact" ? "p-2 md:p-3" : ""}>
-              <CardTitle>Match Quality</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Match Quality</CardTitle>
+                {isSyncing && (
+                  <Cloud className="h-4 w-4 text-muted-foreground animate-pulse" />
+                )}
+              </div>
               <CardDescription>
                 Control the minimum match score for jobs you see
               </CardDescription>
@@ -85,11 +113,11 @@ export default function Settings() {
                 <div className="flex justify-between items-center">
                   <Label>Minimum Match Score</Label>
                   <span className="text-sm font-medium">
-                    {Math.round(matchSettings.keywordThreshold * 100)}%
+                    {Math.round(settings.match_threshold * 100)}%
                   </span>
                 </div>
                 <Slider
-                  value={[matchSettings.keywordThreshold]}
+                  value={[settings.match_threshold]}
                   onValueChange={handleThresholdChange}
                   min={0.3}
                   max={0.95}
@@ -125,7 +153,7 @@ export default function Settings() {
                 <div className="grid grid-cols-3 gap-2 md:gap-3">
                   <Button
                     variant={theme === "light" ? "default" : "outline"}
-                    onClick={() => setTheme("light")}
+                    onClick={() => handleThemeChange("light")}
                     className="w-full"
                   >
                     <Sun className="h-4 w-4 mr-2" />
@@ -133,7 +161,7 @@ export default function Settings() {
                   </Button>
                   <Button
                     variant={theme === "dark" ? "default" : "outline"}
-                    onClick={() => setTheme("dark")}
+                    onClick={() => handleThemeChange("dark")}
                     className="w-full"
                   >
                     <Moon className="h-4 w-4 mr-2" />
@@ -141,7 +169,7 @@ export default function Settings() {
                   </Button>
                   <Button
                     variant={theme === "system" ? "default" : "outline"}
-                    onClick={() => setTheme("system")}
+                    onClick={() => handleThemeChange("system")}
                     className="w-full"
                   >
                     <Monitor className="h-4 w-4 mr-2" />
@@ -183,15 +211,7 @@ export default function Settings() {
                   <Switch
                     id="dense-mode"
                     checked={denseMode === "compact"}
-                    onCheckedChange={(checked) => {
-                      setDenseMode(checked ? "compact" : "normal");
-                      toast({
-                        title: checked ? "Dense mode enabled" : "Dense mode disabled",
-                        description: checked 
-                          ? "Spacing has been tightened across all pages"
-                          : "Normal spacing has been restored",
-                      });
-                    }}
+                    onCheckedChange={handleDenseModeChange}
                   />
                 </div>
               </div>
