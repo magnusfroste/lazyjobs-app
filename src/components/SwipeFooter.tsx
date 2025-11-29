@@ -3,6 +3,7 @@ import { Lightbulb, Heart, Sparkles, Zap } from "lucide-react";
 
 interface SwipeFooterProps {
   remainingJobs: number;
+  isIOSSafari?: boolean;
 }
 
 const tips = [
@@ -12,7 +13,7 @@ const tips = [
   { icon: Zap, text: "Higher match % = better fit for you" },
 ];
 
-export const SwipeFooter = ({ remainingJobs }: SwipeFooterProps) => {
+export const SwipeFooter = ({ remainingJobs, isIOSSafari = false }: SwipeFooterProps) => {
   const [tipIndex, setTipIndex] = useState(0);
 
   useEffect(() => {
@@ -44,8 +45,8 @@ export const SwipeFooter = ({ remainingJobs }: SwipeFooterProps) => {
         </div>
       </div>
 
-      {/* Extra spacer for Safari scroll */}
-      <div className="h-32" aria-hidden="true" />
+      {/* Extra spacer for Safari scroll trick - only needed in Safari browser, not PWA */}
+      {isIOSSafari && <div className="h-32" aria-hidden="true" />}
     </div>
   );
 };
