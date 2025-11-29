@@ -131,7 +131,7 @@ const Swipe = () => {
   }
 
   return (
-    <div className="min-h-screen pb-32 safari-scroll-container">
+    <div className={`min-h-screen pb-32 ${isIOSSafari ? 'safari-scroll-container' : ''}`}>
         <TopBar />
         {isIOSSafari && !bannerDismissed && (
           <SafariInstallBanner onDismiss={() => setBannerDismissed(true)} />
@@ -162,7 +162,7 @@ const Swipe = () => {
                 ))
               }
             />
-            <SwipeFooter remainingJobs={remainingJobs} />
+            <SwipeFooter remainingJobs={remainingJobs} isIOSSafari={isIOSSafari} />
             <SwipeControls
               onSwipeLeft={handleButtonSwipeLeft}
               onSwipeRight={handleButtonSwipeRight}
