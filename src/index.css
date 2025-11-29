@@ -177,4 +177,13 @@ All colors MUST be HSL.
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
+
+  /* Safari toolbar hide trick - enables minimal UI mode */
+  @supports (height: 100dvh) {
+    .safari-scroll-container {
+      min-height: calc(100dvh + 1px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
 }
