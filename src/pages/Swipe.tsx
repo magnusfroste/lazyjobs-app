@@ -6,8 +6,7 @@ import { useJobs } from "@/hooks/useJobs";
 import { useSwipe } from "@/hooks/useSwipe";
 import { useCardFlip } from "@/hooks/useCardFlip";
 import { useToast } from "@/hooks/use-toast";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useSafariToolbarHide } from "@/hooks/useSafariToolbarHide";
 import JobCard from "@/components/JobCard";
 import SwipeControls from "@/components/SwipeControls";
 import TopBar from "@/components/TopBar";
@@ -15,6 +14,7 @@ import { CardStack } from "@/components/CardStack";
 import MobileNavBar from "@/components/MobileNavBar";
 import { SwipeHint } from "@/components/SwipeHint";
 import { PageContainer } from "@/components/layout/LayoutComponents";
+import { SafariInstallBanner } from "@/components/SafariInstallBanner";
 
 const DEFAULT_MATCH_THRESHOLD = 0.65;
 
@@ -23,12 +23,12 @@ type MatchMode = "keyword" | "precomputed";
 const Swipe = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile(user?.id);
   const [swipePreview, setSwipePreview] = useState<"left" | "right" | null>(null);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const { toast } = useToast();
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const isMobile = useIsMobile();
+  const { isIOSSafari } = useSafariToolbarHide();
 
   // Get threshold from profile preferences, fall back to default
   const keywordThreshold = useMemo(() => {
@@ -130,8 +130,11 @@ const Swipe = () => {
   }
 
   return (
-    <div className="min-h-screen pb-32">
+    <div className="min-h-screen pb-32 safari-scroll-container">
         <TopBar />
+        {isIOSSafari && !bannerDismissed && (
+          <SafariInstallBanner onDismiss={() => setBannerDismissed(true)} />
+        )}
         <SwipeHint />
 
       <PageContainer maxWidth="2xl" className="pt-4 md:pt-20">
