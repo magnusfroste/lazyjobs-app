@@ -154,15 +154,12 @@ const Swipe = () => {
                     isActive={idx === 0}
                     isFlipped={isCardFlipped(job.id)}
                     onFlip={() => flipCard(job.id)}
-                    cardsRemaining={remainingJobs}
-                    matchThreshold={keywordThreshold}
-                    matchMode={matchMode}
                     swipePreview={idx === 0 ? swipePreview : null}
                   />
                 ))
               }
             />
-            <SwipeFooter remainingJobs={remainingJobs} isIOSSafari={isIOSSafari} />
+            <SwipeFooter remainingJobs={remainingJobs} matchThreshold={keywordThreshold} isIOSSafari={isIOSSafari} />
             <SwipeControls
               onSwipeLeft={handleButtonSwipeLeft}
               onSwipeRight={handleButtonSwipeRight}

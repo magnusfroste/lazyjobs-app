@@ -53,9 +53,6 @@ interface JobCardProps {
   isActive?: boolean;
   isFlipped?: boolean;
   onFlip?: () => void;
-  cardsRemaining?: number;
-  matchThreshold?: number;
-  matchMode?: "keyword" | "precomputed";
   mode?: "swipe" | "matches";
   onDelete?: () => void;
   onApply?: () => void;
@@ -67,7 +64,7 @@ interface JobCardProps {
   swipePreview?: "left" | "right" | null;
 }
 
-const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, cardsRemaining, matchThreshold, matchMode, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false, swipePreview }: JobCardProps) => {
+const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, mode = "swipe", onDelete, onApply, onMarkAsApplied, isApplied, matchDate, appliedAt, hasGeneratedApplication = false, swipePreview }: JobCardProps) => {
   const [exitX, setExitX] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const x = useMotionValue(0);
@@ -351,19 +348,6 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, car
             </>
           )}
         </div>
-
-        {/* Card Footer - Cards Remaining Counter (Swipe mode only) */}
-        {mode === "swipe" && isActive && cardsRemaining !== undefined && (
-          <div className="bg-muted/30 px-6 py-3 text-center border-t border-border/50">
-            <span className="text-sm font-medium text-muted-foreground">
-              {(matchMode === "keyword" || matchMode === "precomputed") && matchThreshold !== undefined ? (
-                <>{cardsRemaining} {cardsRemaining === 1 ? 'job' : 'jobs'} above {Math.round(matchThreshold * 100)}%</>
-              ) : (
-                <>{cardsRemaining} {cardsRemaining === 1 ? 'job' : 'jobs'} remaining</>
-              )}
-            </span>
-          </div>
-        )}
 
         {/* BACK SIDE - Detailed Match Analysis */}
         <motion.div
