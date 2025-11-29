@@ -11,13 +11,16 @@ export const useSwipe = (userId: string, jobs: JobWithMatch[]) => {
   const { toast } = useToast();
   const prevJobsRef = useRef<JobWithMatch[]>([]);
 
-  // Only reset if jobs array was actually replaced (not on background append)
+  // Reset index when jobs array changes (new data loaded)
   useEffect(() => {
-    const jobsReplaced = jobs.length > 0 && prevJobsRef.current.length > 0 &&
-      (jobs[0]?.id !== prevJobsRef.current[0]?.id);
+    const prevJobs = prevJobsRef.current;
+    const hasNewJobs = jobs.length > 0;
+    const hadPrevJobs = prevJobs.length > 0;
+    const firstJobChanged = hasNewJobs && (!hadPrevJobs || jobs[0]?.id !== prevJobs[0]?.id);
     
-    if (jobsReplaced) {
-      console.log("🔄 Jobs replaced, resetting index");
+    // Reset when we get jobs for the first time OR when the jobs list changes
+    if (firstJobChanged) {
+      console.log("🔄 Jobs changed, resetting index");
       setCurrentIndex(0);
       setSwipeHistory([]);
     }
