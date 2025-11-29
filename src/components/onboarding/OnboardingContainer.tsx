@@ -3,6 +3,7 @@ import { OnboardingWelcome } from "./OnboardingWelcome";
 import { OnboardingCVUpload } from "./OnboardingCVUpload";
 import { OnboardingProcessing } from "./OnboardingProcessing";
 import { OnboardingPreferencesForm } from "./OnboardingPreferences";
+import { OnboardingComplete } from "./OnboardingComplete";
 import { Progress } from "@/components/ui/progress";
 
 interface OnboardingContainerProps {
@@ -20,6 +21,7 @@ export const OnboardingContainer = ({ userId, onComplete }: OnboardingContainerP
     handleSkipCV,
     handleSavePreferences,
     handleSkipPreferences,
+    handleStartSwiping,
   } = useOnboarding(userId);
 
   // Auto-redirect when complete
@@ -28,7 +30,7 @@ export const OnboardingContainer = ({ userId, onComplete }: OnboardingContainerP
     return null;
   }
 
-  // Calculate progress
+  // Calculate progress (4 steps: upload, processing, preferences, ready)
   const getProgress = () => {
     switch (step) {
       case "welcome":
@@ -39,6 +41,8 @@ export const OnboardingContainer = ({ userId, onComplete }: OnboardingContainerP
         return 50;
       case "preferences":
         return 75;
+      case "ready":
+        return 100;
       default:
         return 0;
     }
@@ -49,20 +53,25 @@ export const OnboardingContainer = ({ userId, onComplete }: OnboardingContainerP
       case "welcome":
         return "Welcome";
       case "upload":
-        return "Step 1 of 2: Upload CV";
+        return "Steg 1 av 2: Ladda upp CV";
       case "processing":
-        return "Processing...";
+        return "Bearbetar...";
       case "preferences":
-        return "Step 2 of 2: Preferences";
+        return "Steg 2 av 2: Preferenser";
+      case "ready":
+        return "Klart!";
       default:
         return "";
     }
   };
 
+  // Don't show progress bar on welcome or ready screens
+  const showProgressBar = step !== "welcome" && step !== "ready";
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Progress Bar */}
-      {step !== "welcome" && (
+      {showProgressBar && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-background border-b">
           <div className="container max-w-2xl mx-auto px-4 py-4 space-y-2">
             <div className="flex items-center justify-between">
@@ -75,7 +84,7 @@ export const OnboardingContainer = ({ userId, onComplete }: OnboardingContainerP
       )}
 
       {/* Content */}
-      <div className={step !== "welcome" ? "pt-24" : ""}>
+      <div className={showProgressBar ? "pt-24" : ""}>
         {step === "welcome" && <OnboardingWelcome onStart={handleStart} />}
         
         {step === "upload" && (
@@ -93,6 +102,10 @@ export const OnboardingContainer = ({ userId, onComplete }: OnboardingContainerP
             onSave={handleSavePreferences}
             onSkip={handleSkipPreferences}
           />
+        )}
+
+        {step === "ready" && (
+          <OnboardingComplete userId={userId} onStartSwiping={handleStartSwiping} />
         )}
       </div>
     </div>

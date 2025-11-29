@@ -4,7 +4,7 @@ import { profileService } from "@/services/profileService";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
-type OnboardingStep = "welcome" | "upload" | "processing" | "preferences" | "complete";
+type OnboardingStep = "welcome" | "upload" | "processing" | "preferences" | "ready" | "complete";
 
 export const useOnboarding = (userId: string) => {
   const { user } = useAuth();
@@ -79,15 +79,12 @@ export const useOnboarding = (userId: string) => {
       // Save preferences
       await onboardingService.savePreferences(userId, prefs);
 
-      // Complete onboarding
+      // Complete onboarding in DB
       await onboardingService.completeOnboarding(userId);
 
-      setStep("complete");
+      // Go to ready step (show completion screen)
+      setStep("ready");
       
-      toast({
-        title: "Welcome to LazyJobs!",
-        description: "Your profile is all set up. Let's find you some matches!",
-      });
     } catch (err) {
       setError((err as Error).message);
       toast({
@@ -101,12 +98,7 @@ export const useOnboarding = (userId: string) => {
   const handleSkipPreferences = async () => {
     try {
       await onboardingService.completeOnboarding(userId);
-      setStep("complete");
-      
-      toast({
-        title: "Welcome to LazyJobs!",
-        description: "You can update your preferences later in Settings.",
-      });
+      setStep("ready");
     } catch (err) {
       setError((err as Error).message);
       toast({
@@ -115,6 +107,14 @@ export const useOnboarding = (userId: string) => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleStartSwiping = () => {
+    toast({
+      title: "Välkommen till LazyJobs!",
+      description: "Swipa höger för att spara jobb, vänster för att skippa.",
+    });
+    setStep("complete");
   };
 
   return {
@@ -130,5 +130,6 @@ export const useOnboarding = (userId: string) => {
     handleSkipCV,
     handleSavePreferences,
     handleSkipPreferences,
+    handleStartSwiping,
   };
 };
