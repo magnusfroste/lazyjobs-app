@@ -58,29 +58,46 @@ const JobCard = ({ job, onSwipe, isActive = true, isFlipped = false, onFlip, mod
         rotate,
         opacity,
         cursor: isFlipped ? "default" : "grab",
+        touchAction: "pan-y", // Allow vertical scroll, capture horizontal for swipe
       } : {}}
       animate={
-        mode === "swipe" && exitX !== 0 
-          ? { x: exitX } 
+        // Only animate for exit or swipePreview - NOT during normal drag
+        exitX !== 0 
+          ? { x: exitX, rotate: exitX > 0 ? 15 : -15 } 
           : swipePreview === "left"
           ? { x: -window.innerWidth * 1.2, rotate: -10 }
           : swipePreview === "right"
           ? { x: window.innerWidth * 1.2, rotate: 10 }
-          : { x: 0, rotate: 0 }
+          : undefined // No animate during drag - card follows finger directly
       }
-      transition={{ duration: exitX !== 0 ? 0.3 : swipePreview ? 0.5 : 0.2, ease: "easeOut" }}
+      transition={{ duration: exitX !== 0 ? 0.3 : swipePreview ? 0.5 : 0.15, ease: "easeOut" }}
       drag={mode === "swipe" && !isFlipped ? "x" : false}
-      dragConstraints={{ left: -300, right: 300 }}
-      dragElastic={0}
+      dragConstraints={{ left: 0, right: 0 }} // Snap back to center
+      dragElastic={0.7} // Natural resistance feel
+      dragMomentum={false} // No floating after release!
+      dragSnapToOrigin={true} // Snap back if not swiped
       onDragEnd={mode === "swipe" ? (e, { offset, velocity }) => {
-        if (Math.abs(offset.x) > 100) {
+        const swipeThreshold = 80; // Distance threshold
+        const velocityThreshold = 400; // Speed threshold for quick flicks
+        
+        // Swipe if dragged far enough OR flicked fast enough
+        const isSwipeByDistance = Math.abs(offset.x) > swipeThreshold;
+        const isSwipeByVelocity = Math.abs(velocity.x) > velocityThreshold;
+        
+        if (isSwipeByDistance || isSwipeByVelocity) {
+          // Determine direction: use velocity direction if it was a flick
+          const direction = isSwipeByVelocity 
+            ? (velocity.x > 0 ? "right" : "left")
+            : (offset.x > 0 ? "right" : "left");
+          
           // Haptic feedback on mobile
           if (navigator.vibrate) {
             navigator.vibrate(50);
           }
-          setExitX(offset.x > 0 ? window.innerWidth * 1.5 : -window.innerWidth * 1.5);
-          setTimeout(() => onSwipe(offset.x > 0 ? "right" : "left"), 500);
+          setExitX(direction === "right" ? window.innerWidth * 1.5 : -window.innerWidth * 1.5);
+          setTimeout(() => onSwipe(direction), 300);
         }
+        // If not swiped: dragSnapToOrigin handles snap-back automatically
       } : undefined}
       className={cn(
         "relative w-full max-w-2xl mx-auto transition-opacity duration-300",
