@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatches } from "@/hooks/useMatches";
 import { Button } from "@/components/ui/button";
 import { ApplicationAssistantModal } from "@/components/ApplicationAssistantModal";
+import { MatchDetailsOverlay } from "@/components/MatchDetailsOverlay";
 import { Job, JobWithMatch } from "@/types/job";
 import JobCard from "@/components/JobCard";
 import MobileNavBar from "@/components/MobileNavBar";
@@ -11,17 +13,14 @@ import TopBar from "@/components/TopBar";
 import { PageContainer, PageSection, MobilePageHeader, DesktopPageHeader } from "@/components/layout/LayoutComponents";
 
 const Matches = () => {
-  const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({});
+  const [flippedJobId, setFlippedJobId] = useState<string | null>(null);
   const [selectedJobForApplication, setSelectedJobForApplication] = useState<Job | null>(null);
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { matches, loading: matchesLoading, deleteMatch, markAsApplied } = useMatches(user?.id || "");
 
   const toggleFlip = (matchId: string) => {
-    setFlippedCards(prev => ({
-      ...prev,
-      [matchId]: !prev[matchId],
-    }));
+    setFlippedJobId(prev => prev === matchId ? null : matchId);
   };
 
   // Redirect to auth if not logged in
@@ -70,32 +69,59 @@ const Matches = () => {
         <p className="text-muted-foreground mb-4 md:mb-6">{matches.length} saved {matches.length === 1 ? 'job' : 'jobs'}</p>
 
         <PageSection>
-          {sortedMatches.map((match) => (
-          <JobCard
-              key={match.id}
-              job={{
-                ...match.job,
-                match_score: match.match_score || 50,
-                match_breakdown: match.job_match?.match_breakdown,
-                matching_skills: match.job_match?.matching_skills,
-                skills_to_learn: match.job_match?.skills_to_learn,
-                recommendation: match.job_match?.recommendation,
-                confidence_level: match.job_match?.confidence_level,
-              } as JobWithMatch}
-              mode="matches"
-              isFlipped={flippedCards[match.id]}
-              onFlip={() => toggleFlip(match.id)}
-              onDelete={() => deleteMatch(match.id)}
-              onApply={() => setSelectedJobForApplication(match.job as Job)}
-              onMarkAsApplied={() => markAsApplied(match.id)}
-              isApplied={match.is_applied || false}
-              hasGeneratedApplication={!!match.application}
-              matchDate={new Date(match.created_at!).toLocaleDateString()}
-              appliedAt={match.applied_at}
-              onSwipe={() => {}}
-            />
-          ))}
+          {sortedMatches.map((match) => {
+            const jobWithMatch = {
+              ...match.job,
+              match_score: match.match_score || 50,
+              match_breakdown: match.job_match?.match_breakdown,
+              matching_skills: match.job_match?.matching_skills,
+              skills_to_learn: match.job_match?.skills_to_learn,
+              recommendation: match.job_match?.recommendation,
+              confidence_level: match.job_match?.confidence_level,
+            } as JobWithMatch;
+            
+            return (
+              <JobCard
+                key={match.id}
+                job={jobWithMatch}
+                mode="matches"
+                isFlipped={flippedJobId === match.id}
+                onFlip={() => toggleFlip(match.id)}
+                onDelete={() => deleteMatch(match.id)}
+                onApply={() => setSelectedJobForApplication(match.job as Job)}
+                onMarkAsApplied={() => markAsApplied(match.id)}
+                isApplied={match.is_applied || false}
+                hasGeneratedApplication={!!match.application}
+                matchDate={new Date(match.created_at!).toLocaleDateString()}
+                appliedAt={match.applied_at}
+                onSwipe={() => {}}
+              />
+            );
+          })}
         </PageSection>
+
+        {/* Match Details Overlay */}
+        <AnimatePresence>
+          {flippedJobId && (() => {
+            const match = sortedMatches.find(m => m.id === flippedJobId);
+            if (!match) return null;
+            const jobWithMatch = {
+              ...match.job,
+              match_score: match.match_score || 50,
+              match_breakdown: match.job_match?.match_breakdown,
+              matching_skills: match.job_match?.matching_skills,
+              skills_to_learn: match.job_match?.skills_to_learn,
+              recommendation: match.job_match?.recommendation,
+              confidence_level: match.job_match?.confidence_level,
+            } as JobWithMatch;
+            return (
+              <MatchDetailsOverlay 
+                job={jobWithMatch} 
+                onClose={() => setFlippedJobId(null)} 
+              />
+            );
+          })()}
+        </AnimatePresence>
 
         {matches.length === 0 && (
           <div className="text-center py-12 px-4">
