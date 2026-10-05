@@ -1,0 +1,11 @@
+# LazyJobs
+
+> Swipe. Match. Get Hired. A Tinder-style job matching app powered by AI.
+
+LazyJobs matches job seekers with openings based on their CV. Upload your CV, swipe through ranked job matches, see your skill gaps and get AI-generated cover letters and application answers. Jobs are aggregated from sources such as Arbetsförmedlingen, EURES and Remotive.
+
+Built for job seekers who want a faster, lower-effort way to find and apply for relevant jobs.
+
+## Links
+
+- [LazyJobs app](https://lazyjobs.app/): Sign up, upload your CV and start swiping.
