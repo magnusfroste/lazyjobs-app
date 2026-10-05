@@ -156,7 +156,7 @@ export class ProfileService {
       }
 
       // 5. Flatten skills if needed
-      let cvData = responseData;
+      const cvData = responseData;
       if (cvData.technical_skills && !cvData.skills_flat) {
         cvData.skills_flat = this.flattenSkills(cvData.technical_skills);
       }

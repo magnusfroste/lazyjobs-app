@@ -36,34 +36,22 @@ export const useProfile = (userId: string | undefined) => {
   const updateProfile = async (updates: Partial<Profile>) => {
     if (!userId) return;
     
-    try {
-      const updated = await profileService.updateProfile(userId, updates);
-      setProfile(updated);
-    } catch (err) {
-      throw err;
-    }
+    const updated = await profileService.updateProfile(userId, updates);
+    setProfile(updated);
   };
 
   const completeOnboarding = async () => {
     if (!userId) return;
     
-    try {
-      await profileService.completeOnboarding(userId);
-      setProfile(profile ? { ...profile, onboarding_completed: true } : null);
-    } catch (err) {
-      throw err;
-    }
+    await profileService.completeOnboarding(userId);
+    setProfile(profile ? { ...profile, onboarding_completed: true } : null);
   };
 
   const updateSkills = async (skills: string[]) => {
     if (!userId) return;
     
-    try {
-      const updated = await profileService.updateSkills(userId, skills);
-      setProfile(updated);
-    } catch (err) {
-      throw err;
-    }
+    const updated = await profileService.updateSkills(userId, skills);
+    setProfile(updated);
   };
 
   return {
