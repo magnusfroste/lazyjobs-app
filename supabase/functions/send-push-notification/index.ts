@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { getCaller, mayActFor } from "../_shared/caller.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -203,7 +204,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { user_id, job_id, match_score, job_title, company }: PushNotificationRequest = await req.json();
+    const body: PushNotificationRequest = await req.json();
+    const { user_id, job_id } = body;
+    let { match_score, job_title, company } = body;
 
     console.log(`Sending push notification for user ${user_id}, job ${job_id}`);
 
@@ -211,6 +214,33 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Signed-in users may send test notifications to themselves; the service
+    // role may send anything. Unauthenticated calls (the daily match cron posts
+    // without a key) may only notify about a real, not yet notified match, and
+    // the text is taken from the database rather than from the request.
+    if (!mayActFor(await getCaller(req), user_id)) {
+      const forbidden = () => new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+      const { data: match } = await supabase
+        .from("job_matches")
+        .select("match_score, jobs!inner(title, company)")
+        .eq("profile_id", user_id)
+        .eq("job_id", job_id)
+        .maybeSingle();
+      if (!match) return forbidden();
+      const { count: alreadySent } = await supabase
+        .from("notification_history")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user_id)
+        .eq("job_id", job_id);
+      if (alreadySent) return forbidden();
+      const job = match.jobs as unknown as { title: string; company: string };
+      match_score = match.match_score;
+      job_title = job.title;
+      company = job.company;
+    }
 
     // Get user's push subscriptions
     const { data: subscriptions, error: subError } = await supabase

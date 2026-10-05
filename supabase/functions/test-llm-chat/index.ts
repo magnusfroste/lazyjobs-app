@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCaller, mayActFor } from "../_shared/caller.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,13 @@ serve(async (req) => {
   }
 
   const startTime = Date.now();
+
+  // Paid LLM endpoint: signed-in users (or the server) only
+  if (!(await getCaller(req))) {
+    return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const { message, useToolCalling, discoverModels, testJobMatching, testSimpleJSON }: TestChatRequest = await req.json();

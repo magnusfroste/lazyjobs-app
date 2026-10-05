@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getCaller, mayActFor } from "../_shared/caller.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +21,12 @@ serve(async (req) => {
 
   try {
     const { job_id, user_id, language_override = 'auto', include = ['cv', 'cover_letter', 'email'] }: GenerateRequest = await req.json();
+
+    if (!mayActFor(await getCaller(req), user_id)) {
+      return new Response(JSON.stringify({ success: false, error: 'Forbidden' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!job_id || !user_id) {
       return new Response(
